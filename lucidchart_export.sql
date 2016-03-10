@@ -25,18 +25,18 @@ CREATE TABLE `Order` (
 );
 
 CREATE TABLE `Employee` (
-  `empid` <type>,
-  `hourly_rate` <type>,
-  `ssn` <type>,
-  `hours_per_week` <type>,
-  `date_hired` <type>,
-  `date_terminated` <type>,
-  `job_title` <type>
+  `empid` varchar(255),
+  `hourly_rate` float(2),
+  `ssn` int,
+  `hours_per_week` float(2),
+  `date_hired` varchar(10),
+  `date_terminated` varchar(10),
+  `job_title` varchar(255)
 );
 
 CREATE TABLE `Customer` (
-  `cust_id` <type>,
-  `reward_pts` <type>
+  `cust_id` varchar(255),
+  `reward_pts` int
 );
 
 CREATE TABLE `Menu_Item` (
