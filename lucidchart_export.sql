@@ -1,15 +1,18 @@
-CREATE TABLE `Order_Item` (
-  `order_id` <type>,
-  `item_id` <type>,
-  `quantity` <type>
+CREATE TABLE Order_Item (
+  order_id IDENTITY not null,
+  name VARCHAR(200),
+  quantity INT,
+  primary key (order_id),
+  foreign key (name) references Menu_Item
 );
 
-CREATE TABLE `Credit_Card` (
-  `number` <type>,
-  `sec_code` <type>
+CREATE TABLE Credit_Card (
+  number char(16),
+  sec_code char(3),
+  primary key(number),
 );
 
-CREATE TABLE `Order` (
+CREATE TABLE Order (
   `orderid` <type>,
   `custid` <type>,
   `empid_took_order` <type>,
@@ -39,14 +42,14 @@ CREATE TABLE `Customer` (
   `reward_pts` int
 );
 
-CREATE TABLE `Menu_Item` (
+CREATE TABLE Menu_Item (
   `name` <type>,
   `type` <type>,
   `price` <type>,
   `est_prep_time` <type>
 );
 
-CREATE TABLE `Person` (
+CREATE TABLE Person (
   `personid` <type>,
   `name` <type>,
   `    first` <type>,
