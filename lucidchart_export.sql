@@ -46,22 +46,30 @@ CREATE TABLE `Menu_Item` (
   `est_prep_time` <type>
 );
 
-CREATE TABLE `Person` (
-  `personid` <type>,
-  `name` <type>,
-  `    first` <type>,
-  `    middle  ` <type>,
-  `    last` <type>,
-  `date_of_birth` <type>,
-  `{ phone_number }` <type>,
-  `{ email_addr }` <type>,
-  `username` <type>,
-  `password_hash` <type>,
-  `password_salt` <type>,
-  `home_address` <type>,
-  `    street` <type>,
-  `    city` <type>,
-  `    state` <type>,
-  `    zip` <type>,
-  `age()` <type>
+CREATE TABLE IF NOT EXISTS Person (
+  personid IDENTITY PRIMARY KEY,
+  first_name VARCHAR(255),
+  middle_name VARCHAR(255),
+  last_name VARCHAR(255),
+  date_of_birth DATE,
+  username VARCHAR(255),
+  password_hash VARCHAR(255),
+  password_salt VARCHAR(255),
+  street VARCHAR(255),
+  city VARCHAR(255),
+  state CHAR(2),
+  zip VARCHAR(20),
+  age() INT
 );
+
+CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
+	personid INT,
+	phone_number VARCHAR(20),
+	FOREIGN KEY (personid) REFERENCES Person(personid)
+	);
+	
+CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
+	personid INT,
+	email_addr VARCHAR(255),
+	FOREIGN KEY (personid) REFERENCES Person(personid)
+	);
