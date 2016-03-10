@@ -34,7 +34,8 @@ CREATE TABLE `Employee` (
   `hours_per_week` float(2),
   `date_hired` varchar(10),
   `date_terminated` varchar(10),
-  `job_title` varchar(255)
+  `job_title` varchar(255),
+  primary key (`empid`)
 );
 
 CREATE TABLE `Customer` (
