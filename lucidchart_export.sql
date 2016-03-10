@@ -12,19 +12,24 @@ CREATE TABLE Credit_Card (
   primary key(number),
 );
 
-CREATE TABLE Order (
-  `orderid` <type>,
-  `custid` <type>,
-  `empid_took_order` <type>,
-  `empid_prepared_order` <type>,
-  `empid_delivered_order` <type>,
-  `time_order_placed` <type>,
-  `time_order_out` <type>,
-  `time_order_delivered` <type>,
-  `subtotal` <type>,
-  `tax` <type>,
-  `total` <type>,
-  `tip` <type>
+CREATE TABLE `Order` (
+  `orderid` INT,
+  `custid` INT NOT NULL,
+  `empid_took_order` INT NOT NULL,
+  `empid_prepared_order` INT NOT NULL,
+  `empid_delivered_order` INT NOT NULL,
+  `time_order_placed` DATETIME NOT NULL,
+  `time_order_out` DATETIME NOT NULL,
+  `time_order_delivered` DATETIME NOT NULL,
+  `subtotal` DECIMAL(7,2) NOT NULL,
+  `tax` DECIMAL(7,2) NOT NULL,
+  `total` DECIMAL(8,2) NOT NULL,
+  `tip` DECIMAL(7,2),
+  PRIMARY KEY (`orderid`),
+  FOREIGN KEY (`custid`) REFERNCES `Customer`.`cust_id`,
+  FOREIGN KEY (`empid_took_order`) REFERENCES `Employee`.`empid`,
+  FOREIGN KEY (`empid_prepared_order`) REFERENCES `Employee`.`empid`,
+  FOREIGN KEY (`empid_delivered_order`) REFERENCES `Employee`.`empid`
 );
 
 CREATE TABLE `Employee` (
@@ -43,11 +48,12 @@ CREATE TABLE `Customer` (
   `reward_pts` int
 );
 
-CREATE TABLE Menu_Item (
-  `name` <type>,
-  `type` <type>,
-  `price` <type>,
-  `est_prep_time` <type>
+CREATE TABLE `Menu_Item` (
+  `name` VARCHAR(200),
+  `type` INT NOT NULL,
+  `price` DECIMAL(2,2) NOT NULL,
+  `est_prep_time` INT,
+  PRIMARY KEY (`name`)
 );
 
 CREATE TABLE Person (
