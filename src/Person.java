@@ -61,7 +61,7 @@ public class Person
         p.first_name = "Jordan";
         p.middle_name = "Alexander";
         p.last_name = "Rosario";
-        p.date_of_birth = new Date(2016 - 1900, 3, 12);
+        p.date_of_birth = new Date(2016 - 1900, 2, 12);
         p.username = "jar2119";
         p.password_hash = new byte[64];
         rand.nextBytes(p.password_hash);
