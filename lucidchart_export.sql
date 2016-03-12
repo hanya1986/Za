@@ -58,13 +58,13 @@ CREATE TABLE `Menu_Item` (
 
 CREATE TABLE IF NOT EXISTS Person (
   personid IDENTITY PRIMARY KEY,
-  first_name VARCHAR(255),
+  first_name VARCHAR(255) NOT NULL,
   middle_name VARCHAR(255),
-  last_name VARCHAR(255),
+  last_name VARCHAR(255) NOT NULL,
   date_of_birth DATE,
-  username VARCHAR(255),
-  password_hash VARCHAR(255),
-  password_salt VARCHAR(255),
+  username VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  password_salt VARCHAR(255) NOT NULL,
   street VARCHAR(255),
   city VARCHAR(255),
   state CHAR(2),
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
 	
 CREATE TABLE IF NOT EXISTS PersonEmailAddress(
 	personid INT,
-	email_addr VARCHAR(255),
+	email_addr VARCHAR(255) NOT NULL,
 	FOREIGN KEY (personid) REFERENCES Person(personid)
 	);
 
