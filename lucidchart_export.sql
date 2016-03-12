@@ -83,3 +83,10 @@ CREATE TABLE IF NOT EXISTS PersonEmailAddress(
 	email_addr VARCHAR(255),
 	FOREIGN KEY (personid) REFERENCES Person(personid)
 	);
+
+CREATE TABLE IF NOT EXISTS CustomerCard (
+    personid INT,
+    card_number CHAR(16),
+    PRIMARY KEY (personid, card_number),
+    FOREIGN KEY (card_number) REFERENCES Credit_Card(number)
+);
