@@ -63,13 +63,12 @@ CREATE TABLE IF NOT EXISTS Person (
   last_name VARCHAR(255) NOT NULL,
   date_of_birth DATE,
   username VARCHAR(255) NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  password_salt VARCHAR(255) NOT NULL,
+  password_hash BINARY(64) NOT NULL,
+  password_salt BINARY(64) NOT NULL,
   street VARCHAR(255),
   city VARCHAR(255),
   state CHAR(2),
-  zip VARCHAR(20),
-  age() INT
+  zip VARCHAR(9)
 );
 
 CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
