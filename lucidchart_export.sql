@@ -1,15 +1,12 @@
+<Andrew>
 CREATE TABLE Order_Item (
+  
   order_id IDENTITY not null,
   name VARCHAR(200),
   quantity INT,
-  primary key (order_id),
+  primary key (order_id, name),
   foreign key (name) references Menu_Item
-);
-
-CREATE TABLE Credit_Card (
-  number char(16),
-  sec_code char(3),
-  primary key(number),
+  foreign key (order_id) references Order(orderid)
 );
 
 CREATE TABLE `Order` (
@@ -31,7 +28,25 @@ CREATE TABLE `Order` (
   FOREIGN KEY (`empid_prepared_order`) REFERENCES `Employee`.`empid`,
   FOREIGN KEY (`empid_delivered_order`) REFERENCES `Employee`.`empid`
 );
+</Andrew>
 
+<Nick>
+CREATE TABLE Credit_Card (
+  number char(16),
+  sec_code char(3),
+  primary key(number),
+);
+
+CREATE TABLE `Menu_Item` (
+  `name` VARCHAR(200),
+  `type` INT NOT NULL,
+  `price` DECIMAL(2,2) NOT NULL,
+  `est_prep_time` INT,
+  PRIMARY KEY (`name`)
+);
+</Nick>
+
+<Jordan>
 CREATE TABLE `Employee` (
   `empid` varchar(255),
   `hourly_rate` float(2),
@@ -47,14 +62,7 @@ CREATE TABLE `Customer` (
   `cust_id` varchar(255),
   `reward_pts` int
 );
-
-CREATE TABLE `Menu_Item` (
-  `name` VARCHAR(200),
-  `type` INT NOT NULL,
-  `price` DECIMAL(2,2) NOT NULL,
-  `est_prep_time` INT,
-  PRIMARY KEY (`name`)
-);
+</Jordan>
 
 CREATE TABLE IF NOT EXISTS Person (
   personid IDENTITY PRIMARY KEY,
@@ -71,15 +79,18 @@ CREATE TABLE IF NOT EXISTS Person (
   zip VARCHAR(9)
 );
 
+<Yihao>
 CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
 	personid INT,
 	phone_number VARCHAR(20),
+	PRIMARY KEY (personid, phone_number),
 	FOREIGN KEY (personid) REFERENCES Person(personid)
 	);
 	
 CREATE TABLE IF NOT EXISTS PersonEmailAddress(
 	personid INT,
 	email_addr VARCHAR(255) NOT NULL,
+	PRIMARY KEY (personid, email_addr),
 	FOREIGN KEY (personid) REFERENCES Person(personid)
 	);
 
@@ -89,3 +100,4 @@ CREATE TABLE IF NOT EXISTS CustomerCard (
     PRIMARY KEY (personid, card_number),
     FOREIGN KEY (card_number) REFERENCES Credit_Card(number)
 );
+</Yihao>
