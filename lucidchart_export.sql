@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
 	FOREIGN KEY (personid) REFERENCES Person(personid)
 	);
 	
-CREATE TABLE IF NOT EXISTS PersonPhoneNumber(
+CREATE TABLE IF NOT EXISTS PersonEmailAddress(
 	personid INT,
 	email_addr VARCHAR(255),
 	FOREIGN KEY (personid) REFERENCES Person(personid)
