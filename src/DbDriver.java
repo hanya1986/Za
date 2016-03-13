@@ -92,6 +92,38 @@ public class DbDriver
             {
                 System.out.printf("\tPerson %d: %s %s\n", results2.getInt(1), results2.getString(2), results2.getString(3));
             }
+            
+            Person p = Person.createPerson();
+            PersonPhoneNumberTable.createPersonPhoneNUmberTable(dbDriver.getConnection());
+            PersonPhoneNumberTable.insertPersonPhoneNumber(dbDriver.getConnection(), p.personid,
+            		PersonPhoneNumber.createPersonPhoneNumber(p.personid).phoneNumbers);
+            PersonPhoneNumberTable.printPersonPhoneNumberTable(dbDriver.getConnection());
+            System.out.println("\n\nPrint results of SELECT * FROM person");
+            result = PersonPhoneNumberTable.queryPersonPhoneNumberTable(dbDriver.getConnection(), new ArrayList<String>());
+            while(result.next())
+            {
+            	PersonPhoneNumber ppn = new PersonPhoneNumber();
+                ppn.id = result.getInt(1);
+                ppn.phoneNumbers.add(result.getString(2));
+                System.out.println(ppn);
+            }
+            
+            PersonEmailAddressTable.createPersonEmailAddressTable(dbDriver.getConnection());
+            PersonEmailAddressTable.insertPersonEmailAddress(dbDriver.getConnection(), p.personid,
+            		PersonEmailAddress.createPersonEmailAddress(p.personid).emails);
+            PersonEmailAddressTable.printPersonEmailAddressTable(dbDriver.getConnection());
+            System.out.println("\n\nPrint results of SELECT * FROM person");
+            ArrayList<String> pId = new ArrayList<String>();
+            pId.add("1");
+            result = PersonEmailAddressTable.queryPersonEmailAddressTable(dbDriver.getConnection(), pId);
+            while(result.next())
+            {
+            	PersonEmailAddress pea = new PersonEmailAddress();
+            	pea.id = result.getInt(1);
+            	pea.emails.add(result.getString(2));
+                System.out.println(pea);
+            }
+            
         }
         catch (SQLException e)
         {
