@@ -78,7 +78,12 @@ public class PersonPhoneNumberTable
             while(result.next())
             {
                 long personid = result.getLong(1);
-                if (!personPhoneMap.containsKey(personid)) personPhoneMap.put(personid, new PersonPhoneNumber());
+                if (!personPhoneMap.containsKey(personid))
+                {
+                    PersonPhoneNumber ppn = new PersonPhoneNumber();
+                    ppn.personid = personid;
+                    personPhoneMap.put(personid, ppn);
+                }
                 personPhoneMap.get(personid).phoneNumbers.add(result.getString(2));
             }
             

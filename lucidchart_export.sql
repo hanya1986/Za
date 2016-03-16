@@ -62,7 +62,6 @@ CREATE TABLE `Customer` (
   `cust_id` varchar(255),
   `reward_pts` int
 );
-</Jordan>
 
 CREATE TABLE IF NOT EXISTS Person (
   personid IDENTITY PRIMARY KEY,
@@ -78,6 +77,7 @@ CREATE TABLE IF NOT EXISTS Person (
   state CHAR(2),
   zip VARCHAR(9)
 );
+</Jordan>
 
 <Yihao>
 CREATE TABLE IF NOT EXISTS PersonPhoneNumber(

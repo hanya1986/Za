@@ -39,7 +39,7 @@ public class DbDriver
     public static void main(String[] args)
     {    
         DbDriver dbDriver = new DbDriver();
-        String location = ".";
+        String location = "E:\\ZADB\\za";
         String user = "username";
         String password = "password";
         dbDriver.createConnection(location, user, password);
@@ -48,12 +48,15 @@ public class DbDriver
         {
             PersonTable.createPersonTable(dbDriver.getConnection());
             Person person = Person.createPerson();
+            
+            System.out.println("Adding person to table...");
             long personid = PersonTable.insertPerson(dbDriver.getConnection(), person);
+            System.out.println("insertPerson returned " + personid);
             
             System.out.println("Printing Person table");
             PersonTable.printPersonTable(dbDriver.getConnection());
 
-            System.out.println("\n\nPrint results of SELECT * FROM Person");
+            System.out.println("Printing results of SELECT * FROM Person");
             ResultSet result = PersonTable.queryPersonTable(dbDriver.getConnection(), new ArrayList<String>(), new ArrayList<String>());            
 
             while(result.next())
@@ -72,10 +75,10 @@ public class DbDriver
                 p.state = result.getString(11);
                 p.zip = result.getString(12);
                 
-                System.out.println(person);
+                System.out.println(p);
             }
             
-            System.out.println("\n\nPrint results of SELECT "
+            System.out.println("Printing results of SELECT "
                     + "personid, first_name "
                     + "FROM person "
                     + "WHERE first_name = \'Jordan\' "
@@ -97,33 +100,78 @@ public class DbDriver
             }
             
             //Person p = Person.createPerson();
+            System.out.println("Creating PersonPhoneNumber table...");
             PersonPhoneNumberTable.createPersonPhoneNumberTable(dbDriver.getConnection());
-            PersonPhoneNumberTable.insertPersonPhoneNumber(dbDriver.getConnection(), personid,
-            		PersonPhoneNumber.createPersonPhoneNumber(personid).phoneNumbers);
+            
+            System.out.println("Creating person-phone number association...");
+            PersonPhoneNumber ppn = PersonPhoneNumber.createPersonPhoneNumber(personid);
+            
+            System.out.println("Adding numbers for person with personid " + ppn.personid);
+            PersonPhoneNumberTable.insertPersonPhoneNumber(dbDriver.getConnection(), ppn.personid, ppn.phoneNumbers);
+            
+            System.out.println("Printing PersonPhoneNumber table...");
             PersonPhoneNumberTable.printPersonPhoneNumberTable(dbDriver.getConnection());
-            System.out.println("\n\nPrint results of SELECT phone_number FROM PersonEmailAddress");
+            
+            System.out.println("Print results of SELECT phone_number FROM PersonEmailAddress WHERE personid=" + personid);
             result = PersonPhoneNumberTable.queryPersonPhoneNumberTable(dbDriver.getConnection(), personid);
             while(result.next())
             {
-            	PersonPhoneNumber ppn = new PersonPhoneNumber();
+            	ppn = new PersonPhoneNumber();
                 ppn.personid = personid;
                 ppn.phoneNumbers.add(result.getString(1));
                 System.out.println(ppn);
             }
             
+            System.out.println("Creating PersonEmailAddress table...");
             PersonEmailAddressTable.createPersonEmailAddressTable(dbDriver.getConnection());
-            PersonEmailAddressTable.insertPersonEmailAddress(dbDriver.getConnection(), personid,
-            		PersonEmailAddress.createPersonEmailAddress(personid).emails);
+            
+            System.out.println("Creating person-email address association...");
+            PersonEmailAddress pea = PersonEmailAddress.createPersonEmailAddress(personid);
+            
+            System.out.println("Adding addresses for perosn with personid " + personid);
+            PersonEmailAddressTable.insertPersonEmailAddress(dbDriver.getConnection(), pea.personid, pea.emails);
+            
+            System.out.println("Printing PersonEmailAddressTable...");
             PersonEmailAddressTable.printPersonEmailAddressTable(dbDriver.getConnection());
-            System.out.println("\n\nPrint results of SELECT email_addr FROM PersonEmailAddress");
+            
+            System.out.println("Print results of SELECT email_addr FROM PersonEmailAddress WHERE personid=" + personid);
             result = PersonEmailAddressTable.queryPersonEmailAddressTable(dbDriver.getConnection(), personid);
             while(result.next())
             {
-            	PersonEmailAddress pea = new PersonEmailAddress();
+            	pea = new PersonEmailAddress();
             	pea.personid = personid;
             	pea.emails.add(result.getString(1));
                 System.out.println(pea);
             }
+            
+            Person p = new Person();
+            p.city = "Rochester";
+            p.date_of_birth = new Date(1993 - 1900, 3, 29);
+            p.first_name = "Jordan";
+            p.last_name = "Rosario";
+            p.middle_name = "Alexander";
+            p.password_hash = new byte[64];
+            p.password_salt = new byte[64];
+            p.state = "NY";
+            p.street = "161D Perkins Road";
+            p.username = "jar2119";
+            p.zip = "14623";
+            
+            System.out.println("Adding person to table...");
+            long pid = PersonTable.insertPerson(dbDriver.getConnection(), p);
+            System.out.println("Printing Person table...");
+            PersonTable.printPersonTable(dbDriver.getConnection());
+            
+            CustomerTable.createCustomerTable(dbDriver.getConnection());
+            Customer c = new Customer();
+            c.cust_id = pid;
+            c.reward_pts = 10000;
+            
+            System.out.println("Adding customer to table...");
+            CustomerTable.insertCustomer(dbDriver.getConnection(), c);
+            
+            System.out.println("Printing Customer table...");
+            CustomerTable.printCustomerTable(dbDriver.getConnection());
         }
         catch (SQLException e)
         {

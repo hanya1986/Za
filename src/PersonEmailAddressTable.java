@@ -79,7 +79,12 @@ public class PersonEmailAddressTable
             while(result.next())
             {
                 long personid = result.getLong(1);
-                if (!personEmailMap.containsKey(personid)) personEmailMap.put(personid, new PersonEmailAddress());
+                if (!personEmailMap.containsKey(personid))
+                {
+                    PersonEmailAddress pea = new PersonEmailAddress();
+                    pea.personid = personid;
+                    personEmailMap.put(personid, pea);
+                }
                 personEmailMap.get(personid).emails.add(result.getString(2));
             }
             

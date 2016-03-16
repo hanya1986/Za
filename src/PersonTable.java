@@ -45,7 +45,7 @@ public class PersonTable
          */
         PreparedStatement ps = conn.prepareStatement(
             "INSERT INTO Person (first_name, middle_name, last_name, date_of_birth, username, password_hash, " +
-            "password_salt, street, city, state, zip) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+            "password_salt, street, city, state, zip) VALUES (?,?,?,?,?,?,?,?,?,?,?)", new String[]{ "personid" });
         ps.setString(1, person.first_name);
         ps.setString(2, person.middle_name);
         ps.setString(3, person.last_name);
@@ -58,9 +58,10 @@ public class PersonTable
         ps.setString(10, person.state);
         ps.setString(11, person.zip);
         ps.executeUpdate();
-        ResultSet keySet = ps.getGeneratedKeys();
-        keySet.next();
-        return keySet.getLong(1);
+        ResultSet generatedKeys = ps.getGeneratedKeys();
+        generatedKeys.next();
+        long personid = generatedKeys.getLong(1);
+        return personid;
     }
     
     public static ResultSet queryPersonTable(Connection conn, ArrayList<String> columns, ArrayList<String> whereClauses)
