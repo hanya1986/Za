@@ -23,7 +23,7 @@ CREATE TABLE `Order` (
   `total` DECIMAL(8,2) NOT NULL,
   `tip` DECIMAL(7,2),
   PRIMARY KEY (`orderid`),
-  FOREIGN KEY (`custid`) REFERNCES `Customer`.`cust_id`,
+  FOREIGN KEY (`custid`) REFERENCES `Customer`.`cust_id`,
   FOREIGN KEY (`empid_took_order`) REFERENCES `Employee`.`empid`,
   FOREIGN KEY (`empid_prepared_order`) REFERENCES `Employee`.`empid`,
   FOREIGN KEY (`empid_delivered_order`) REFERENCES `Employee`.`empid`
