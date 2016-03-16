@@ -3,8 +3,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
+import java.util.Iterator;
 import java.sql.PreparedStatement;
+import java.util.HashMap;
 
 public class PersonEmailAddressTable
 {
@@ -13,8 +14,8 @@ public class PersonEmailAddressTable
         try
         {
             String query =  "CREATE TABLE IF NOT EXISTS PersonEmailAddress (" +
-                            "  personid INT, " +
-                            "  email_addr VARCHAR(255), " +
+                            "  personid   BIGINT, " +
+                            "  email_addr VARCHAR(256), " +
                             "  PRIMARY KEY (personid, email_addr)," +
                             "  FOREIGN KEY (personid) REFERENCES Person(personid)" +
                             ");";
@@ -28,22 +29,19 @@ public class PersonEmailAddressTable
         }
     }
     
-    public static void insertPersonEmailAddress(Connection conn, int personid, ArrayList<String> email)
+    public static void insertPersonEmailAddress(Connection conn, long personid, ArrayList<String> email)
     {
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO PersonEmailAddress (personid, email_addr)VALUES");
-            for(int i = 0; i < email.size(); i++){
-            	String pn = email.get(i);
-    			sb.append(String.format("(%d,\'%s\')", 
-    					personid, pn));
-    			if( i != email.size()-1){
-    				sb.append(",");
-    			}
-    			else{
-    				sb.append(";");
-    			}
+        	sb.append("INSERT INTO PersonEmailAddress (personid, email_addr) VALUES ");
+        	Iterator<String> emailIt = email.iterator();
+        	while (emailIt.hasNext())
+        	{
+        	    String email_addr = emailIt.next();
+    			sb.append(String.format("(%d,\'%s\')", personid, email_addr));
+    			if(emailIt.hasNext()) sb.append(", ");
+    			else sb.append(";");
             }
             PreparedStatement ps = conn.prepareStatement(sb.toString());
             ps.executeUpdate();
@@ -54,37 +52,12 @@ public class PersonEmailAddressTable
         }   
     }
     
-    public static ResultSet queryPersonEmailAddressTable(Connection conn, ArrayList<String> personId)
+    public static ResultSet queryPersonEmailAddressTable(Connection conn, long personid)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT * ");
-        sb.append("FROM PersonEmailAddress ");
-        
-        if(!personId.isEmpty())
-        {
-            sb.append("WHERE ");
-            for(int i = 0; i < personId.size(); i++)
-            {
-            	sb.append("personid = ");
-                if(i != personId.size() -1)
-                {
-                    sb.append(personId.get(i) + " AND ");
-                }
-                else
-                {
-                    sb.append(personId.get(i));
-                }
-            }
-        }
-        
-        sb.append(";");
-        
-        //Print it out to verify it made it right
-        System.out.println("Query: " + sb.toString());
         try
         {
             Statement stmt = conn.createStatement();
-            return stmt.executeQuery(sb.toString());
+            return stmt.executeQuery(String.format("SELECT email_addr FROM PersonEmailAddress WHERE personid=%d", personid));
         }
         catch (SQLException e)
         {
@@ -101,15 +74,18 @@ public class PersonEmailAddressTable
             Statement stmt = conn.createStatement();
             ResultSet result = stmt.executeQuery(query);
             
+            HashMap<Long,PersonEmailAddress> personEmailMap = new HashMap<Long,PersonEmailAddress>();
+            
             while(result.next())
             {
-            	PersonEmailAddress ppn = new PersonEmailAddress();
-                ppn.id = result.getInt(1);
-                ppn.emails.add(result.getString(2));
-                
-                
-                System.out.println(ppn);
+                long personid = result.getLong(1);
+                if (!personEmailMap.containsKey(personid)) personEmailMap.put(personid, new PersonEmailAddress());
+                personEmailMap.get(personid).emails.add(result.getString(2));
             }
+            
+            Iterator<Long> personidIt = personEmailMap.keySet().iterator();
+            while (personidIt.hasNext())
+                System.out.println(personEmailMap.get(personidIt.next()));
         }
         catch (SQLException e)
         {

@@ -3,7 +3,7 @@ import java.util.Random;
 
 public class Person
 {
-    public int personid;
+    public long personid;
     public String first_name;
     public String middle_name;
     public String last_name;
@@ -57,7 +57,7 @@ public class Person
     {
         Random rand = new Random();
         Person p = new Person();
-        p.personid = 1;
+        //p.personid = rand.nextLong();
         p.first_name = "Jordan";
         p.middle_name = "Alexander";
         p.last_name = "Rosario";

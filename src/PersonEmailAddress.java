@@ -1,25 +1,33 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 
-public class PersonEmailAddress {
+public class PersonEmailAddress
+{
 	ArrayList<String> emails = new ArrayList<String>();
-	public int id;
-	public String toString(){
+	public long personid;
+	
+	public String toString()
+	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("PersonId = " + id + "\n");
-		for(int i = 0; i < emails.size(); i++){
-			if(i == emails.size() - 1){
-				sb.append(emails.get(i) + "\n");
-			}else{
-				sb.append(emails.get(i) + ", ");
-			}
+		sb.append("personid=");
+		sb.append(personid);
+		sb.append(";emails={");
+		Iterator<String> emailIt = emails.iterator();
+		while (emailIt.hasNext())
+		{
+		    String email_addr = emailIt.next();
+		    sb.append(email_addr);
+		    if (emailIt.hasNext()) sb.append(',');
 			
 		}
+		sb.append('}');
 		return sb.toString();
 	}
 	
-	public static PersonEmailAddress createPersonEmailAddress(int person){
+	public static PersonEmailAddress createPersonEmailAddress(long personid)
+	{
 		PersonEmailAddress pea = new PersonEmailAddress();
-		pea.id = person;
+		pea.personid = personid;
 		pea.emails.add("pizza@rit.edu");
 		pea.emails.add("wings@rit.edu");
 		pea.emails.add("cola@rit.edu");

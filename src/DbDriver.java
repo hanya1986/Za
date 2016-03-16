@@ -47,33 +47,36 @@ public class DbDriver
         try
         {
             PersonTable.createPersonTable(dbDriver.getConnection());
-            PersonTable.insertPerson(dbDriver.getConnection(), Person.createPerson());
+            Person person = Person.createPerson();
+            long personid = PersonTable.insertPerson(dbDriver.getConnection(), person);
+            
+            System.out.println("Printing Person table");
             PersonTable.printPersonTable(dbDriver.getConnection());
 
-            System.out.println("\n\nPrint results of SELECT * FROM person");
+            System.out.println("\n\nPrint results of SELECT * FROM Person");
             ResultSet result = PersonTable.queryPersonTable(dbDriver.getConnection(), new ArrayList<String>(), new ArrayList<String>());            
 
             while(result.next())
             {
-                Person person = new Person();
-                person.personid = result.getInt(1);
-                person.first_name = result.getString(2);
-                person.middle_name = result.getString(3);
-                person.last_name = result.getString(4);
-                person.date_of_birth = result.getDate(5);
-                person.username = result.getString(6);
-                person.password_hash = result.getBytes(7);
-                person.password_salt = result.getBytes(8);
-                person.street = result.getString(9);
-                person.city = result.getString(10);
-                person.state = result.getString(11);
-                person.zip = result.getString(12);
+                Person p = new Person();
+                p.personid = result.getLong(1);
+                p.first_name = result.getString(2);
+                p.middle_name = result.getString(3);
+                p.last_name = result.getString(4);
+                p.date_of_birth = result.getDate(5);
+                p.username = result.getString(6);
+                p.password_hash = result.getBytes(7);
+                p.password_salt = result.getBytes(8);
+                p.street = result.getString(9);
+                p.city = result.getString(10);
+                p.state = result.getString(11);
+                p.zip = result.getString(12);
                 
                 System.out.println(person);
             }
             
             System.out.println("\n\nPrint results of SELECT "
-                    + "id, first_name "
+                    + "personid, first_name "
                     + "FROM person "
                     + "WHERE first_name = \'Jordan\' "
                     + "AND last_name = \'Rosario\'");
@@ -90,40 +93,37 @@ public class DbDriver
             ResultSet results2 = PersonTable.queryPersonTable(dbDriver.getConnection(), columns, whereClauses);
             while(results2.next())
             {
-                System.out.printf("\tPerson %d: %s %s\n", results2.getInt(1), results2.getString(2), results2.getString(3));
+                System.out.printf("%d %s %s%n", results2.getLong(1), results2.getString(2), results2.getString(3));
             }
             
-            Person p = Person.createPerson();
-            PersonPhoneNumberTable.createPersonPhoneNUmberTable(dbDriver.getConnection());
-            PersonPhoneNumberTable.insertPersonPhoneNumber(dbDriver.getConnection(), p.personid,
-            		PersonPhoneNumber.createPersonPhoneNumber(p.personid).phoneNumbers);
+            //Person p = Person.createPerson();
+            PersonPhoneNumberTable.createPersonPhoneNumberTable(dbDriver.getConnection());
+            PersonPhoneNumberTable.insertPersonPhoneNumber(dbDriver.getConnection(), personid,
+            		PersonPhoneNumber.createPersonPhoneNumber(personid).phoneNumbers);
             PersonPhoneNumberTable.printPersonPhoneNumberTable(dbDriver.getConnection());
-            System.out.println("\n\nPrint results of SELECT * FROM person");
-            result = PersonPhoneNumberTable.queryPersonPhoneNumberTable(dbDriver.getConnection(), new ArrayList<String>());
+            System.out.println("\n\nPrint results of SELECT phone_number FROM PersonEmailAddress");
+            result = PersonPhoneNumberTable.queryPersonPhoneNumberTable(dbDriver.getConnection(), personid);
             while(result.next())
             {
             	PersonPhoneNumber ppn = new PersonPhoneNumber();
-                ppn.id = result.getInt(1);
-                ppn.phoneNumbers.add(result.getString(2));
+                ppn.personid = personid;
+                ppn.phoneNumbers.add(result.getString(1));
                 System.out.println(ppn);
             }
             
             PersonEmailAddressTable.createPersonEmailAddressTable(dbDriver.getConnection());
-            PersonEmailAddressTable.insertPersonEmailAddress(dbDriver.getConnection(), p.personid,
-            		PersonEmailAddress.createPersonEmailAddress(p.personid).emails);
+            PersonEmailAddressTable.insertPersonEmailAddress(dbDriver.getConnection(), personid,
+            		PersonEmailAddress.createPersonEmailAddress(personid).emails);
             PersonEmailAddressTable.printPersonEmailAddressTable(dbDriver.getConnection());
-            System.out.println("\n\nPrint results of SELECT * FROM person");
-            ArrayList<String> pId = new ArrayList<String>();
-            pId.add("1");
-            result = PersonEmailAddressTable.queryPersonEmailAddressTable(dbDriver.getConnection(), pId);
+            System.out.println("\n\nPrint results of SELECT email_addr FROM PersonEmailAddress");
+            result = PersonEmailAddressTable.queryPersonEmailAddressTable(dbDriver.getConnection(), personid);
             while(result.next())
             {
             	PersonEmailAddress pea = new PersonEmailAddress();
-            	pea.id = result.getInt(1);
-            	pea.emails.add(result.getString(2));
+            	pea.personid = personid;
+            	pea.emails.add(result.getString(1));
                 System.out.println(pea);
             }
-            
         }
         catch (SQLException e)
         {
