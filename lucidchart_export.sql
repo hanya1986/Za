@@ -39,7 +39,7 @@ CREATE TABLE Credit_Card (
 
 CREATE TABLE `Menu_Item` (
   `name` VARCHAR(200),
-  `type` INT NOT NULL,
+  `type` BOOLEAN NOT NULL,
   `price` DECIMAL(2,2) NOT NULL,
   `est_prep_time` INT,
   PRIMARY KEY (`name`)
