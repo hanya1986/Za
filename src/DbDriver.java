@@ -1,6 +1,8 @@
 import java.sql.*;
 import java.util.ArrayList;
 
+import org.h2.table.Table;
+
 public class DbDriver
 {
     private Connection conn;
@@ -172,6 +174,21 @@ public class DbDriver
             
             System.out.println("Printing Customer table...");
             CustomerTable.printCustomerTable(dbDriver.getConnection());
+            
+//            Credit_CardTable.createCredit_CardTable(dbDriver.getConnection());
+//            Credit_Card cd = new Credit_Card();
+//            cd.cardNo = "1234567890123456";
+//            cd.secNo = "123";
+//            Credit_CardTable.insertCredit_Card(dbDriver.getConnection(), cd);
+            
+            CustomerCardTable.createCustomerCardTable(dbDriver.getConnection());
+            CustomerCard card = new CustomerCard();
+            card.personId = p.personid;
+            card.cardNumber.add("1234567890123456");
+            System.out.println("Adding CustomerCard to table...");
+            CustomerCardTable.insertCustomerCard(dbDriver.getConnection(), pea.personid, card.cardNumber);
+            System.out.println("Printing CustomerCard table...");
+            CustomerCardTable.printCustomerCardTable(dbDriver.getConnection());
         }
         catch (SQLException e)
         {
