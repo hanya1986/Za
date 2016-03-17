@@ -18,7 +18,7 @@ public class CustomerCardTable
                             "  card_number CHAR(16), " +
                             "  PRIMARY KEY (personid, card_number)," +
                             "  FOREIGN KEY (personid) REFERENCES Person(personid)," +
-                            "  FOREIGN KEY (card_number) REFERENCES Credit_Card(number)" +
+                            "  FOREIGN KEY (card_number) REFERENCES Credit_Card(card_num)" +
                             ");";
             
             Statement stmt = conn.createStatement();
@@ -116,6 +116,7 @@ public class CustomerCardTable
                 {
                 	CustomerCard pea = new CustomerCard();
                     pea.personId = personid;
+                    pea.cardNumber.add(result.getString(2));
                     customerCardMap.put(personid, pea);
                 }
             }

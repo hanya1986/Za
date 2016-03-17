@@ -175,11 +175,11 @@ public class DbDriver
             System.out.println("Printing Customer table...");
             CustomerTable.printCustomerTable(dbDriver.getConnection());
             
-//            Credit_CardTable.createCredit_CardTable(dbDriver.getConnection());
-//            Credit_Card cd = new Credit_Card();
-//            cd.cardNo = "1234567890123456";
-//            cd.secNo = "123";
-//            Credit_CardTable.insertCredit_Card(dbDriver.getConnection(), cd);
+            Credit_CardTable.createCredit_CardTable(dbDriver.getConnection());
+            Credit_Card cd = new Credit_Card();
+            cd.cardNo = "1234567890123456";
+            cd.secNo = "123";
+            Credit_CardTable.insertCredit_Card(dbDriver.getConnection(), cd);
             
             CustomerCardTable.createCustomerCardTable(dbDriver.getConnection());
             CustomerCard card = new CustomerCard();
