@@ -30,6 +30,7 @@ public class PersonTable
             
             Statement stmt = conn.createStatement();
             stmt.execute(query);
+            
         }
         catch (SQLException e)
         {

@@ -13,7 +13,7 @@ public class EmployeeTable
         {
             String query =  "CREATE TABLE Employee (" +
                             "  empid           BIGINT," +
-                            "  hourly_rate     DECIMAL NOT NULL," +
+                            "  hourly_rate     DECIMAL(3,2) NOT NULL," +
                             "  ssn             INT NOT NULL," +
                             "  hours_per_week  REAL NOT NULL," +
                             "  date_hired      DATE NOT NULL," +

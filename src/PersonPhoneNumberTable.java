@@ -15,7 +15,7 @@ public class PersonPhoneNumberTable
         {
             String query =  "CREATE TABLE IF NOT EXISTS PersonPhoneNumber (" +
                             "  personid     BIGINT, " +
-                            "  phone_number VARCHAR(15), " +
+                            "  phone_number VARCHAR(17), " +
                             "  PRIMARY KEY (personid, phone_number)," +
                             "  FOREIGN KEY (personid) REFERENCES Person(personid)" +
                             ");";

@@ -13,8 +13,9 @@ public class CustomerTable
         try
         {
             String query =  "CREATE TABLE IF NOT EXISTS Customer (" +
-                            "  cust_id    BIGINT," +
-                            "  reward_pts INT," +
+                            "  cust_id        BIGINT," +
+                            "  reward_pts     INT," +
+                            "  profile_status BOOLEAN DEFAULT TRUE," +
                             "  PRIMARY KEY (cust_id)," +
                             "  FOREIGN KEY (cust_id) REFERENCES Person(personid)" +
                             ");";

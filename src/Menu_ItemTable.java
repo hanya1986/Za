@@ -13,9 +13,9 @@ public class Menu_ItemTable
         try
         {
             String query =  "CREATE TABLE IF NOT EXISTS Menu_Item (" +
-                    "  name   VARCHAR(200)," +
-                    "  type BOOLEAN NOT NULL," +
-                    "  price DECIMAL(2,2) NOT NULL," +
+                    "  name          VARCHAR(256)," +
+                    "  type          BOOLEAN NOT NULL," +
+                    "  price         DECIMAL(2,2) NOT NULL," +
                     "  est_prep_time INT," +
                     "  PRIMARY KEY (name)" +
                     ");";
