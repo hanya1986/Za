@@ -18,7 +18,7 @@ public class CustomerCardTable
                             "  card_number CHAR(16), " +
                             "  PRIMARY KEY (personid, card_number)," +
                             "  FOREIGN KEY (personid) REFERENCES Person(personid)," +
-                            "  FOREIGN KEY (card_number) REFERENCES Credit_Card(card_num)" +
+                            "  FOREIGN KEY (card_number) REFERENCES Credit_Card(number)" +
                             ");";
             
             Statement stmt = conn.createStatement();

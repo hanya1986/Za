@@ -41,7 +41,7 @@ public class DbDriver
     public static void main(String[] args)
     {    
         DbDriver dbDriver = new DbDriver();
-        String location = "E:\\ZADB\\za";
+        String location = "C:\\ZADB\\za";
         String user = "username";
         String password = "password";
         dbDriver.createConnection(location, user, password);
@@ -177,7 +177,13 @@ public class DbDriver
             
             Credit_CardTable.createCredit_CardTable(dbDriver.getConnection());
             Credit_Card cd = new Credit_Card();
-            cd.cardNo = "1234567890123456";
+            
+            java.util.Random r = new java.util.Random();
+            cd.cardNo = "";
+            for (int i = 0; i < 16; ++i)
+            {
+                cd.cardNo += Integer.toString(r.nextInt(10));
+            }
             cd.secNo = "123";
             Credit_CardTable.insertCredit_Card(dbDriver.getConnection(), cd);
             
