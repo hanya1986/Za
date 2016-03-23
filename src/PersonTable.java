@@ -18,7 +18,7 @@ public class PersonTable
                             "  middle_name   VARCHAR(256)," +
                             "  last_name     VARCHAR(256) NOT NULL," +
                             "  date_of_birth DATE," +
-                            "  username      VARCHAR(256) NOT NULL," +
+                            "  username      VARCHAR(256) UNIQUE NOT NULL," +
                             "  password_hash BINARY(64) NOT NULL," +
                             "  password_salt BINARY(64) NOT NULL," +
                             "  street        VARCHAR(256)," +

@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.h2.table.Table;
 
@@ -156,7 +157,10 @@ public class DbDriver
             p.password_salt = new byte[64];
             p.state = "NY";
             p.street = "161D Perkins Road";
-            p.username = "jar2119";
+            p.username = "jar";
+            Random rand = new Random();
+            int i = rand.nextInt(1000);
+            p.username += Integer.toString(i);
             p.zip = "14623";
             
             System.out.println("Adding person to table...");
@@ -180,7 +184,7 @@ public class DbDriver
             
             java.util.Random r = new java.util.Random();
             cd.cardNo = "";
-            for (int i = 0; i < 16; ++i)
+            for (i = 0; i < 16; ++i)
             {
                 cd.cardNo += Integer.toString(r.nextInt(10));
             }
@@ -189,10 +193,10 @@ public class DbDriver
             
             CustomerCardTable.createCustomerCardTable(dbDriver.getConnection());
             CustomerCard card = new CustomerCard();
-            card.personId = p.personid;
+            card.personId = pid;
             card.cardNumber.add("1234567890123456");
             System.out.println("Adding CustomerCard to table...");
-            CustomerCardTable.insertCustomerCard(dbDriver.getConnection(), pea.personid, card.cardNumber);
+            CustomerCardTable.insertCustomerCard(dbDriver.getConnection(), card.personId, card.cardNumber);
             System.out.println("Printing CustomerCard table...");
             CustomerCardTable.printCustomerCardTable(dbDriver.getConnection());
         }

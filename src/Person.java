@@ -62,7 +62,9 @@ public class Person
         p.middle_name = "Alexander";
         p.last_name = "Rosario";
         p.date_of_birth = new Date(2016 - 1900, 2, 12);
-        p.username = "jar2119";
+        p.username = "jar";
+        int i = rand.nextInt(1000);
+        p.username += Integer.toString(i);
         p.password_hash = new byte[64];
         rand.nextBytes(p.password_hash);
         p.password_salt = new byte[64];
