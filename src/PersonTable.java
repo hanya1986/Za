@@ -8,12 +8,29 @@ import java.util.Iterator;
 
 public class PersonTable
 {
+    public enum State {
+        ALABAMA("AL"), ALASKA("AK"), ARIZONA("AZ"), ARKANSAS("AR"), CALIFORNIA("CA"),
+        COLORADO("CO"), CONNECTICUT("CT"), DELAWARE("DE"), FLORIDA("FL"), GEORGIA("GA"),
+        HAWAII("HI"), IDAHO("ID"), ILLINOIS("IL"), INDIANA("IN"), IOWA("IA"),
+        KANSAS("KS"), KENTUCKY("KY"), LOUISIANA("LA"), MAINE("ME"), MARYLAND("MD"),
+        MASSACHUSETTS("MA"), MICHIGAN("MI"), MINNESOTA("MN"), MISISSIPPI("MS"), MISSOURI("MO"),
+        MONTANA("MT"), NEBRASKA("NE"), NEVADA("NV"), NEW_HAMPSHIRE("NH"), NEW_JERSEY("NJ"),
+        NEW_MEXICO("NM"), NEW_YORK("NY"), NORTH_CAROLINA("NC"), NORTH_DAKOTA("ND"), OHIO("OH"),
+        OKLAHOMA("OK"), OREGON("OR"), PENNSYLVANIA("PA"), RHODE_ISLAND("RI"), SOUTH_CAROLINA("SC"),
+        SOUTH_DAKOTA("SD"), TENNESSEE("TN"), TEXAS("TX"), UTAH("UT"), VERMONT("VT"),
+        VIRGINIAA("VA"), WASHINGTON("WA"), WEST_VIRGINIA("WV"), WISCONSIN("WI"), WYOMING("WY");
+        
+        private final String abbrev;
+        private State(String abbrev) { this.abbrev = abbrev; }
+        public String abbrev() { return abbrev; }
+    }
+    
     public static void createPersonTable(Connection conn)
     {
         try
         {
             String query =  "CREATE TABLE IF NOT EXISTS Person (" +
-                            "  personid      IDENTITY," +
+                            "  personid      IDENTITY CHECK >= 0," +
                             "  first_name    VARCHAR(256) NOT NULL," +
                             "  middle_name   VARCHAR(256)," +
                             "  last_name     VARCHAR(256) NOT NULL," +
@@ -24,7 +41,7 @@ public class PersonTable
                             "  street        VARCHAR(256)," +
                             "  city          VARCHAR(256)," +
                             "  state         CHAR(2)," +
-                            "  zip           VARCHAR(9)," +
+                            "  zip           VARCHAR(10)," +
                             "  PRIMARY KEY (personid)" +
                             ");";
             
