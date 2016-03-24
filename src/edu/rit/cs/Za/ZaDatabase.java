@@ -61,7 +61,7 @@ public class ZaDatabase
     {
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("CREATE TABLE Employee (");
+        builder.append("CREATE TABLE IF NOT EXISTS Employee (");
         builder.append("  empid           BIGINT,");
         builder.append("  hourly_rate     DECIMAL(3,2) NOT NULL,");
         builder.append("  ssn             INT NOT NULL,");

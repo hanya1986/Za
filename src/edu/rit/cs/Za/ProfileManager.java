@@ -156,7 +156,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("city"));
                 break;
             case "state":
-                ps.setString(paramIdx++, ((State)values.get("state")).abbrev());
+                ps.setString(paramIdx++, ((State)values.get("state")).toString());
                 break;
             case "zip":
                 ps.setString(paramIdx++, (String)values.get("zip"));
@@ -360,7 +360,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("city"));
                 break;
             case "state":
-                ps.setString(paramIdx++, ((State)values.get("state")).abbrev());
+                ps.setString(paramIdx++, ((State)values.get("state")).toString());
                 break;
             case "zip":
                 ps.setString(paramIdx++, (String)values.get("zip"));
@@ -553,7 +553,13 @@ public class ProfileManager
                 values.put(col, rs.getString(col));
                 break;
             case "state":
-                values.put(col, State.valueOf(rs.getString(col)));
+                String str = rs.getString(col);
+                for (State state : State.values())
+                    if (str.equals(state.toString()))
+                    {
+                        values.put(col, state);
+                        break;
+                    }
                 break;
             case "zip":
                 values.put(col, rs.getString(col));

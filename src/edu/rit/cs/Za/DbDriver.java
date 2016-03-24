@@ -30,5 +30,8 @@ public class DbDriver
         ZaDatabase.createDatabase();
         System.out.println("DATABASE CREATED");
         System.out.println();
+        
+        System.out.println("TESTING State ENUMERATION");
+        System.out.println(State.NEW_YORK);
     }
 }
