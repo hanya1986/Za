@@ -1,3 +1,5 @@
+package edu.rit.cs.Za;
+
 /**
  * ProfileManager.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
@@ -154,7 +156,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("city"));
                 break;
             case "state":
-                ps.setString(paramIdx++, ((PersonTable.State)values.get("state")).abbrev());
+                ps.setString(paramIdx++, ((State)values.get("state")).abbrev());
                 break;
             case "zip":
                 ps.setString(paramIdx++, (String)values.get("zip"));
@@ -358,7 +360,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("city"));
                 break;
             case "state":
-                ps.setString(paramIdx++, ((PersonTable.State)values.get("state")).abbrev());
+                ps.setString(paramIdx++, ((State)values.get("state")).abbrev());
                 break;
             case "zip":
                 ps.setString(paramIdx++, (String)values.get("zip"));
@@ -551,7 +553,7 @@ public class ProfileManager
                 values.put(col, rs.getString(col));
                 break;
             case "state":
-                values.put(col, PersonTable.State.valueOf(rs.getString(col)));
+                values.put(col, State.valueOf(rs.getString(col)));
                 break;
             case "zip":
                 values.put(col, rs.getString(col));
