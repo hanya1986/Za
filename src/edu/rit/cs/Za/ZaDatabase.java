@@ -189,7 +189,7 @@ public class ZaDatabase
         builder.append("  FOREIGN KEY (empid_prepared_order) REFERENCES Employee (empid),");
         builder.append("  FOREIGN KEY (empid_delivered_order) REFERENCES Employee (empid),");
         builder.append("  CHECK (orderid>=0),");
-        builder.append("  CHECK (order_type in (\'Delivery\',\'Carry-out\'))");
+        builder.append("  CHECK (order_type in (\'DELIVERY\',\'CARRY-OUT\'))");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
