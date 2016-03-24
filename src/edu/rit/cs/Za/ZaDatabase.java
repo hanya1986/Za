@@ -208,6 +208,7 @@ public class ZaDatabase
         builder.append("  quantity INT,");
         builder.append("  PRIMARY KEY (orderid,itemid),");
         builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
+        builder.append("  FOREIGN KEY (itemid) REFERENCES Menu_Item (name),");
         builder.append("  CHECK (quantity>0)");
         builder.append(");");
         
