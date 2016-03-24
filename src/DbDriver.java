@@ -1,54 +1,32 @@
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Random;
-
-import org.h2.table.Table;
+import java.io.File;
 
 public class DbDriver
-{
-    /* SHA-512 produces 512-bit/64-byte digests */
-    public static final int DIGEST_SIZE_IN_BYTES = 64;
-    
-    private Connection conn;
-    
-    public void createConnection(String location, String user, String password)
-    {
-        try
-        {
-            String url = "jdbc:h2:" + location;
-            Class.forName("org.h2.Driver");
-            conn = DriverManager.getConnection(url, user, password);
-        }
-        catch (SQLException | ClassNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
-    public Connection getConnection()
-    {
-        return conn;
-    }
-
-    public void closeConnection()
-    {
-        try
-        {
-            conn.close();
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
+{    
     public static void main(String[] args)
         throws Exception // test-driver program; swallow exceptions
-    {    
-        DbDriver dbDriver = new DbDriver();
-        String location = "C:\\ZADB\\za";
-        String user = "username";
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append(System.getProperty("user.home"));
+        builder.append(File.separatorChar);
+        builder.append("ZADB");
+        builder.append(File.separatorChar);
+        builder.append("za");
+        
+        String location = builder.toString();
+        String username = "username";
         String password = "password";
-        dbDriver.createConnection(location, user, password);
+        
+        System.out.println("INITIALIZING DATABASE CONNECTION");
+        System.out.printf("location: %s%n", location);
+        System.out.printf("username: %s%n", username);
+        System.out.printf("password: %s%n", password);
+        ConnectionManager.initConnection(location, username, password);
+        System.out.println("DATABASE CONNECTION INITIALIZED");
+        System.out.println();
+        
+        System.out.println("CREATING DATABASE");
+        ZaDatabase.createDatabase();
+        System.out.println("DATABASE CREATED");
+        System.out.println();
     }
 }

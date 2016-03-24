@@ -15,7 +15,7 @@ public class ZaDatabase
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS Person (");
-        builder.append("  personid      IDENTITY CHECK >= 0,");
+        builder.append("  personid      IDENTITY,");
         builder.append("  first_name    VARCHAR(256) NOT NULL,");
         builder.append("  middle_name   VARCHAR(256),");
         builder.append("  last_name     VARCHAR(256) NOT NULL,");
@@ -27,7 +27,8 @@ public class ZaDatabase
         builder.append("  city          VARCHAR(256),");
         builder.append("  state         CHAR(2),");
         builder.append("  zip           VARCHAR(10),");
-        builder.append("  PRIMARY KEY (personid)");
+        builder.append("  PRIMARY KEY (personid),");
+        builder.append("  CHECK (personid>=0)");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -161,19 +162,20 @@ public class ZaDatabase
         return;
     }
     
-    private static void createOrderTable()
+    private static void createZaOrderTable()
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("CREATE TABLE IF NOT EXISTS Order (");
-        builder.append("  orderid IDENTITY CHECK >= 0,");
+        builder.append("CREATE TABLE IF NOT EXISTS ZaOrder (");
+        builder.append("  orderid IDENTITY,");
         builder.append("  custid BIGINT NOT NULL,");
+        builder.append("  order_type VARCHAR(10),");
         builder.append("  empid_took_order BIGINT,");
         builder.append("  empid_prepared_order BIGINT,");
         builder.append("  empid_delivered_order BIGINT,");
         builder.append("  time_order_placed TIMESTAMP NOT NULL,");
-        builder.append("  time_oreder_out TIMESTAMP,");
+        builder.append("  time_order_out TIMESTAMP,");
         builder.append("  time_order_delivered TIMESTAMP,");
         builder.append("  subtotal DECIMAL(7,2),");
         builder.append("  tax DECIMAL(7,2),");
@@ -183,7 +185,9 @@ public class ZaDatabase
         builder.append("  FOREIGN KEY (custid) REFERENCES Customer (cust_id),");
         builder.append("  FOREIGN KEY (empid_took_order) REFERENCES Employee (empid),");
         builder.append("  FOREIGN KEY (empid_prepared_order) REFERENCES Employee (empid),");
-        builder.append("  FOREIGN KEY (empid_delivered_order) REFERENCES Employee (empid)");
+        builder.append("  FOREIGN KEY (empid_delivered_order) REFERENCES Employee (empid),");
+        builder.append("  CHECK (orderid>=0),");
+        builder.append("  CHECK (order_type in (\'Delivery\',\'Carry-out\'))");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -191,17 +195,18 @@ public class ZaDatabase
         return;
     }
     
-    private static void createOrderItemTable()
+    private static void createZaOrderItemTable()
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("CREATE TABLE IF NOT EXISTS OrderItem (");
+        builder.append("CREATE TABLE IF NOT EXISTS ZaOrderItem (");
         builder.append("  orderid BIGINT,");
         builder.append("  itemid VARCHAR(256),");
-        builder.append("  quantity INT CHECK > 0,");
+        builder.append("  quantity INT,");
         builder.append("  PRIMARY KEY (orderid,itemid),");
-        builder.append("  FOREIGN KEY (orderid) REFERENCES Order (orderid)");
+        builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
+        builder.append("  CHECK (quantity>0)");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -220,7 +225,7 @@ public class ZaDatabase
         createCreditCardTable();
         createCustomerCardTable();
         createMenu_ItemTable();
-        createOrderTable();
-        createOrderItemTable();
+        createZaOrderTable();
+        createZaOrderItemTable();
     }
 }
