@@ -173,6 +173,7 @@ public class ZaDatabase
         builder.append("  orderid IDENTITY,");
         builder.append("  custid BIGINT NOT NULL,");
         builder.append("  order_type VARCHAR(10),");
+        builder.append("  active BOOLEAN DEFAULT TRUE,");
         builder.append("  empid_took_order BIGINT,");
         builder.append("  empid_prepared_order BIGINT,");
         builder.append("  empid_delivered_order BIGINT,");

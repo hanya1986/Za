@@ -7,6 +7,9 @@ package edu.rit.cs.Za;
 
 import java.util.Map;
 import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Set;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -46,9 +49,6 @@ public class OrderManager
         }
         
         BigDecimal subtotal = new BigDecimal("0.00");
-        /*  SELECT price FROM Menu_Item WHERE name IN
-         *      (SELECT itemid FROM ZaOrderItem WHERE orderid=?);
-         */
         builder.setLength(0);
         builder.append("SELECT price ");
         builder.append("FROM Menu_Item ");
@@ -85,5 +85,67 @@ public class OrderManager
         return orderid;
     }
     
+    public static List<Long> getActiveOrders()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT orderid ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE active=TRUE;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        List<Long> activeIDs = new LinkedList<Long>();
+        while (rs.next())
+            activeIDs.add(rs.getLong(1));
+        return activeIDs;
+    }
     
+    public static void addItems(long orderid, Map<String,Integer> items)
+        throws SQLException
+    {
+        /* get items already in order */
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT itemid,quantity ");
+        builder.append("FROM ZaOrderItem ");
+        builder.append("WHERE orderid=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, orderid);
+        ResultSet rs = ps.executeQuery();
+        
+        builder.setLength(0);
+        builder.append("UPDATE ZaOrderItem ");
+        builder.append("SET quantity=? ");
+        builder.append("WHERE orderid=?;");
+        PreparedStatement update = conn.prepareStatement(builder.toString());
+        
+        builder.setLength(0);
+        builder.append("INSERT INTO ZaOrderItem (orderid,itemid,quantity) ");
+        builder.append("VALUES (?,?,?);");
+        PreparedStatement insert = conn.prepareStatement(builder.toString());
+        
+        Set<String> itemSet = items.keySet();
+        while (rs.next())
+        {
+            String itemName = rs.getString(1);
+            int currentQty = rs.getInt(2);
+            int additionalQty = items.get(itemName);
+            if (itemSet.contains(itemName))
+            {
+                /* item already in order; increase quantity */
+                update.setInt(1, currentQty + additionalQty);
+                update.setLong(2, orderid);
+                update.executeUpdate();
+            }
+            else
+            {
+                /* item not yet in order; add specified amount */
+                insert.setLong(1, orderid);
+                insert.setString(2, itemName);
+                insert.setInt(3, additionalQty);
+                insert.executeUpdate();
+            }
+        }
+    }
 }
