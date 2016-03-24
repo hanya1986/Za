@@ -12,11 +12,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.LinkedList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.math.BigDecimal;
 
 public class ProfileManager
 {
@@ -246,7 +246,7 @@ public class ProfileManager
                 ps.setLong(paramIdx++, (long)values.get("empid"));
                 break;
             case "hourly_rate":
-                ps.setFloat(paramIdx++, (float)values.get("hourly_rate"));
+                ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("hourly_rate"));
                 break;
             case "ssn":
                 ps.setInt(paramIdx++, (int)values.get("ssn"));
@@ -285,13 +285,11 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
-    public static void modifyCustomer(long personid, HashMap<String,Object> values)
+    public static void modifyPerson(long personid, HashMap<String,Object> values)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
-        StringBuilder builder = new StringBuilder();
-        builder.append("UPDATE Customer ");
-        builder.append("SET ");
+        
         Iterator<String> colIt = values.keySet().iterator();
         List<String> columns = new LinkedList<String>();
         while (colIt.hasNext())
@@ -308,12 +306,16 @@ public class ProfileManager
             case "city":
             case "state":
             case "zip":
-            case "reward_pts":
-            case "active":
                 columns.add(col);
                 break;
             }
         }
+        
+        if (columns.size() == 0) return;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("UPDATE Person ");
+        builder.append("SET ");
         colIt = columns.iterator();
         while (colIt.hasNext())
         {
@@ -342,7 +344,352 @@ public class ProfileManager
             case "last_name":
                 ps.setString(paramIdx++, (String)values.get("last_name"));
                 break;
+            case "date_of_birth":
+                ps.setDate(paramIdx++, (Date)values.get("date_of_birth"));
+                break;
+            case "username":
+                ps.setString(paramIdx++, (String)values.get("username"));
+                break;
+            case "street":
+                ps.setString(paramIdx++, (String)values.get("street"));
+                break;
+            case "city":
+                ps.setString(paramIdx++, (String)values.get("city"));
+                break;
+            case "state":
+                ps.setString(paramIdx++, ((PersonTable.State)values.get("state")).abbrev());
+                break;
+            case "zip":
+                ps.setString(paramIdx++, (String)values.get("zip"));
+                break;
             }
         }
+        ps.setLong(paramIdx++, personid);
+        ps.executeUpdate();
+    }
+    
+    public static void modifyCustomer(long cust_id, HashMap<String,Object> values)
+        throws SQLException
+    {
+        modifyPerson(cust_id, values);
+        
+        Connection conn = ConnectionManager.getConnection();
+        
+        Iterator<String> colIt = values.keySet().iterator();
+        List<String> columns = new LinkedList<String>();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "reward_pts":
+            case "active":
+                columns.add(col);
+                break;
+            }
+        }
+        
+        if (columns.size() == 0) return;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("UPDATE Customer ");
+        builder.append("SET ");
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            builder.append("=?");
+            if (colIt.hasNext()) builder.append(',');
+        }
+        
+        builder.append(" WHERE cust_id=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        colIt = columns.iterator();
+        int paramIdx = 1;
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "reward_pts":
+                ps.setInt(paramIdx++, (int)values.get("reward_pts"));
+                break;
+            case "active":
+                ps.setBoolean(paramIdx++, (boolean)values.get("active"));
+                break;
+            }
+        }
+        ps.setLong(paramIdx++, cust_id);
+        ps.executeUpdate();
+    }
+    
+    public static void modifyEmployee(long empid, HashMap<String,Object> values)
+        throws SQLException
+    {
+        modifyPerson(empid, values);
+        
+        Connection conn = ConnectionManager.getConnection();
+        
+        Iterator<String> colIt = values.keySet().iterator();
+        List<String> columns = new LinkedList<String>();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "hourly_rate":
+            case "ssn":
+            case "hours_per_week":
+            case "date_hired":
+            case "date_terminated":
+            case "job_title":
+                columns.add(col);
+                break;
+            }
+        }
+        
+        if (columns.size() == 0) return;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("UPDATE Employee ");
+        builder.append("SET ");
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            builder.append("=?");
+            if (colIt.hasNext()) builder.append(',');
+        }
+        
+        builder.append(" WHERE empid=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        colIt = columns.iterator();
+        int paramIdx = 1;
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "hourly_rate":
+                ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("hourly_rate"));
+                break;
+            case "ssn":
+                ps.setBoolean(paramIdx++, (boolean)values.get("ssn"));
+                break;
+            case "hours_per_week":
+                ps.setFloat(paramIdx++, (float)values.get("hours_per_week"));
+                break;
+            case "date_hired":
+                ps.setDate(paramIdx++, (Date)values.get("date_hired"));
+                break;
+            case "date_terminated":
+                ps.setDate(paramIdx++, (Date)values.get("date_terminated"));
+                break;
+            case "job_title":
+                ps.setString(paramIdx++, (String)values.get("job_title"));
+                break;
+            }
+        }
+        ps.setLong(paramIdx++, empid);
+        ps.executeUpdate();
+    }
+    
+    private HashMap<String,Object> getPersonInfo(long personid, List<String> attributes)
+        throws SQLException
+    {
+        HashMap<String,Object> values = new HashMap<String,Object>();
+        if (attributes.size() == 0) return values;
+        
+        Connection conn = ConnectionManager.getConnection();
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT ");
+        Iterator<String> colIt = attributes.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            if (colIt.hasNext()) builder.append(',');
+        }
+        builder.append(" FROM Person ");
+        builder.append("WHERE personid=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, personid);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return values;
+        colIt = attributes.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "first_name":
+                values.put(col, rs.getString(col));
+                break;
+            case "middle_name":
+                values.put(col, rs.getString(col));
+                break;
+            case "last_name":
+                values.put(col, rs.getString(col));
+                break;
+            case "date_of_birth":
+                values.put(col, rs.getDate(col));
+                break;
+            case "username":
+                values.put(col, rs.getString(col));
+                break;
+            case "street":
+                values.put(col, rs.getString(col));
+                break;
+            case "city":
+                values.put(col, rs.getString(col));
+                break;
+            case "state":
+                values.put(col, PersonTable.State.valueOf(rs.getString(col)));
+                break;
+            case "zip":
+                values.put(col, rs.getString(col));
+                break;
+            }
+        }
+        return values;
+    }
+    
+    public HashMap<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
+        throws SQLException
+    {
+        HashMap<String,Object> values = getPersonInfo(cust_id, attributes);
+        
+        Connection conn = ConnectionManager.getConnection();
+        
+        Iterator<String> colIt = attributes.iterator();
+        List<String> columns = new LinkedList<String>();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "reward_pts":
+            case "active":
+                columns.add(col);
+                break;
+            }
+        }
+        
+        if (columns.size() == 0) return values;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT ");
+        
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            if (colIt.hasNext()) builder.append(',');
+        }
+        builder.append(" FROM Customer ");
+        builder.append("WHERE cust_id=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return values;
+        
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "reward_pts":
+                values.put(col, rs.getInt(col));
+                break;
+            case "active":
+                values.put(col, rs.getBoolean(col));
+                break;
+            }
+        }
+        
+        return values;
+    }
+    
+    public HashMap<String,Object> getEmployeeInfo(long empid, List<String> attributes)
+        throws SQLException
+    {
+        HashMap<String,Object> values = getPersonInfo(empid, attributes);
+        
+        Connection conn = ConnectionManager.getConnection();
+        
+        Iterator<String> colIt = attributes.iterator();
+        List<String> columns = new LinkedList<String>();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "hourly_rate":
+            case "ssn":
+            case "hours_per_week":
+            case "date_hired":
+            case "date_terminated":
+            case "job_title":
+                columns.add(col);
+                break;
+            }
+        }
+        
+        if (columns.size() == 0) return values;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT ");
+        
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            if (colIt.hasNext()) builder.append(',');
+        }
+        builder.append(" FROM Employee ");
+        builder.append("WHERE empid=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, empid);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return values;
+        
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "hourly_rate":
+                values.put(col, rs.getBigDecimal(col));
+                break;
+            case "ssn":
+                values.put(col, rs.getInt(col));
+                break;
+            case "hours_per_week":
+                values.put(col, rs.getFloat(col));
+                break;
+            case "date_hired":
+                values.put(col, rs.getDate(col));
+                break;
+            case "date_terminated":
+                values.put(col, rs.getDate(col));
+                break;
+            case "job_title":
+                values.put(col, rs.getString(col));
+                break;
+            }
+        }
+        return values;
     }
 }
