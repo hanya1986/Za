@@ -9,11 +9,12 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Set;
+import java.util.HashMap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -21,49 +22,24 @@ public class OrderManager
 {   
     public static BigDecimal TAX_RATE = new BigDecimal("0.08");
     
-    public static long createOrder(long custid, OrderType orderType, Map<String,Integer> items)
+    private static void updateTotal(long orderid)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
-        String sql = "INSERT INTO ZaOrder (custid,order_type) VALUES (?,?);";
-        PreparedStatement ps = conn.prepareStatement(sql, new String[]{ "orderid" });
-        ps.setLong(1, custid);
-        ps.setString(2, orderType.toString());
-        ps.executeUpdate();
-        ResultSet generatedKey = ps.getGeneratedKeys();
-        generatedKey.next();
-        long orderid = generatedKey.getLong(1);
-        
-        Iterator<String> itemIt = items.keySet().iterator();
-        StringBuilder builder = new StringBuilder();
-        builder.append("INSERT INTO ZaOrderItem (orderid,itemid,quantity) ");
-        builder.append("VALUES(?,?,?);");
-        ps = conn.prepareStatement(builder.toString());
-        while (itemIt.hasNext())
-        {
-            String item = itemIt.next();
-            ps.setLong(1, orderid);
-            ps.setString(2, item);
-            ps.setInt(3, items.get(item));
-            ps.executeUpdate();
-        }
-        
         BigDecimal subtotal = new BigDecimal("0.00");
-        builder.setLength(0);
-        builder.append("SELECT price ");
-        builder.append("FROM Menu_Item ");
-        builder.append("WHERE name IN (");
-        builder.append("    SELECT itemid ");
-        builder.append("    FROM ZaOrderItem ");
-        builder.append("    WHERE orderid=?);");
-        ps = conn.prepareStatement(builder.toString());
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT price,quantity ");
+        builder.append("FROM Menu_Item INNER JOIN ZaOrderItem ON ZaOrderItem.itemid=Menu_Item.name ");
+        builder.append("WHERE orderid=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, orderid);
         ResultSet rs = ps.executeQuery();
         
         while (rs.next())
         {
             BigDecimal price = rs.getBigDecimal(1);
-            subtotal = subtotal.add(price);
+            BigDecimal quantity = new BigDecimal(rs.getInt(2));
+            subtotal = subtotal.add(price.multiply(quantity));
         }
         
         BigDecimal tax = subtotal.multiply(TAX_RATE);
@@ -81,7 +57,24 @@ public class OrderManager
         ps.setBigDecimal(3, total);
         ps.setLong(4, orderid);
         ps.executeUpdate();
-        
+        return;
+    }
+    
+    public static long createOrder(long custid, OrderType orderType, Map<String,Integer> items)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("INSERT INTO ZaOrder (custid,order_type) ");
+        builder.append("VALUES (?,?);");
+        PreparedStatement ps = conn.prepareStatement(builder.toString(), new String[]{ "orderid" });
+        ps.setLong(1, custid);
+        ps.setString(2, orderType.toString());
+        ps.executeUpdate();
+        ResultSet generatedKey = ps.getGeneratedKeys();
+        generatedKey.next();
+        long orderid = generatedKey.getLong(1);
+        addItems(orderid, items);
         return orderid;
     }
     
@@ -104,48 +97,276 @@ public class OrderManager
     public static void addItems(long orderid, Map<String,Integer> items)
         throws SQLException
     {
-        /* get items already in order */
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT itemid,quantity ");
+        builder.append("INSERT INTO ZaOrderItem (orderid,itemid,quantity) ");
+        builder.append("VALUES ");
+        Iterator<String> itemIt = items.keySet().iterator();
+        while (itemIt.hasNext())
+        {
+            builder.append("(?,?,?)");
+            if (itemIt.hasNext()) builder.append(',');
+        }
+        builder.append(';');
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        itemIt = items.keySet().iterator();
+        int paramIdx = 1;
+        while (itemIt.hasNext())
+        {
+            String item = itemIt.next();
+            ps.setLong(paramIdx++, orderid);
+            ps.setString(paramIdx++, item);
+            ps.setInt(paramIdx++, items.get(item));
+        }
+        ps.executeUpdate();
+        updateTotal(orderid);
+    }
+    
+    public static void changeQuantities(long orderid, Map<String,Integer> items)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("UPDATE ZaOrderItem ");
+        builder.append("SET quantity=? ");
+        builder.append("WHERE orderid=? AND itemid=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        Iterator<String> itemIt = items.keySet().iterator();
+        while (itemIt.hasNext())
+        {
+            String name = itemIt.next();
+            int quantity = items.get(name);
+            ps.setInt(1, quantity);
+            ps.setLong(2, orderid);
+            ps.setString(3, name);
+            ps.executeUpdate();
+        }
+        updateTotal(orderid);
+        return;
+    }
+    
+    public static void removeItems(long orderid, List<String> items)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("DELETE FROM ZaOrderItem ");
+        builder.append("WHERE orderid=? AND itemid IN (");
+        Iterator<String> itemIt = items.iterator();
+        while (itemIt.hasNext())
+        {
+            builder.append('?');
+            if (itemIt.hasNext()) builder.append(',');
+        }
+        builder.append(");");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        int paramIdx = 1;
+        ps.setLong(paramIdx++, orderid);
+        itemIt = items.iterator();
+        while (itemIt.hasNext())
+            ps.setString(paramIdx++, itemIt.next());
+        ps.executeUpdate();
+        updateTotal(orderid);
+        return;
+    }
+    
+    public static void modifyOrder(long orderid, Map<String,Object> values)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        List<String> columns = new LinkedList<String>();
+        Iterator<String> colIt = values.keySet().iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "active":
+            case "empid_took_order":
+            case "empid_prepared_order":
+            case "empid_delivered_order":
+            case "time_order_placed":
+            case "time_order_out":
+            case "time_order_delivered":
+            case "tip":
+                columns.add(col);
+                break;
+            }
+        }
+        
+        if (columns.size() == 0) return;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("UPDATE Order ");
+        builder.append("SET ");
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            builder.append("=?");
+            if (colIt.hasNext()) builder.append(',');
+        }
+        builder.append(" WHERE orderid=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        colIt = columns.iterator();
+        int paramIdx = 1;
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "active":
+                ps.setBoolean(paramIdx++, (boolean)values.get(col));
+                break;
+            case "empid_took_order":
+                ps.setLong(paramIdx++, (long)values.get(col));
+                break;
+            case "empid_prepared_order":
+                ps.setLong(paramIdx++, (long)values.get(col));
+                break;
+            case "empid_delivered_order":
+                ps.setLong(paramIdx++, (long)values.get(col));
+                break;
+            case "time_order_placed":
+                ps.setTimestamp(paramIdx++, (Timestamp)values.get(col));
+                break;
+            case "time_order_out":
+                ps.setTimestamp(paramIdx++, (Timestamp)values.get(col));
+                break;
+            case "time_order_delivered":
+                ps.setTimestamp(paramIdx++, (Timestamp)values.get(col));
+                break;
+            case "tip":
+                ps.setBigDecimal(paramIdx++, (BigDecimal)values.get(col));
+                break;
+            }
+        }
+        ps.executeUpdate();
+        return;
+    }
+    
+    public static Map<String,Integer> getOrderItems(long orderid)
+        throws SQLException
+    {
+        Map<String,Integer> items = new HashMap<String,Integer>();
+        Connection conn = ConnectionManager.getConnection();
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT (itemid,quantity) ");
         builder.append("FROM ZaOrderItem ");
         builder.append("WHERE orderid=?;");
+        
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, orderid);
         ResultSet rs = ps.executeQuery();
-        
-        builder.setLength(0);
-        builder.append("UPDATE ZaOrderItem ");
-        builder.append("SET quantity=? ");
-        builder.append("WHERE orderid=?;");
-        PreparedStatement update = conn.prepareStatement(builder.toString());
-        
-        builder.setLength(0);
-        builder.append("INSERT INTO ZaOrderItem (orderid,itemid,quantity) ");
-        builder.append("VALUES (?,?,?);");
-        PreparedStatement insert = conn.prepareStatement(builder.toString());
-        
-        Set<String> itemSet = items.keySet();
         while (rs.next())
         {
-            String itemName = rs.getString(1);
-            int currentQty = rs.getInt(2);
-            int additionalQty = items.get(itemName);
-            if (itemSet.contains(itemName))
+            String name = rs.getString(1);
+            int quantity = rs.getInt(2);
+            items.put(name, quantity);
+        }
+        return items;
+    }
+    
+    public static Map<String,Object> getOrderInfo(long orderid, List<String> attributes)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        Map<String,Object> values = new HashMap<String,Object>();
+        Iterator<String> colIt = attributes.iterator();
+        List<String> columns = new LinkedList<String>();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
             {
-                /* item already in order; increase quantity */
-                update.setInt(1, currentQty + additionalQty);
-                update.setLong(2, orderid);
-                update.executeUpdate();
-            }
-            else
-            {
-                /* item not yet in order; add specified amount */
-                insert.setLong(1, orderid);
-                insert.setString(2, itemName);
-                insert.setInt(3, additionalQty);
-                insert.executeUpdate();
+            case "custid":
+            case "order_type":
+            case "active":
+            case "empid_took_order":
+            case "empid_prepared_order":
+            case "empid_delivered_order":
+            case "time_order_placed":
+            case "time_order_out":
+            case "time_order_delivered":
+            case "subtotal":
+            case "tax":
+            case "total":
+            case "tip":
+                columns.add(col);
+                break;
             }
         }
+        
+        if (columns.size() == 0) return values;
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT ");
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            builder.append(col);
+            if (colIt.hasNext()) builder.append(',');
+        }
+        builder.append(" FROM Customer ");
+        builder.append("WHERE orderid=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, orderid);
+        
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return values;
+        colIt = columns.iterator();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "custid":
+                values.put(col, rs.getLong(col));
+                break;
+            case "order_type":
+                String str = rs.getString(col);
+                values.put(col, str.equals(OrderType.CARRY_OUT.toString()) ? OrderType.CARRY_OUT : OrderType.DELIVERY);
+                break;
+            case "active":
+                values.put(col, rs.getBoolean(col));
+                break;
+            case "empid_took_order":
+                values.put(col, rs.getLong(col));
+                break;
+            case "empid_prepared_order":
+                values.put(col, rs.getLong(col));
+                break;
+            case "empid_delivered_order":
+                values.put(col,  rs.getLong(col));
+                break;
+            case "time_order_placed":
+                values.put(col, rs.getTimestamp(col));
+                break;
+            case "time_order_out":
+                values.put(col, rs.getTimestamp(col));
+                break;
+            case "time_order_delivered":
+                values.put(col, rs.getTimestamp(col));
+                break;
+            case "subtotal":
+                values.put(col, rs.getBigDecimal(col));
+                break;
+            case "tax":
+                values.put(col, rs.getBigDecimal(col));
+                break;
+            case "total":
+                values.put(col, rs.getBigDecimal(col));
+                break;
+            case "tip":
+                values.put(col, rs.getBigDecimal(col));
+                break;
+            }
+        }
+        return values;
     }
 }
