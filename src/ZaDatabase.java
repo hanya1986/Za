@@ -1,5 +1,11 @@
+/**
+ * ZaDatabase.java
+ * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ */
+
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 public class ZaDatabase
 {
@@ -23,10 +29,198 @@ public class ZaDatabase
         builder.append("  zip           VARCHAR(10),");
         builder.append("  PRIMARY KEY (personid)");
         builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createCustomerTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS Customer (");
+        builder.append("  cust_id    BIGINT,");
+        builder.append("  reward_pts INT DEFAULT 0,");
+        builder.append("  active     BOOLEAN DEFAULT TRUE,");
+        builder.append("  PRIMARY KEY (cust_id),");
+        builder.append("  FOREIGN KEY (cust_id) REFERENCES Person(personid)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createEmployeeTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE Employee (");
+        builder.append("  empid           BIGINT,");
+        builder.append("  hourly_rate     DECIMAL(3,2) NOT NULL,");
+        builder.append("  ssn             INT NOT NULL,");
+        builder.append("  hours_per_week  REAL NOT NULL,");
+        builder.append("  date_hired      DATE NOT NULL,");
+        builder.append("  date_terminated DATE,");
+        builder.append("  job_title       VARCHAR(256) NOT NULL,");
+        builder.append("  PRIMARY KEY (empid),");
+        builder.append("  FOREIGN KEY (empid) REFERENCES PERSON(personid)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createPersonEmailAddressTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS PersonEmailAddress (");
+        builder.append("  personid   BIGINT,");
+        builder.append("  email_addr VARCHAR(256),");
+        builder.append("  PRIMARY KEY (personid, email_addr),");
+        builder.append("  FOREIGN KEY (personid) REFERENCES Person(personid)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createCreditCardTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS Credit_Card (");
+        builder.append("  number   CHAR(16),");
+        builder.append("  sec_code CHAR(3),");
+        builder.append("  PRIMARY KEY (number)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createCustomerCardTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS CustomerCard (");
+        builder.append("  personid BIGINT, ");
+        builder.append("  card_number CHAR(16), ");
+        builder.append("  PRIMARY KEY (personid, card_number),");
+        builder.append("  FOREIGN KEY (personid) REFERENCES Person(personid),");
+        builder.append("  FOREIGN KEY (card_number) REFERENCES Credit_Card(number)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createMenu_ItemTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS Menu_Item (");
+        builder.append("  name          VARCHAR(256),");
+        builder.append("  type          BOOLEAN NOT NULL,");
+        builder.append("  price         DECIMAL(2,2) NOT NULL,");
+        builder.append("  est_prep_time INT,");
+        builder.append("  PRIMARY KEY (name)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createPersonPhoneNumberTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS PersonPhoneNumber (");
+        builder.append("  personid     BIGINT,");
+        builder.append("  phone_number VARCHAR(17),");
+        builder.append("  PRIMARY KEY (personid, phone_number),");
+        builder.append("  FOREIGN KEY (personid) REFERENCES Person(personid)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createOrderTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS Order (");
+        builder.append("  orderid IDENTITY CHECK >= 0,");
+        builder.append("  custid BIGINT NOT NULL,");
+        builder.append("  empid_took_order BIGINT,");
+        builder.append("  empid_prepared_order BIGINT,");
+        builder.append("  empid_delivered_order BIGINT,");
+        builder.append("  time_order_placed TIMESTAMP NOT NULL,");
+        builder.append("  time_oreder_out TIMESTAMP,");
+        builder.append("  time_order_delivered TIMESTAMP,");
+        builder.append("  subtotal DECIMAL(7,2),");
+        builder.append("  tax DECIMAL(7,2),");
+        builder.append("  total DECIMAL(8,2),");
+        builder.append("  tip DECIMAL(4,2),");
+        builder.append("  PRIMARY KEY (orderid),");
+        builder.append("  FOREIGN KEY (custid) REFERENCES Customer (cust_id),");
+        builder.append("  FOREIGN KEY (empid_took_order) REFERENCES Employee (empid),");
+        builder.append("  FOREIGN KEY (empid_prepared_order) REFERENCES Employee (empid),");
+        builder.append("  FOREIGN KEY (empid_delivered_order) REFERENCES Employee (empid)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
+    }
+    
+    private static void createOrderItemTable()
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS OrderItem (");
+        builder.append("  orderid BIGINT,");
+        builder.append("  itemid VARCHAR(256),");
+        builder.append("  quantity INT CHECK > 0,");
+        builder.append("  PRIMARY KEY (orderid,itemid),");
+        builder.append("  FOREIGN KEY (orderid) REFERENCES Order (orderid)");
+        builder.append(");");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.executeUpdate();
+        return;
     }
     
     public static void createDatabase()
+        throws SQLException
     {
-        
+        createPersonTable();
+        createPersonEmailAddressTable();
+        createPersonPhoneNumberTable();
+        createCustomerTable();
+        createEmployeeTable();
+        createCreditCardTable();
+        createCustomerCardTable();
+        createMenu_ItemTable();
+        createOrderTable();
+        createOrderItemTable();
     }
 }
