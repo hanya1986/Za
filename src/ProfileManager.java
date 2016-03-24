@@ -10,6 +10,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
@@ -79,7 +80,7 @@ public class ProfileManager
         return PersonType.NOT_A_PERSON;
     }
     
-    private static long createPerson(HashMap<String,Object> values, String password)
+    private static long createPerson(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
     {
         Connection conn = ConnectionManager.getConnection();
@@ -173,7 +174,7 @@ public class ProfileManager
         return generatedKey.getLong(1);
     }
     
-    public static long createCustomer(HashMap<String,Object> values, String password)
+    public static long createCustomer(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
     {
         long personid = createPerson(values, password);
@@ -193,7 +194,7 @@ public class ProfileManager
         return personid;
     }
     
-    public static long createEmployee(HashMap<String,Object> values, String password)
+    public static long createEmployee(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
     {
         long personid = createPerson(values,password);
@@ -285,7 +286,7 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
-    public static void modifyPerson(long personid, HashMap<String,Object> values)
+    private static void modifyPerson(long personid, Map<String,Object> values)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
@@ -368,7 +369,7 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
-    public static void modifyCustomer(long cust_id, HashMap<String,Object> values)
+    public static void modifyCustomer(long cust_id, Map<String,Object> values)
         throws SQLException
     {
         modifyPerson(cust_id, values);
@@ -425,7 +426,7 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
-    public static void modifyEmployee(long empid, HashMap<String,Object> values)
+    public static void modifyEmployee(long empid, Map<String,Object> values)
         throws SQLException
     {
         modifyPerson(empid, values);
@@ -498,10 +499,10 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
-    private HashMap<String,Object> getPersonInfo(long personid, List<String> attributes)
+    private Map<String,Object> getPersonInfo(long personid, List<String> attributes)
         throws SQLException
     {
-        HashMap<String,Object> values = new HashMap<String,Object>();
+        Map<String,Object> values = new HashMap<String,Object>();
         if (attributes.size() == 0) return values;
         
         Connection conn = ConnectionManager.getConnection();
@@ -560,10 +561,10 @@ public class ProfileManager
         return values;
     }
     
-    public HashMap<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
+    public Map<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
         throws SQLException
     {
-        HashMap<String,Object> values = getPersonInfo(cust_id, attributes);
+        Map<String,Object> values = getPersonInfo(cust_id, attributes);
         
         Connection conn = ConnectionManager.getConnection();
         
@@ -619,10 +620,10 @@ public class ProfileManager
         return values;
     }
     
-    public HashMap<String,Object> getEmployeeInfo(long empid, List<String> attributes)
+    public Map<String,Object> getEmployeeInfo(long empid, List<String> attributes)
         throws SQLException
     {
-        HashMap<String,Object> values = getPersonInfo(empid, attributes);
+        Map<String,Object> values = getPersonInfo(empid, attributes);
         
         Connection conn = ConnectionManager.getConnection();
         
