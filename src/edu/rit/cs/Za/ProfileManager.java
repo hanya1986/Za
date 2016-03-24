@@ -701,4 +701,16 @@ public class ProfileManager
         }
         return values;
     }
+
+    public static long getPersonID(String username)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        String sql = "SELECT personid FROM Person WHERE username=?;";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, username);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return USERNAME_NOT_IN_TABLE;
+        else return rs.getLong(1);
+    }
 }
