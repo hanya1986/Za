@@ -501,6 +501,150 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
+    public static void addCreditCard(long cust_id, String cardNumber, String securityCode, Month expMonth, int expYear)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT number ");
+        builder.append("FROM Credit_Card ");
+        builder.append("WHERE number=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setString(1, cardNumber);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next())
+        {
+            builder.setLength(0);
+            builder.append("INSERT INTO Credit_Card (number,sec_code,exp_month,exp_year) ");
+            builder.append("VALUES (?,?,?,?);");
+            ps = conn.prepareStatement(builder.toString());
+            ps.setString(1, cardNumber);
+            ps.setString(2, securityCode);
+            ps.setInt(3, expMonth.value());
+            ps.setInt(4, expYear);
+            ps.executeUpdate();
+        }
+        
+        builder.setLength(0);
+        builder.append("INSERT INTO CustomerCard (personid,card_number) ");
+        builder.append("VALUES (?,?):");
+        ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ps.setString(2, cardNumber);
+        ps.executeUpdate();
+    }
+    
+    public static void removeCreditCard(long cust_id, String cardNumber)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        
+        builder.append("DELETE FROM CustomerCard ");
+        builder.append("WHERE personid=? AND card_number=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ps.setString(2, cardNumber);
+        ps.executeUpdate();
+        
+        builder.setLength(0);
+        builder.append("SELECT EXISTS (");
+        builder.append("    SELECT card_number ");
+        builder.append("    FROM CustomerCard ");
+        builder.append("    WHERE card_number=?);");
+        ps = conn.prepareStatement(builder.toString());
+        ps.setString(1, cardNumber);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) return;
+        
+        builder.setLength(0);
+        builder.append("DELETE FROM CreditCard ");
+        builder.append("WHERE number=?;");
+        ps = conn.prepareStatement(builder.toString());
+        ps.setString(1, cardNumber);
+        ps.executeUpdate();
+        return;
+    }
+
+    public static List<CreditCard> getCreditCards(long cust_id)
+        throws SQLException
+    {
+        List<CreditCard> cards = new LinkedList<CreditCard>();
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT number,sec_code,exp_month,exp_year");
+        builder.append("FROM Credit_Card INNER JOIN CustomerCard");
+        builder.append("ON Credit_Card.number=CustomerCard.card_number ");
+        builder.append("WHERE personid=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next())
+        {
+            CreditCard card = new CreditCard();
+            card.cardNumber = rs.getString(1);
+            card.securityCode = rs.getString(2);
+            int expirationMonth = rs.getInt(3);
+            for (Month month : Month.values())
+            {
+                if (month.value() == expirationMonth)
+                {
+                    card.expirationMonth = month;
+                    break;
+                }
+            }
+            card.expirationYear = rs.getInt(4);
+            cards.add(card);
+        }
+        return cards;
+    }
+    
+    public static void addPhoneNumber(long cust_id, String phoneNumber)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("INSERT INTO PersonPhoneNumber (personid,phone_number) ");
+        builder.append("VALUES (?,?);");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ps.setString(2, phoneNumber);
+        ps.executeUpdate();
+        return;
+    }
+    
+    public static void removePhoneNumber(long cust_id, String phoneNumber)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("DELETE FROM PersonPhoneNumber ");
+        builder.append("WHERE personid=? AND phone_number=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ps.setString(2, phoneNumber);
+        ps.executeUpdate();
+        return;
+    }
+    
+    public List<String> getPhoneNumbers(long cust_id)
+        throws SQLException
+    {
+        List<String> numbers = new LinkedList<String>();
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT phone_number ");
+        builder.append("FROM PersonPhoneNumber ");
+        builder.append("WHERE personid=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, cust_id);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next())
+            numbers.add(rs.getString(1));
+        return numbers;
+    }
+    
     private Map<String,Object> getPersonInfo(long personid, List<String> attributes)
         throws SQLException
     {

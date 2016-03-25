@@ -102,8 +102,11 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS Credit_Card (");
         builder.append("  number   CHAR(16),");
-        builder.append("  sec_code CHAR(3),");
-        builder.append("  PRIMARY KEY (number)");
+        builder.append("  sec_code CHAR(3) NOT NULL,");
+        builder.append("  exp_month INT NOT NULL,");
+        builder.append("  exp_year INT NOT NULL,");
+        builder.append("  PRIMARY KEY (number),");
+        builder.append("  CHECK (exp_month BETWEEN 0 AND 11 AND exp_year>=0)");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -118,7 +121,7 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS CustomerCard (");
         builder.append("  personid BIGINT, ");
-        builder.append("  card_number CHAR(16), ");
+        builder.append("  card_number CHAR(16) NOT NULL, ");
         builder.append("  PRIMARY KEY (personid, card_number),");
         builder.append("  FOREIGN KEY (personid) REFERENCES Person(personid),");
         builder.append("  FOREIGN KEY (card_number) REFERENCES Credit_Card(number)");
@@ -139,7 +142,9 @@ public class ZaDatabase
         builder.append("  type          BOOLEAN NOT NULL,");
         builder.append("  price         DECIMAL(2,2) NOT NULL,");
         builder.append("  est_prep_time INT,");
-        builder.append("  PRIMARY KEY (name)");
+        builder.append("  available     BOOLEAN DEFAULT TRUE,");
+        builder.append("  PRIMARY KEY (name),");
+        builder.append("  CHECK (type IN (\'PIZZA\',\'SIDE\',\'DRINK\'))");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
