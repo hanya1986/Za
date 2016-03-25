@@ -26,7 +26,6 @@ public class ProfileManager
     private static final int DIGEST_BYTE_SIZE = 64;
     public static final long USERNAME_NOT_IN_TABLE = -1L;
     public static final long INCORRECT_PASSWORD = -2L;
-    public enum PersonType { NOT_A_PERSON, CUSTOMER, EMPLOYEE };
     
     private static final SecureRandom sr = new SecureRandom();
     
