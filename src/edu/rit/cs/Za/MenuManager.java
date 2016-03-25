@@ -40,6 +40,7 @@ public class MenuManager
                 break;
             }
         }
+        
         colIt = columns.iterator();
         while (colIt.hasNext())
         {
