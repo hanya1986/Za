@@ -14,5 +14,15 @@ public enum OrderType
     {
         this.orderType = orderType;
     }
-    public String toString() { return orderType; }
+    
+    public static OrderType parseOrderType(String s)
+    {
+        for (OrderType orderType : OrderType.values())
+            if (s.equalsIgnoreCase(orderType.orderType)) return orderType;
+        StringBuilder builder = new StringBuilder();
+        builder.append('\"');
+        builder.append(s);
+        builder.append("\" IS NOT AN OrderType.");
+        throw new IllegalArgumentException(builder.toString());
+    }
 }

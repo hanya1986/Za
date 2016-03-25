@@ -21,4 +21,14 @@ public enum State
     private final String abbrev;
     private State(String abbrev) { this.abbrev = abbrev; }
     public String toString() { return abbrev; }
+    public static State parseState(String s)
+    {
+        for (State state : State.values())
+            if (s.equalsIgnoreCase(state.abbrev)) return state;
+        StringBuilder builder = new StringBuilder();
+        builder.append('\"');
+        builder.append(s);
+        builder.append("\" IS NOT A State.");
+        throw new IllegalArgumentException(builder.toString());
+    }
 }

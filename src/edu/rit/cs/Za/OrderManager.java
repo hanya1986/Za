@@ -329,8 +329,7 @@ public class OrderManager
                 values.put(col, rs.getLong(col));
                 break;
             case "order_type":
-                String str = rs.getString(col);
-                values.put(col, str.equals(OrderType.CARRY_OUT.toString()) ? OrderType.CARRY_OUT : OrderType.DELIVERY);
+                values.put(col, OrderType.parseOrderType(rs.getString(col)));
                 break;
             case "active":
                 values.put(col, rs.getBoolean(col));

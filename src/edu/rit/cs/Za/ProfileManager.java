@@ -741,13 +741,7 @@ public class ProfileManager
                 values.put(col, rs.getString(col));
                 break;
             case "state":
-                String str = rs.getString(col);
-                for (State state : State.values())
-                    if (str.equals(state.toString()))
-                    {
-                        values.put(col, state);
-                        break;
-                    }
+                values.put(col, State.parseState(rs.getString(col)));
                 break;
             case "zip":
                 values.put(col, rs.getString(col));
