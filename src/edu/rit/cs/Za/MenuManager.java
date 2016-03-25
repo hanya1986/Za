@@ -7,5 +7,4 @@ package edu.rit.cs.Za;
 
 public class MenuManager
 {
-
 }

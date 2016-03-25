@@ -600,7 +600,7 @@ public class ProfileManager
         return cards;
     }
     
-    public static void addPhoneNumber(long cust_id, String phoneNumber)
+    public static void addPhoneNumber(long personid, String phoneNumber)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
@@ -608,13 +608,13 @@ public class ProfileManager
         builder.append("INSERT INTO PersonPhoneNumber (personid,phone_number) ");
         builder.append("VALUES (?,?);");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
-        ps.setLong(1, cust_id);
+        ps.setLong(1, personid);
         ps.setString(2, phoneNumber);
         ps.executeUpdate();
         return;
     }
     
-    public static void removePhoneNumber(long cust_id, String phoneNumber)
+    public static void removePhoneNumber(long personid, String phoneNumber)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
@@ -622,13 +622,13 @@ public class ProfileManager
         builder.append("DELETE FROM PersonPhoneNumber ");
         builder.append("WHERE personid=? AND phone_number=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
-        ps.setLong(1, cust_id);
+        ps.setLong(1, personid);
         ps.setString(2, phoneNumber);
         ps.executeUpdate();
         return;
     }
     
-    public List<String> getPhoneNumbers(long cust_id)
+    public List<String> getPhoneNumbers(long personid)
         throws SQLException
     {
         List<String> numbers = new LinkedList<String>();
@@ -638,7 +638,52 @@ public class ProfileManager
         builder.append("FROM PersonPhoneNumber ");
         builder.append("WHERE personid=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
-        ps.setLong(1, cust_id);
+        ps.setLong(1, personid);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next())
+            numbers.add(rs.getString(1));
+        return numbers;
+    }
+
+    public static void addEmailAddress(long personid, String emailAddress)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("INSERT INTO PersonEmailAddress (personid,email_addr) ");
+        builder.append("VALUES (?,?);");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, personid);
+        ps.setString(2, emailAddress);
+        ps.executeUpdate();
+        return;
+    }
+    
+    public static void removeEmailAddress(long personid, String emailAddress)
+        throws SQLException
+    {
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("DELETE FROM PersonEmailAddress ");
+        builder.append("WHERE personid=? AND emailAddress=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, personid);
+        ps.setString(2, emailAddress);
+        ps.executeUpdate();
+        return;
+    }
+    
+    public List<String> getEmailAddresses(long personid)
+        throws SQLException
+    {
+        List<String> numbers = new LinkedList<String>();
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT email_address ");
+        builder.append("FROM PersonEmailAddress ");
+        builder.append("WHERE personid=?;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, personid);
         ResultSet rs = ps.executeQuery();
         while (rs.next())
             numbers.add(rs.getString(1));

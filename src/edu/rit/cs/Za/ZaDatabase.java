@@ -85,7 +85,7 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS PersonEmailAddress (");
         builder.append("  personid   BIGINT,");
-        builder.append("  email_addr VARCHAR(256),");
+        builder.append("  email_addr VARCHAR(256) NOT NULL,");
         builder.append("  PRIMARY KEY (personid, email_addr),");
         builder.append("  FOREIGN KEY (personid) REFERENCES Person(personid)");
         builder.append(");");
@@ -159,7 +159,7 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS PersonPhoneNumber (");
         builder.append("  personid     BIGINT,");
-        builder.append("  phone_number VARCHAR(17),");
+        builder.append("  phone_number VARCHAR(17) NOT NULL,");
         builder.append("  PRIMARY KEY (personid, phone_number),");
         builder.append("  FOREIGN KEY (personid) REFERENCES Person(personid)");
         builder.append(");");
@@ -210,8 +210,8 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS ZaOrderItem (");
         builder.append("  orderid BIGINT,");
-        builder.append("  itemid VARCHAR(256),");
-        builder.append("  quantity INT,");
+        builder.append("  itemid VARCHAR(256) NOT NULL,");
+        builder.append("  quantity INT DEFAULT 1,");
         builder.append("  PRIMARY KEY (orderid,itemid),");
         builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
         builder.append("  FOREIGN KEY (itemid) REFERENCES Menu_Item (name),");
