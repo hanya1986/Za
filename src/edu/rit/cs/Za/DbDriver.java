@@ -106,5 +106,7 @@ public class DbDriver
         String pw = "you'll never guess";
         long custid = testCustomerProfileCreation(customer, pw);
         testCustomerLoginValidation(custid, customer, pw);
+        
+        Map<String,Object> employee = new HashMap<String,Object>();
     }
 }
