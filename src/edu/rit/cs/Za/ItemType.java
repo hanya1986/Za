@@ -7,7 +7,7 @@ package edu.rit.cs.Za;
 
 public enum ItemType
 {
-    FOOD("FOOD"), DRINK("DRINK"), SIDE("SIDE");
+    PIZZA("PIZZA"), DRINK("DRINK"), SIDE("SIDE");
     
     private final String itemType;
     private ItemType(String itemType) { this.itemType = itemType; }
