@@ -81,6 +81,12 @@ public class ProfileManager
         return PersonType.NOT_A_PERSON;
     }
     
+    /*
+     * THIS METHOD WAS INTENTIONALLY MADE PRIVATE.
+     * WHEN createCustomer OR createEmployee IS CALLED, THIS METHOD IS CALLED IN
+     * TURN TO INSERT A NEW PERSON WHOSE personid IS USED IN EITHER THE Customer
+     * OR THE Employee TABLE, RESPECTIVELY. 
+     */
     private static long createPerson(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
     {
@@ -175,6 +181,11 @@ public class ProfileManager
         return generatedKey.getLong(1);
     }
     
+    /*
+     * DO NOT PROVIDE A PASSWORD HASH OR SALT IN values. IF ONE OR BOTH ARE
+     * PROVIDED, THEY WILL BE IGNORED. A SALT WILL BE CREATED FOR COMPUTING THE
+     * HASH OF THE PASSWORD PROVIDED AS AN ARGUMENT.
+     */
     public static long createCustomer(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
     {
@@ -195,6 +206,11 @@ public class ProfileManager
         return personid;
     }
     
+    /*
+     * DO NOT PROVIDE A PASSWORD HASH OR SALT IN values. IF ONE OR BOTH ARE
+     * PROVIDED, THEY WILL BE IGNORED. A SALT WILL BE CREATED FOR COMPUTING THE
+     * HASH OF THE PASSWORD PROVIDED AS AN ARGUMENT.
+     */
     public static long createEmployee(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
     {
@@ -267,6 +283,11 @@ public class ProfileManager
         return personid;
     }
 
+    /*
+     * AS IS THE CASE WITH ALL OF THE METHODS IN THIS CLASS THAT TAKE A personid
+     * PARAMETER, THE personid PARAMETER REALLY REFERS TO cust_id IF THE PERSON
+     * IS A CUSTOMER AND empid IF THE PERSON IS AN EMPLOYEE.
+     */
     public static void changePassword(long personid, String password)
         throws NoSuchAlgorithmException, SQLException
     {
