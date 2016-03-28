@@ -139,7 +139,7 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS Menu_Item (");
         builder.append("  name          VARCHAR(256),");
-        builder.append("  type          BOOLEAN NOT NULL,");
+        builder.append("  type          VARCHAR(8) NOT NULL,");
         builder.append("  price         DECIMAL(2,2) NOT NULL,");
         builder.append("  est_prep_time INT,");
         builder.append("  available     BOOLEAN DEFAULT TRUE,");
