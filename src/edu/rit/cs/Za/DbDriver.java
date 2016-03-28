@@ -71,7 +71,7 @@ public class DbDriver
         throws Exception // test-driver program; swallow exceptions
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(System.getProperty("user.home"));
+        builder.append("E:\\");
         builder.append(File.separatorChar);
         builder.append("ZADB");
         builder.append(File.separatorChar);
