@@ -32,11 +32,19 @@ public class ProfileManager
     private static byte[] computeHash(byte[] password, byte[] salt)
         throws NoSuchAlgorithmException
     {   
-        byte[] passConcatSalt = new byte[password.length + salt.length];
+        /*
+         * To compute the password hash to store in the database, first
+         * concatenate it with the salt, which we have decided to make the same
+         * size as the digest. Then, compute the SHA-512 digest of that whole
+         * thing, which will be 512 bits or 64 bytes long. Finally, return the
+         * digest, which will be stored as the password hash along with the
+         * salt.
+         */
+        byte[] passConcatSalt = new byte[password.length + DIGEST_BYTE_SIZE];
         int idx = 0;
         for (int passIdx = 0; passIdx < password.length; ++passIdx)
             passConcatSalt[idx++] = password[passIdx];
-        for (int saltIdx = 0; saltIdx < salt.length; ++saltIdx)
+        for (int saltIdx = 0; saltIdx < DIGEST_BYTE_SIZE; ++saltIdx)
             passConcatSalt[idx++] = salt[saltIdx];
         
         MessageDigest md = MessageDigest.getInstance("SHA-512");
