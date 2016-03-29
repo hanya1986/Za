@@ -52,26 +52,25 @@ public class DbDriver
         System.out.println("ATTEMPTING LOGIN WITH NON-EXISTENT USERNAME");
         long result = ProfileManager.validateCredentials(fakeUsername, fakePassword);
         if (result == ProfileManager.USERNAME_NOT_IN_TABLE)
-        {
-            System.out.printf("Username %s not in database.%n", fakeUsername);
-            System.out.println();
-        }
+            System.out.printf("Username %s not in database. (PASSED)%n", fakeUsername);
+        else
+            System.out.println("Call to method ProfileManager.validateCredentials returned incorrect result. (FAILED)");
+        System.out.println();
         
         System.out.println("ATTEMPTING LOGIN WITH INCORRECT PASSWORD");
         result = ProfileManager.validateCredentials((String)customer.get("username"), fakePassword);
         if (result == ProfileManager.INCORRECT_PASSWORD)
-        {
-            System.out.println("Incorrect password.");
-            System.out.println();
-        }
+            System.out.println("Incorrect password. (PASSED)");
+        else
+            System.out.println("Call to method ProfileManager.validateCredentials returned incorrect result. (FAILED)");
+        System.out.println();
         
         System.out.println("LOGGING IN WITH VALID CREDENTIALS");
         result = ProfileManager.validateCredentials((String)customer.get("username"), pw);
         if (result == custid)
-        {
-            System.out.printf("(\'%s\',\'%s\') login successful.%n", (String)customer.get("username"), pw);
-            System.out.println();
-        }
+            System.out.printf("(\'%s\',\'%s\') login successful. (PASSED)%n", (String)customer.get("username"), pw);
+        else
+            System.out.println("Call to method ProfileManager.validateCredentials returned incorrect result. (FAILED)");
         System.out.println();
     }
     
