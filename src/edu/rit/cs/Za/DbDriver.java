@@ -102,26 +102,31 @@ public class DbDriver
 		personData.put("username", new ArrayList<Object>());
 		personData.put("password", new ArrayList<Object>());
 		String currLine;
-		try {
+		try
+		{
 			String currKey = "";
-			while ((currLine = dataBufferedReader.readLine()) != null) {
-				if (currLine.startsWith("---")) { //reading in new type of data
+			while ((currLine = dataBufferedReader.readLine()) != null)
+			{
+				if (currLine.startsWith("---"))
+				{   //reading in new type of data
 					currKey = currLine.substring(3);	//...so update the key we're pairing vals to
 					continue;
 				}
-				if (currKey.equals("street")) {
+				if (currKey.equals("street"))
+				{
 					personData.get("street").add(currLine.split(",")[0].trim());
 					personData.get("city").add(currLine.split(",")[1].trim());
+					personData.get("state").add(State.parseState(currLine.split(",")[2].trim()));
 					personData.get("zip").add(currLine.split(",")[3].trim());
-					continue;
 				}
-				if (currKey.equals("date_of_birth")) {
-					personData.get(currKey).add(new java.sql.Date(Long.parseLong(currLine)));
-					continue;
-				}
-				personData.get(currKey).add(currLine);
+				else if (currKey.equals("date_of_birth"))
+					personData.get(currKey).add(new Date(Long.parseLong(currLine)));
+				else
+				    personData.get(currKey).add(currLine);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	
@@ -130,21 +135,28 @@ public class DbDriver
 		Map<String, Object> customerData = new HashMap<String, Object>();;
 		for (int customersCreated = 0; customersCreated < 90; customersCreated++) {
 			customerData = new HashMap<String, Object>();
-			for (String personKey : personData.keySet()) {
+			for (String personKey : personData.keySet())
+			{
 				try { customerData.put(personKey, personData.get(personKey).get(customersCreated));	}
 				catch(Exception e) { }
 			}
 			//System.out.println("Customer Data: " + customerData);
-			try {
+			try
+			{
 				ProfileManager.createCustomer(customerData, (String) customerData.get("password")); //redundant, but I'm lazy
-			} catch (NoSuchAlgorithmException e) {
+			}
+			catch (NoSuchAlgorithmException e)
+			{
 				e.printStackTrace();
-			} catch (SQLException e) {
+			}
+			catch (SQLException e)
+			{
 				e.printStackTrace();
 			}
 		}
 		
-		for (int employeesCreated = 0; employeesCreated < 10; employeesCreated++) {
+		for (int employeesCreated = 0; employeesCreated < 10; employeesCreated++)
+		{
 			
 		}
 	}
