@@ -5,7 +5,11 @@
 
 package edu.rit.cs.Za;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.sql.Date;
@@ -14,6 +18,10 @@ import java.security.NoSuchAlgorithmException;
 
 public class DbDriver
 {
+	
+	private static FileReader dataFileReader;
+	private static BufferedReader dataBufferedReader;
+
     private static long testCustomerProfileCreation(Map<String,Object> customer, String pw)
         throws SQLException, NoSuchAlgorithmException
     {
@@ -67,6 +75,81 @@ public class DbDriver
         System.out.println();
     }
     
+    
+    private static void populateTables() {
+		File[] dataFiles = new File("table_data/").listFiles();
+		for (File dataFile : dataFiles) {
+			try { dataFileReader = new FileReader(dataFile);}
+			catch (FileNotFoundException e) {e.printStackTrace();}
+			dataBufferedReader = new BufferedReader(dataFileReader);
+			switch(dataFile.getName()) {
+				case "person_data.txt": //common employee, customer data
+					populatePersons(dataFile);
+			}
+		}
+    }
+    
+    private static void populatePersons(File personsFile) {
+    	//Initialize personData.
+		Map<String, ArrayList<Object>> personData = new HashMap<String, ArrayList<Object>>();
+		personData.put("street", new ArrayList<Object>()); 
+		personData.put("city", new ArrayList<Object>());
+		personData.put("state", new ArrayList<Object>());
+		personData.put("zip", new ArrayList<Object>());
+		personData.put("first_name", new ArrayList<Object>());
+		personData.put("middle_name", new ArrayList<Object>());
+		personData.put("last_name", new ArrayList<Object>());
+		personData.put("date_of_birth", new ArrayList<Object>());
+		personData.put("username", new ArrayList<Object>());
+		personData.put("password", new ArrayList<Object>());
+		String currLine;
+		try {
+			String currKey = "";
+			while ((currLine = dataBufferedReader.readLine()) != null) {
+				if (currLine.startsWith("---")) { //reading in new type of data
+					currKey = currLine.substring(3);	//...so update the key we're pairing vals to
+					continue;
+				}
+				if (currKey.equals("street")) {
+					personData.get("street").add(currLine.split(",")[0].trim());
+					personData.get("city").add(currLine.split(",")[1].trim());
+					personData.get("zip").add(currLine.split(",")[3].trim());
+					continue;
+				}
+				if (currKey.equals("date_of_birth")) {
+					personData.get(currKey).add(new java.sql.Date(Long.parseLong(currLine)));
+					continue;
+				}
+				personData.get(currKey).add(currLine);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+		//Make personData ready for ProfileManager creation method.
+		//I.e., Map<String, ArrayList<Object>> --> Map<String, Object>
+		Map<String, Object> customerData = new HashMap<String, Object>();;
+		for (int customersCreated = 0; customersCreated < 90; customersCreated++) {
+			customerData = new HashMap<String, Object>();
+			for (String personKey : personData.keySet()) {
+				try { customerData.put(personKey, personData.get(personKey).get(customersCreated));	}
+				catch(Exception e) { }
+			}
+			//System.out.println("Customer Data: " + customerData);
+			try {
+				ProfileManager.createCustomer(customerData, (String) customerData.get("password")); //redundant, but I'm lazy
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for (int employeesCreated = 0; employeesCreated < 10; employeesCreated++) {
+			
+		}
+	}
+    
     public static void main(String[] args)
         throws Exception // test-driver program; swallow exceptions
     {
@@ -108,5 +191,8 @@ public class DbDriver
         testCustomerLoginValidation(custid, customer, pw);
         
         Map<String,Object> employee = new HashMap<String,Object>();
+        
+        //BEGIN JEREMY'S DATA GENERATION
+        populateTables();
     }
 }
