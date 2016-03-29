@@ -64,7 +64,7 @@ public class ZaDatabase
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE TABLE IF NOT EXISTS Employee (");
         builder.append("  empid           BIGINT,");
-        builder.append("  hourly_rate     DECIMAL(3,2) NOT NULL,");
+        builder.append("  hourly_rate     DECIMAL(5,2) NOT NULL,");
         builder.append("  ssn             INT NOT NULL,");
         builder.append("  hours_per_week  REAL NOT NULL,");
         builder.append("  date_hired      DATE NOT NULL,");
@@ -141,7 +141,7 @@ public class ZaDatabase
         builder.append("CREATE TABLE IF NOT EXISTS Menu_Item (");
         builder.append("  name          VARCHAR(256),");
         builder.append("  type          VARCHAR(8) NOT NULL,");
-        builder.append("  price         DECIMAL(2,2) NOT NULL,");
+        builder.append("  price         DECIMAL(4,2) NOT NULL,");
         builder.append("  est_prep_time INT,");
         builder.append("  available     BOOLEAN DEFAULT TRUE,");
         builder.append("  PRIMARY KEY (name),");
@@ -186,10 +186,10 @@ public class ZaDatabase
         builder.append("  time_order_placed TIMESTAMP NOT NULL,");
         builder.append("  time_order_out TIMESTAMP,");
         builder.append("  time_order_delivered TIMESTAMP,");
-        builder.append("  subtotal DECIMAL(7,2),");
-        builder.append("  tax DECIMAL(7,2),");
-        builder.append("  total DECIMAL(8,2),");
-        builder.append("  tip DECIMAL(4,2),");
+        builder.append("  subtotal DECIMAL(9,2),");
+        builder.append("  tax DECIMAL(9,2),");
+        builder.append("  total DECIMAL(10,2),");
+        builder.append("  tip DECIMAL(6,2),");
         builder.append("  PRIMARY KEY (orderid),");
         builder.append("  FOREIGN KEY (custid) REFERENCES Customer (cust_id),");
         builder.append("  FOREIGN KEY (empid_took_order) REFERENCES Employee (empid),");
