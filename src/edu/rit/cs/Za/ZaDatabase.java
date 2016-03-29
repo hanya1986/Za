@@ -48,7 +48,8 @@ public class ZaDatabase
         builder.append("  reward_pts INT DEFAULT 0,");
         builder.append("  active     BOOLEAN DEFAULT TRUE,");
         builder.append("  PRIMARY KEY (cust_id),");
-        builder.append("  FOREIGN KEY (cust_id) REFERENCES Person(personid)");
+        builder.append("  FOREIGN KEY (cust_id) REFERENCES Person(personid),");
+        builder.append("  CHECK (reward_pts>=0)");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
