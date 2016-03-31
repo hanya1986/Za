@@ -13,13 +13,15 @@ public class ConnectionManager
 {
     private static Connection connection = null;
     
-    public static void initConnection(String location, String username, String password) throws SQLException, ClassNotFoundException
+    public static void initConnection(String location, String username, String password) throws SQLException
     {
         if (connection != null) connection.close();
         String url = "jdbc:h2:" + location;
-        Class.forName("org.h2.Driver");
         connection = DriverManager.getConnection(url, username, password);
     }
     
-    public static Connection getConnection() { return connection; }
+    public static Connection getConnection()
+    {
+        return connection;
+    }
 }

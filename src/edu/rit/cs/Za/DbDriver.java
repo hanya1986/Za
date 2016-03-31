@@ -36,7 +36,7 @@ public class DbDriver
         catch (SQLException ex)
         {
             custid = ProfileManager.getPersonID((String)customer.get("username"));
-            System.out.println(ex);
+            System.err.println(ex);
             System.out.println("CUSTOMER PROFILE NOT CREATED");
         }
         System.out.println();
@@ -213,18 +213,25 @@ public class DbDriver
     public static void main(String[] args)
         throws Exception // test-driver program; swallow exceptions
     {
-        StringBuilder builder = new StringBuilder();
-        builder.append("./ZADB/za");
+
+        String db_location = "./ZADB/za";
+        String db_path = db_location + ".mv.db";
         
-        String location = builder.toString();
+        // removes old database file to run clean test
+        File f = new File(db_path);
+        if (f.exists()) {
+            System.out.println("REMOVING OLD DATABASE\n");
+            f.delete();
+        }
+
         String username = "username";
         String password = "password";
         
         System.out.println("INITIALIZING DATABASE CONNECTION");
-        System.out.printf("location: %s%n", location);
+        System.out.printf("location: %s%n", db_location);
         System.out.printf("username: %s%n", username);
         System.out.printf("password: %s%n", password);
-        ConnectionManager.initConnection(location, username, password);
+        ConnectionManager.initConnection(db_location, username, password);
         System.out.println("DATABASE CONNECTION INITIALIZED");
         System.out.println();
         
