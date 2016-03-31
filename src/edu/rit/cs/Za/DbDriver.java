@@ -214,11 +214,7 @@ public class DbDriver
         throws Exception // test-driver program; swallow exceptions
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("E:\\");
-        builder.append(File.separatorChar);
-        builder.append("ZADB");
-        builder.append(File.separatorChar);
-        builder.append("za");
+        builder.append("./ZADB/za");
         
         String location = builder.toString();
         String username = "username";

@@ -201,7 +201,7 @@ public class ZaDatabase
         builder.append("  FOREIGN KEY (empid_delivered_order) REFERENCES Employee (empid),");
         builder.append("  CHECK (orderid>=0),");
         builder.append("  CHECK (order_type in (\'DELIVERY\',\'CARRY-OUT\')),");
-        builder.append("  CHECK (pay_method in ((\'CARD\',\'CASH\'))");
+        builder.append("  CHECK (pay_method in (\'CARD\',\'CASH\'))");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -222,7 +222,7 @@ public class ZaDatabase
         builder.append("  PRIMARY KEY (orderid,itemid),");
         builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
         builder.append("  FOREIGN KEY (itemid) REFERENCES Menu_Item (name),");
-        builder.append("  CHECK (quantity>0)");
+        builder.append("  CHECK (quantity>0),");
         builder.append("  CHECK (size in (\'SMALL\',\'MEDIUM\',\'LARGE\'))");
         builder.append(");");
         
