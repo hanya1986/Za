@@ -85,6 +85,9 @@ public class DbDriver
 			switch(dataFile.getName()) {
 				case "person_data.txt": //common employee, customer data
 					populatePersons(dataFile);
+					break;
+				case "item_data.txt":
+					System.out.println("TEST");
 			}
 		}
     }
