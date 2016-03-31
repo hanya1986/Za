@@ -144,6 +144,9 @@ public class ZaDatabase
         builder.append("  price         DECIMAL(4,2) NOT NULL,");
         builder.append("  est_prep_time INT,");
         builder.append("  available     BOOLEAN DEFAULT TRUE,");
+        builder.append("  small_price   DECIMAL(4,2) NOT NULL,");
+        builder.append("  medium_price  DECIMAL(4,2) NOT NULL,");
+        builder.append("  large_price   DECIMAL(4,2) NOT NULL,");
         builder.append("  PRIMARY KEY (name),");
         builder.append("  CHECK (type IN (\'PIZZA\',\'SIDE\',\'DRINK\'))");
         builder.append(");");
@@ -190,13 +193,15 @@ public class ZaDatabase
         builder.append("  tax DECIMAL(9,2),");
         builder.append("  total DECIMAL(10,2),");
         builder.append("  tip DECIMAL(6,2),");
+        builder.append("  pay_method VARCHAR(8),");
         builder.append("  PRIMARY KEY (orderid),");
         builder.append("  FOREIGN KEY (custid) REFERENCES Customer (cust_id),");
         builder.append("  FOREIGN KEY (empid_took_order) REFERENCES Employee (empid),");
         builder.append("  FOREIGN KEY (empid_prepared_order) REFERENCES Employee (empid),");
         builder.append("  FOREIGN KEY (empid_delivered_order) REFERENCES Employee (empid),");
         builder.append("  CHECK (orderid>=0),");
-        builder.append("  CHECK (order_type in (\'DELIVERY\',\'CARRY-OUT\'))");
+        builder.append("  CHECK (order_type in (\'DELIVERY\',\'CARRY-OUT\')),");
+        builder.append("  CHECK (pay_method in ((\'CARD\',\'CASH\'))");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -213,10 +218,12 @@ public class ZaDatabase
         builder.append("  orderid BIGINT,");
         builder.append("  itemid VARCHAR(256) NOT NULL,");
         builder.append("  quantity INT DEFAULT 1,");
+        builder.append("  size VARCHAR(8),");
         builder.append("  PRIMARY KEY (orderid,itemid),");
         builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
         builder.append("  FOREIGN KEY (itemid) REFERENCES Menu_Item (name),");
         builder.append("  CHECK (quantity>0)");
+        builder.append("  CHECK (size in (\'SMALL\',\'MEDIUM\',\'LARGE\'))");
         builder.append(");");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
