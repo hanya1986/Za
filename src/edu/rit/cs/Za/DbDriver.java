@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,6 +102,13 @@ public class DbDriver
 		personData.put("date_of_birth", new ArrayList<Object>());
 		personData.put("username", new ArrayList<Object>());
 		personData.put("password", new ArrayList<Object>());
+		personData.put("reward_pts", new ArrayList<Object>());
+		personData.put("empid", new ArrayList<Object>());
+		personData.put("hourly_rate", new ArrayList<Object>());
+		personData.put("ssn", new ArrayList<Object>());
+		personData.put("hours_per_week", new ArrayList<Object>());
+		personData.put("date_hired", new ArrayList<Object>());
+		personData.put("job_title", new ArrayList<Object>());
 		String currLine;
 		try
 		{
@@ -119,8 +127,20 @@ public class DbDriver
 					personData.get("state").add(State.parseState(currLine.split(",")[2].trim()));
 					personData.get("zip").add(currLine.split(",")[3].trim());
 				}
-				else if (currKey.equals("date_of_birth"))
+				else if (currKey.equals("date_of_birth") || currKey.equals("date_hired"))
 					personData.get(currKey).add(new Date(Long.parseLong(currLine)));
+				else if (currKey.equals("reward_pts") || currKey.equals("hours_per_week") || currKey.equals("ssn"))
+				{
+					personData.get(currKey).add(Integer.parseInt(currLine));
+				}
+				else if (currKey.equals("empid")) 
+				{
+					personData.get(currKey).add(Long.parseLong(currLine));
+				}
+				else if (currKey.equals("hourly_rate"))
+				{
+					personData.get(currKey).add(new BigDecimal(currLine));
+				}
 				else
 				    personData.get(currKey).add(currLine);
 			}
@@ -137,10 +157,14 @@ public class DbDriver
 			customerData = new HashMap<String, Object>();
 			for (String personKey : personData.keySet())
 			{
-				try { customerData.put(personKey, personData.get(personKey).get(customersCreated));	}
-				catch(Exception e) { }
+				if (!((personKey.equals("hourly_rate")) || (personKey.equals("ssn") || personKey.equals("hours_per_week")
+				|| personKey.equals("date_hired") || personKey.equals("job_title"))))
+				{
+					try { customerData.put(personKey, personData.get(personKey).get(customersCreated));	}
+					catch(Exception e) { }
+				}
 			}
-			//System.out.println("Customer Data: " + customerData);
+			System.out.println("Customer Data: " + customerData);
 			try
 			{
 				ProfileManager.createCustomer(customerData, (String) customerData.get("password")); //redundant, but I'm lazy
@@ -155,9 +179,31 @@ public class DbDriver
 			}
 		}
 		
+		Map<String, Object> employeeData = new HashMap<String, Object>();;
 		for (int employeesCreated = 0; employeesCreated < 10; employeesCreated++)
 		{
-			
+			employeeData = new HashMap<String, Object>();
+			for (String personKey : personData.keySet())
+			{
+				if (!(personKey.equals("reward_pts")))
+				{
+					try { employeeData.put(personKey, personData.get(personKey).get(employeesCreated));	}
+					catch(Exception e) { }
+				}
+			}
+			System.out.println("Employee Data: " + employeeData);
+			try
+			{
+				ProfileManager.createEmployee(employeeData, (String) employeeData.get("password")); 
+			}
+			catch (NoSuchAlgorithmException e)
+			{
+				e.printStackTrace();
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
     
