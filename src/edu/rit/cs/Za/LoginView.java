@@ -18,6 +18,10 @@ import javax.swing.border.EmptyBorder;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
@@ -32,7 +36,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-public class LoginView {
+public class LoginView implements ActionListener{
 
 	private JFrame frame;
 	private JPanel panel;
@@ -40,6 +44,9 @@ public class LoginView {
 	private JPanel panel_2;
 	private JPanel panel_3;
 	private JPanel panel_4;
+	private JButton loginButton;
+	private JButton signupButton;
+	
 
 	/**
 	 * Launch the application.
@@ -106,8 +113,9 @@ public class LoginView {
 		cnst.insets = new Insets(4,2,4,2);
 		JLabel usernameLabel = new JLabel("Username:");
 		JLabel passwordLabel = new JLabel("Password:");
-		JButton loginButton = new JButton("Login");
-		JButton signupButton = new JButton("Sign up");
+		loginButton = new JButton("Login");
+		signupButton = new JButton("Sign up");
+		signupButton.addActionListener(this);
 		JTextField usernameText = new JTextField();
 		JTextField passwordText = new JTextField();
 		Dimension prefSize = new Dimension(140,20);
@@ -136,6 +144,15 @@ public class LoginView {
 		cnst.gridx = 2;
 		cnst.gridy = 3;
 		panel_2.add(forgotPass, cnst);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if(cmd.equals("Sign up")){
+			SignupView signup = new SignupView();
+			signup.run();
+		}
 	}
 
 }
