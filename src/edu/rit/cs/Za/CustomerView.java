@@ -5,6 +5,8 @@ import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -23,6 +25,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.border.Border;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -44,6 +48,7 @@ public class CustomerView {
 	};
 	
 	private JFrame frame;
+	private JPanel bottomPanel;
 	private JTable menuTable;
 	private JTable carTable;
 	private JPanel orderPanel;
@@ -90,17 +95,31 @@ public class CustomerView {
 		JMenuBar menuBar = new JMenuBar();
 		orderButtonPanel.add(menuBar);
 		
-		JMenu mnNewMenu = new JMenu("Profile");
-		menuBar.add(mnNewMenu);
+		JButton profileButton = new JButton("Profile");
+		profileButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadProfileView();
+				frame.revalidate();
+			}
+		});
+		menuBar.add(profileButton);
 		
-		JMenu mnNewMenu_1 = new JMenu("Order");
-		menuBar.add(mnNewMenu_1);
+		JButton orderButton = new JButton("Order");
+		orderButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadOrderView();
+				frame.revalidate();
+			}
+		});
+		menuBar.add(orderButton);
 		
-		JMenu mnNewMenu_2 = new JMenu("History");
-		menuBar.add(mnNewMenu_2);
+		JButton historyButton = new JButton("History");
+		menuBar.add(historyButton);
 		
-		JMenu mnNewMenu_3 = new JMenu("Logout");
-		menuBar.add(mnNewMenu_3);
+		JButton logoutButton = new JButton("Logout");
+		menuBar.add(logoutButton);
 	}
 	
 	public void initializeProfileView(){
@@ -231,24 +250,27 @@ public class CustomerView {
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		orderPanel.add(sp, gbc);
 		
-		JPanel panel = new JPanel(new GridBagLayout());
+		bottomPanel = new JPanel();
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.weightx = 0.3;
-		gbc.weighty = 0.3;
-		gbc.fill = GridBagConstraints.VERTICAL;
-		JButton nextButton = new JButton("Next");
-		JButton previousButton = new JButton("Previous");
-		panel.add(previousButton, gbc);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		JButton ResetButton = new JButton("Reset");
 		gbc.gridx++;
-		panel.add(nextButton, gbc);
-		frame.getContentPane().add(panel, BorderLayout.SOUTH);
+		bottomPanel.add(ResetButton, gbc);
+		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
-	private void removeOrderView(){
+	private void loadProfileView(){
 		frame.getContentPane().remove(orderPanel);
-		frame.getContentPane().remove(orderButtonPanel);
+		frame.getContentPane().remove(bottomPanel);
+		initializeProfileView();
+	}
+	
+	private void loadOrderView(){
+		frame.getContentPane().remove(profilePanel);
+		frame.getContentPane().remove(profileScollPane);
+		initializeOrderView();
 	}
 
 	private MyModel populateMenuTable(){
