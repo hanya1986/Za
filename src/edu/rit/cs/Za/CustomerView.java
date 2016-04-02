@@ -85,6 +85,7 @@ public class CustomerView {
 	private void initialize(){
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
+		frame.setSize(new Dimension(1100,600));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout());
 		
@@ -159,6 +160,15 @@ public class CustomerView {
 			gbc.gridy++;
 			gbc.gridx--;
 		}
+		bottomPanel = new JPanel();
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		JButton updateButton = new JButton("Update");
+		gbc.gridx++;
+		bottomPanel.add(updateButton, gbc);
+		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 		frame.getContentPane().add(profileScollPane, BorderLayout.CENTER);
 	}
 	
@@ -168,37 +178,6 @@ public class CustomerView {
 		frame.getContentPane().add(orderPanel, BorderLayout.CENTER);
 		JButton add = new JButton("Add");
 		JButton remove = new JButton("Remove");
-		
-//		panel_2.setLayout(new BorderLayout());
-//		JPanel leftPanel = new JPanel();
-//		leftPanel.setLayout(new BorderLayout());
-//		JPanel rightPanel = new JPanel();
-//		rightPanel.setLayout(new BorderLayout());
-//		GridBagConstraints gbc = new GridBagConstraints();
-//		JPanel AddRemovePanel = new JPanel(new GridBagLayout());
-//		gbc.gridx = 0;
-//		gbc.gridy = 0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		AddRemovePanel.add(add,gbc);
-//		gbc.gridy = 1;
-//		AddRemovePanel.add(remove, gbc);
-//		MyModel table = populateMenuTable();
-//		menuTable = new JTable();
-//		menuTable.setModel(table);
-//		JScrollPane sp = new JScrollPane(menuTable);
-//		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-//		leftPanel.add(sp, BorderLayout.CENTER);
-//		JLabel menuLabel = new JLabel("Menu");
-//		leftPanel.add(menuLabel, BorderLayout.NORTH);
-//		JLabel carLabel = new JLabel("Shopping car");
-//		rightPanel.add(carLabel, BorderLayout.NORTH);
-//		carTable = populateCarTable();
-//		sp = new JScrollPane(carTable);
-//		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-//		rightPanel.add(sp, BorderLayout.CENTER);
-//		panel_2.add(leftPanel,BorderLayout.WEST);
-//		panel_2.add(AddRemovePanel, BorderLayout.CENTER);
-//		panel_2.add(rightPanel, BorderLayout.EAST);
 
 		orderPanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -254,10 +233,10 @@ public class CustomerView {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		JButton ResetButton = new JButton("Reset");
+		gbc.fill = GridBagConstraints.VERTICAL;
+		JButton resetButton = new JButton("Reset");
 		gbc.gridx++;
-		bottomPanel.add(ResetButton, gbc);
+		bottomPanel.add(resetButton, gbc);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
