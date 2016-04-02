@@ -24,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
+import javax.swing.SpringLayout;
 import javax.swing.border.Border;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
@@ -37,8 +38,6 @@ public class CustomerView {
 		"MiddleName",
 		"LastName",
 		"DOB",
-		"Username",
-		"Password",
 		"Address",
 		"City",
 		"State",
@@ -55,7 +54,6 @@ public class CustomerView {
 	private JPanel orderButtonPanel;
 	private JPanel profilePanel;
 	private JSpinner DOBSpinner;
-	private JPasswordField pwField;
 	private JScrollPane profileScollPane;
 	
 	public void run(){
@@ -96,7 +94,7 @@ public class CustomerView {
 		JMenuBar menuBar = new JMenuBar();
 		orderButtonPanel.add(menuBar);
 		
-		JButton profileButton = new JButton("Profile");
+		JButton profileButton = new JButton("Edit Profile");
 		profileButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -106,7 +104,7 @@ public class CustomerView {
 		});
 		menuBar.add(profileButton);
 		
-		JButton orderButton = new JButton("Order");
+		JButton orderButton = new JButton("Place Order");
 		orderButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -120,13 +118,21 @@ public class CustomerView {
 		menuBar.add(historyButton);
 		
 		JButton logoutButton = new JButton("Logout");
+		logoutButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frame.dispose();
+				LoginView.main(null);
+			}
+		});
 		menuBar.add(logoutButton);
 	}
 	
 	public void initializeProfileView(){
 		profilePanel = new JPanel(new GridBagLayout());
 		profileScollPane = new JScrollPane(profilePanel);
-		JLabel[] arrayLabel = new JLabel[12];
+		JLabel[] arrayLabel = new JLabel[profileFields.length];
 		JTextField[] arrayTextField = new JTextField[10];
 		SpinnerDateModel model;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -149,9 +155,6 @@ public class CustomerView {
 				DOBSpinner = new JSpinner(model);
 				DOBSpinner.setEditor(new JSpinner.DateEditor(DOBSpinner, "MM/dd/yyyy"));
 				profilePanel.add(DOBSpinner,gbc);
-			}else if(i == 5){
-				pwField = new JPasswordField(); 
-				profilePanel.add(pwField, gbc);
 			}else{
 				arrayTextField[j] = new JTextField();
 				profilePanel.add(arrayTextField[j],gbc);
@@ -178,7 +181,7 @@ public class CustomerView {
 		frame.getContentPane().add(orderPanel, BorderLayout.CENTER);
 		JButton add = new JButton("Add");
 		JButton remove = new JButton("Remove");
-
+		
 		orderPanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		JPanel AddRemovePanel = new JPanel(new GridBagLayout());
@@ -229,14 +232,31 @@ public class CustomerView {
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		orderPanel.add(sp, gbc);
 		
-		bottomPanel = new JPanel();
+		bottomPanel = new JPanel(new BorderLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.VERTICAL;
 		JButton resetButton = new JButton("Reset");
 		gbc.gridx++;
-		bottomPanel.add(resetButton, gbc);
+		JPanel centerBottomPanel = new JPanel();
+		centerBottomPanel.add(resetButton);
+		bottomPanel.add(centerBottomPanel, BorderLayout.CENTER);
+		JButton pastButton = new JButton("Past Orders");
+		pastButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				PastOrderView pastWindow = new PastOrderView();
+				pastWindow.runGUI();
+			}
+			
+		});
+		gbc.gridx++;
+		bottomPanel.add(pastButton, BorderLayout.LINE_END);
+		JButton placeButton = new JButton("Place Order");
+		gbc.gridx++;
+		bottomPanel.add(placeButton, BorderLayout.LINE_START);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
@@ -249,6 +269,7 @@ public class CustomerView {
 	private void loadOrderView(){
 		frame.getContentPane().remove(profilePanel);
 		frame.getContentPane().remove(profileScollPane);
+		frame.getContentPane().remove(bottomPanel);
 		initializeOrderView();
 	}
 
