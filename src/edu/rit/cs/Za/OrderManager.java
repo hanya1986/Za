@@ -22,14 +22,14 @@ public class OrderManager
 {   
     public static BigDecimal TAX_RATE = new BigDecimal("0.08");
     
-    /* NOTE TO ALL: I (JORDAN) WILL FIX THIS TO TAKE PRICES FOR SMALL, MEDIUM, AND LARGE ITEMS INTO ACCOUNT */
     private static void updateTotal(long orderid)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
         BigDecimal subtotal = new BigDecimal("0.00");
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT price,quantity ");
+        
+        builder.append("SELECT small_price,medium_price,large_price,size,quantity ");
         builder.append("FROM Menu_Item INNER JOIN ZaOrderItem ON ZaOrderItem.itemid=Menu_Item.name ");
         builder.append("WHERE orderid=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -38,7 +38,15 @@ public class OrderManager
         
         while (rs.next())
         {
-            BigDecimal price = rs.getBigDecimal(1);
+            BigDecimal price = null;
+            String size = rs.getString(4).toUpperCase();
+            if (size.equals(ItemSize.SMALL.toString()))
+                price = rs.getBigDecimal(1);
+            else if (size.equals(ItemSize.MEDIUM.toString()))
+                price = rs.getBigDecimal(2);
+            else if (size.equals(ItemSize.LARGE.toString()))
+                price = rs.getBigDecimal(3);
+            
             BigDecimal quantity = new BigDecimal(rs.getInt(2));
             subtotal = subtotal.add(price.multiply(quantity));
         }
@@ -105,7 +113,7 @@ public class OrderManager
         Iterator<String> itemIt = items.keySet().iterator();
         while (itemIt.hasNext())
         {
-            builder.append("(?,?,?)");
+            builder.append("(?,?,?,?)");
             if (itemIt.hasNext()) builder.append(',');
         }
         builder.append(';');
@@ -114,15 +122,18 @@ public class OrderManager
         int paramIdx = 1;
         while (itemIt.hasNext())
         {
-            String[] item = itemIt.next().split(" ", 2);
-            String size = item[0].toUpperCase();
+            String item = itemIt.next();
+            String size = "";
+            for (ItemSize itemSize : ItemSize.values())
+            {
+                if (item.toUpperCase().startsWith(itemSize.toString()))
+                    size = itemSize.toString();
+            }
             
-            /* throws IllegalArgumentException if item size is invalid */
-            ItemSize itemSize = ItemSize.valueOf(size);
+            String name = item.substring(size.length() + 1);
             
-            String itemName = item[1];
             ps.setLong(paramIdx++, orderid);
-            ps.setString(paramIdx++, itemName);
+            ps.setString(paramIdx++, name);
             ps.setInt(paramIdx++, items.get(item));
             ps.setString(paramIdx++, size);
         }
@@ -142,17 +153,20 @@ public class OrderManager
         Iterator<String> itemIt = items.keySet().iterator();
         while (itemIt.hasNext())
         {
-            String[] item = itemIt.next().split(" ", 2);
-            String size = item[0].toUpperCase();
+            String item = itemIt.next();
+            String size = "";
+            for (ItemSize itemSize : ItemSize.values())
+            {
+                if (item.toUpperCase().startsWith(itemSize.toString()))
+                    size = itemSize.toString();
+            }
             
-            /* throws IllegalArgumentException if item size is invalid */
-            ItemSize itemSize = ItemSize.valueOf(size);
+            String name = item.substring(size.length() + 1);
+            int quantity = items.get(item);
             
-            String itemName = item[1];
-            int quantity = items.get(itemName);
             ps.setInt(1, quantity);
             ps.setLong(2, orderid);
-            ps.setString(3, itemName);
+            ps.setString(3, name);
             ps.setString(4, size);
             ps.executeUpdate();
         }
@@ -169,28 +183,33 @@ public class OrderManager
         builder.append("WHERE orderid=?");
         Iterator<String> itemIt = items.iterator();
         if (itemIt.hasNext())
-            builder.append(" AND (");
-        while (itemIt.hasNext())
         {
-            builder.append("itemid=? AND size=?)");
-            if (itemIt.hasNext()) builder.append(" OR ");
+            builder.append(" AND (");
+            while (itemIt.hasNext())
+            {
+                builder.append("(itemid=? AND size=?)");
+                if (itemIt.hasNext()) builder.append(" OR ");
+                else builder.append(')');
+            }
         }
-        builder.append(");");
+        builder.append(';');
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         int paramIdx = 1;
         ps.setLong(paramIdx++, orderid);
         itemIt = items.iterator();
         while (itemIt.hasNext())
         {
-            String[] item = itemIt.next().split(" ", 2);
-            String size = item[0].toUpperCase();
+            String item = itemIt.next();
+            String size = "";
+            for (ItemSize itemSize : ItemSize.values())
+            {
+                if (item.toUpperCase().startsWith(itemSize.toString()))
+                    size = itemSize.toString();
+            }
             
-            /* throws IllegalArgumentException if item size is invalid */
-            ItemSize itemSize = ItemSize.valueOf(size);
+            String name = item.substring(size.length() + 1);
             
-            String itemName = item[1];
-            
-            ps.setString(paramIdx++, itemName);
+            ps.setString(paramIdx++, name);
             ps.setString(paramIdx++, size);
         }
         ps.executeUpdate();
@@ -290,14 +309,7 @@ public class OrderManager
         ps.setLong(1, orderid);
         ResultSet rs = ps.executeQuery();
         while (rs.next())
-        {
-            builder.setLength(0);
-            builder.append(rs.getString(2));
-            builder.append(' ');
-            builder.append(rs.getString(1));
-            int quantity = rs.getInt(3);
-            items.put(builder.toString(), quantity);
-        }
+            items.put(String.format("%s %s", rs.getString(2), rs.getString(1)), rs.getInt(3));
         return items;
     }
     
@@ -399,5 +411,4 @@ public class OrderManager
         }
         return values;
     }
-
 }
