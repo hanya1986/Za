@@ -236,6 +236,7 @@ public class OrderManager
             case "time_order_out":
             case "time_order_delivered":
             case "tip":
+            case "pay_method":
                 columns.add(col);
                 break;
             }
@@ -288,6 +289,9 @@ public class OrderManager
             case "tip":
                 ps.setBigDecimal(paramIdx++, (BigDecimal)values.get(col));
                 break;
+            case "pay_method":
+                ps.setString(paramIdx++, ((PaymentMethod)values.get(col)).toString());
+                break;
             }
         }
         ps.executeUpdate();
@@ -338,6 +342,7 @@ public class OrderManager
             case "tax":
             case "total":
             case "tip":
+            case "pay_method":
                 columns.add(col);
                 break;
             }
@@ -406,6 +411,9 @@ public class OrderManager
                 break;
             case "tip":
                 values.put(col, rs.getBigDecimal(col));
+                break;
+            case "pay_method":
+                values.put(col, PaymentMethod.parsePaymentMethod(rs.getString(col)));
                 break;
             }
         }
