@@ -102,18 +102,25 @@ public class SignupView {
                 }
                 
                 phoneNumberComboBox.addItem(phoneNumber);
-                phoneNumberComboBox.setEnabled(true);
+                if (!phoneNumberComboBox.isEnabled())
+                    phoneNumberComboBox.setEnabled(true);
+                if (!removePhoneNumberButton.isEnabled())
+                    removePhoneNumberButton.setEnabled(true);
             }
         });
         
         removePhoneNumberButton = new JButton("Remove");
+        removePhoneNumberButton.setEnabled(false);
         removePhoneNumberButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent evt)
             {
                 if (phoneNumberComboBox.getItemCount() < 1) return;
                 phoneNumberComboBox.removeItemAt(phoneNumberComboBox.getSelectedIndex());
                 if (phoneNumberComboBox.getItemCount() < 1)
+                {
                     phoneNumberComboBox.setEnabled(false);
+                    removePhoneNumberButton.setEnabled(false);
+                }
             }
         });
         
