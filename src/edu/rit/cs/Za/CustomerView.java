@@ -255,6 +255,15 @@ public class CustomerView {
 		gbc.gridx++;
 		bottomPanel.add(pastButton, BorderLayout.LINE_END);
 		JButton placeButton = new JButton("Place Order");
+		placeButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				PaymentView pv = new PaymentView();
+				pv.runGUI();
+			}
+			
+		});
 		gbc.gridx++;
 		bottomPanel.add(placeButton, BorderLayout.LINE_START);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);

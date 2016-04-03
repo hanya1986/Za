@@ -42,7 +42,17 @@ public class PastOrderView {
 		frame.getContentPane().add(sp, BorderLayout.CENTER);
 		JPanel bottomPanel = new JPanel();
 		JButton selectButton = new JButton("Select");
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frame.dispose();
+			}
+			
+		});
 		bottomPanel.add(selectButton);
+		bottomPanel.add(cancelButton);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
