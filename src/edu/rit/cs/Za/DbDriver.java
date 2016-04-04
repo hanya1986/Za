@@ -86,13 +86,82 @@ public class DbDriver
 				case "person_data.txt": //common employee, customer data
 					populatePersons(dataFile);
 					break;
-				case "item_data.txt":
-					System.out.println("TEST");
+				//case "item_data.txt":
+				//	populateItems(dataFile);
+				//	break;
 			}
 		}
     }
     
-    private static void populatePersons(File personsFile) {
+    private static void populateItems(File itemsFile) {
+    	Map<String, ArrayList<Object>> itemData = new HashMap<String, ArrayList<Object>>();
+    	itemData.put("name", new ArrayList<Object>()); 
+    	itemData.put("type", new ArrayList<Object>());
+    	itemData.put("price", new ArrayList<Object>());
+    	itemData.put("small_price", new ArrayList<Object>());
+    	itemData.put("medium_price", new ArrayList<Object>());
+    	itemData.put("large_price", new ArrayList<Object>());
+    	itemData.put("est_prep_time", new ArrayList<Object>());
+		itemData.put("available", new ArrayList<Object>());
+	
+		String currLine;
+		try
+		{
+			String currKey = "";
+			while ((currLine = dataBufferedReader.readLine()) != null)
+			{
+				if (currLine.startsWith("---"))
+				{   //reading in new type of data
+					currKey = currLine.substring(3);	//...so update the key we're pairing vals to
+					continue;
+				}
+				else if (currKey.equals("price") || currKey.equals("small_price") || currKey.equals("medium_price") || 
+						currKey.equals("large_price"))
+				{
+					itemData.get(currKey).add(new BigDecimal(currLine));
+				}
+				else if (currKey.equals("type"))
+				{
+					itemData.get(currKey).add(ItemType.parseItemType(currLine));
+				}
+				else if (currKey.equals("est_prep_time"))
+				{
+					itemData.get(currKey).add(Integer.parseInt(currLine));
+				}
+				else if (currKey.equals("available"))
+				{
+					itemData.get(currKey).add(Boolean.parseBoolean(currLine));
+				}
+				else
+				    itemData.get(currKey).add(currLine);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		HashMap<String, Object> singleItemData = new HashMap<String, Object>();
+		for (int itemsCreated = 0; itemsCreated < 40; itemsCreated++) {
+			singleItemData = new HashMap<String, Object>();
+			for (String itemKey : itemData.keySet())
+			{
+				try { singleItemData.put(itemKey, itemData.get(itemKey).get(itemsCreated));	}
+				catch(Exception e) { }
+			}
+			System.out.println("Item Data: " + singleItemData);
+			try
+			{
+				MenuManager.addItem(singleItemData);
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+			}
+		}
+    }
+
+	private static void populatePersons(File personsFile) {
     	//Initialize personData.
 		Map<String, ArrayList<Object>> personData = new HashMap<String, ArrayList<Object>>();
 		personData.put("street", new ArrayList<Object>()); 

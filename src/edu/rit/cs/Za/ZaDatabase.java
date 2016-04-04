@@ -193,7 +193,7 @@ public class ZaDatabase
         builder.append("  tax DECIMAL(9,2),");
         builder.append("  total DECIMAL(10,2),");
         builder.append("  tip DECIMAL(6,2),");
-        builder.append("  pay_method VARCHAR(8),");
+        builder.append("  pay_method VARCHAR(8) NOT NULL,");
         builder.append("  PRIMARY KEY (orderid),");
         builder.append("  FOREIGN KEY (custid) REFERENCES Customer (cust_id),");
         builder.append("  FOREIGN KEY (empid_took_order) REFERENCES Employee (empid),");

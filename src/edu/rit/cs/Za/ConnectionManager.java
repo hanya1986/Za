@@ -13,7 +13,8 @@ public class ConnectionManager
 {
     private static Connection connection = null;
     
-    public static void initConnection(String location, String username, String password) throws SQLException
+    public static void initConnection(String location, String username, String password)
+        throws SQLException
     {
         if (connection != null) connection.close();
         String url = "jdbc:h2:" + location;
@@ -23,5 +24,11 @@ public class ConnectionManager
     public static Connection getConnection()
     {
         return connection;
+    }
+    
+    public static void closeConnection()
+        throws SQLException
+    {
+        connection.close();
     }
 }
