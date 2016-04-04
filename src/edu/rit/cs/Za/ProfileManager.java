@@ -282,6 +282,10 @@ public class ProfileManager
                 break;
             case "date_hired":
                 ps.setDate(paramIdx++, (Date)values.get("date_hired"));
+                break;
+            case "date_terminated":
+                ps.setDate(paramIdx++, (Date)values.get("date_terminated"));
+                break;
             case "job_title":
                 ps.setString(paramIdx++, (String)values.get("job_title"));
                 break;

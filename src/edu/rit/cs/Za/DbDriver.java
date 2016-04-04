@@ -180,6 +180,7 @@ public class DbDriver
 		personData.put("ssn", new ArrayList<Object>());
 		personData.put("hours_per_week", new ArrayList<Object>());
 		personData.put("date_hired", new ArrayList<Object>());
+		personData.put("date_terminated", new ArrayList<Object>());
 		personData.put("job_title", new ArrayList<Object>());
 		String currLine;
 		try
@@ -199,7 +200,7 @@ public class DbDriver
 					personData.get("state").add(State.parseState(currLine.split(",")[2].trim()));
 					personData.get("zip").add(currLine.split(",")[3].trim());
 				}
-				else if (currKey.equals("date_of_birth") || currKey.equals("date_hired"))
+				else if (currKey.equals("date_of_birth") || currKey.equals("date_hired") || currKey.equals("date_terminated"))
 					personData.get(currKey).add(new Date(Long.parseLong(currLine)));
 				else if (currKey.equals("reward_pts") || currKey.equals("hours_per_week") || currKey.equals("ssn"))
 				{
@@ -230,7 +231,8 @@ public class DbDriver
 			for (String personKey : personData.keySet())
 			{
 				if (!((personKey.equals("hourly_rate")) || (personKey.equals("ssn") || personKey.equals("hours_per_week")
-				|| personKey.equals("date_hired") || personKey.equals("job_title"))))
+				|| personKey.equals("date_hired") || personKey.equals("job_title") || personKey.equals("empid"))
+				|| personKey.equals("date_terminated")))
 				{
 					try { customerData.put(personKey, personData.get(personKey).get(customersCreated));	}
 					catch(Exception e) { }
@@ -252,13 +254,22 @@ public class DbDriver
 		}
 		
 		Map<String, Object> employeeData = new HashMap<String, Object>();;
-		for (int employeesCreated = 0; employeesCreated < 10; employeesCreated++)
+		String[] employeeUniqueFields = {"empid", "hourly_rate", "ssn", "hours_per_week", "date_hired", "date_terminated", "job_title"};
+		for (int employeesCreated = 90; employeesCreated < 100; employeesCreated++)
 		{
 			employeeData = new HashMap<String, Object>();
 			for (String personKey : personData.keySet())
 			{
 				if (!(personKey.equals("reward_pts")))
 				{
+					for (String s: employeeUniqueFields) 
+					{
+						if (personKey.equals(s))
+						{
+							try { employeeData.put(personKey, personData.get(personKey).get(employeesCreated - 90));	}
+							catch(Exception e) { }
+						}
+					}
 					try { employeeData.put(personKey, personData.get(personKey).get(employeesCreated));	}
 					catch(Exception e) { }
 				}
