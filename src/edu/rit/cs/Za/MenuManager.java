@@ -34,6 +34,9 @@ public class MenuManager
             case "name":
             case "type":
             case "price":
+            case "small_price":
+            case "medium_price":
+            case "large_price":
             case "est_prep_time":
             case "available":
                 columns.add(col);
@@ -74,6 +77,15 @@ public class MenuManager
                 ps.setString(paramIdx++, ((ItemType)menuItem.get(col)).toString());
                 break;
             case "price":
+                ps.setBigDecimal(paramIdx++, (BigDecimal)menuItem.get(col));
+                break;
+            case "small_price":
+                ps.setBigDecimal(paramIdx++, (BigDecimal)menuItem.get(col));
+                break;
+            case "medium_price":
+                ps.setBigDecimal(paramIdx++, (BigDecimal)menuItem.get(col));
+                break;
+            case "large_price":
                 ps.setBigDecimal(paramIdx++, (BigDecimal)menuItem.get(col));
                 break;
             case "est_prep_time":

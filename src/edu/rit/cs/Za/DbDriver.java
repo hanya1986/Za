@@ -86,9 +86,9 @@ public class DbDriver
 				case "person_data.txt": //common employee, customer data
 					populatePersons(dataFile);
 					break;
-				//case "item_data.txt":
-				//	populateItems(dataFile);
-				//	break;
+				case "item_data.txt":
+					populateItems(dataFile);
+					break;
 			}
 		}
     }
@@ -238,7 +238,7 @@ public class DbDriver
 					catch(Exception e) { }
 				}
 			}
-			System.out.println("Customer Data: " + customerData);
+			//System.out.println("Customer Data: " + customerData);
 			try
 			{
 				ProfileManager.createCustomer(customerData, (String) customerData.get("password")); //redundant, but I'm lazy
@@ -274,7 +274,7 @@ public class DbDriver
 					catch(Exception e) { }
 				}
 			}
-			System.out.println("Employee Data: " + employeeData);
+			//System.out.println("Employee Data: " + employeeData);
 			try
 			{
 				ProfileManager.createEmployee(employeeData, (String) employeeData.get("password")); 

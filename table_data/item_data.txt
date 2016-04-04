@@ -38,6 +38,7 @@ Ginger Ale
 Diet Coke
 Water
 Orange Juice
+Lemonade
 ---type
 PIZZA
 PIZZA
@@ -201,6 +202,7 @@ true
 true
 true
 true
+false
 ---small_price
 2.24
 5.19
