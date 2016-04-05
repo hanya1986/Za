@@ -221,4 +221,20 @@ public class Queries
         }
         return customers;
     }
+
+    public static Map<Integer, Timestamp> getLastNCust(int N) throws SQLException{
+        Connection conn = ConnectionManager.getConnection();
+        Map<Integer, Timestamp> customers = new HashMap<Integer, Timestamp>();
+        String build = "";
+        build += "SELECT DISTINCT custid, time_order_placed LIMIT ?";
+        build += "FROM ZaOrder";
+        build += "ORDER BY time_order_placed";
+        PreparedStatement ps = conn.prepareStatement(build);
+        ps.setInt(1, N);
+        ResultSet results = ps.executeQuery();
+        while (results.next()){
+            customers.put(results.getInt(1), results.getTimestamp(2));
+        }
+        return customers;
+    }
 }
