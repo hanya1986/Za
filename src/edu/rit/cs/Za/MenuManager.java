@@ -3,6 +3,7 @@ package edu.rit.cs.Za;
 /**
  * MenuMananger.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ * 					Jeremy Friedman (jsf6410@g.rit.edu)
  */
 
 import java.util.Map;

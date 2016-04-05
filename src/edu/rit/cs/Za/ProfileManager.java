@@ -3,6 +3,7 @@ package edu.rit.cs.Za;
 /**
  * ProfileManager.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ * 					Jeremy Friedman (jsf6410@g.rit.edu)
  */
 
 import java.sql.Connection;
@@ -560,7 +561,7 @@ public class ProfileManager
         
         builder.setLength(0);
         builder.append("INSERT INTO CustomerCard (personid,card_number) ");
-        builder.append("VALUES (?,?):");
+        builder.append("VALUES (?,?);");
         ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, cust_id);
         ps.setString(2, cardNumber);

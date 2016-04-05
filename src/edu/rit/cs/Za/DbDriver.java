@@ -1,6 +1,7 @@
 /**
  * DbDriver.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ * 					Jeremy Friedman (jsf6410@g.rit.edu)
  */
 
 package edu.rit.cs.Za;
@@ -103,15 +104,77 @@ public class DbDriver
 				case "email_address_data.txt":
 					populateEmails(dataFile);
 					break;
+				case "credit_card_data.txt":
+					populateCreditCards(dataFile);
+					break;
 			}
 		}
     }
     
-    private static void populateEmails(File emailsFile) throws SQLException, IOException {
+    private static void populateCreditCards(File dataFile) throws SQLException, NumberFormatException, IOException {
+    	Map<String, ArrayList<Object>> ccData = new HashMap<String, ArrayList<Object>>();
+    	ccData.put("number", new ArrayList<Object>()); 
+    	ccData.put("sec_code", new ArrayList<Object>());
+    	ccData.put("exp_month", new ArrayList<Object>());
+    	ccData.put("exp_year", new ArrayList<Object>());
+	
+    	conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Person; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+    	
+		String currLine;
+		ArrayList<Long> IDs = new ArrayList<Long>();;
+		try
+		{
+			String currKey = "";
+			while ((currLine = dataBufferedReader.readLine()) != null)
+			{
+				if (currLine.startsWith("---"))
+				{   //reading in new type of data
+					currKey = currLine.substring(3);	//...so update the key we're pairing vals to
+					continue;
+				}
+				else
+				    ccData.get(currKey).add(currLine);
+				if (rs.next()) 
+	        	{
+	        		IDs.add(Long.parseLong(rs.getString("personid")));
+	        	}
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		HashMap<String, Object> singleCCData = new HashMap<String, Object>();
+		for (int ccsCreated = 0; ccsCreated < 90; ccsCreated++) {
+			singleCCData = new HashMap<String, Object>();
+			for (String ccKey : ccData.keySet())
+			{
+				try { singleCCData.put(ccKey, ccData.get(ccKey).get(ccsCreated));	}
+				catch(Exception e) { }
+			}
+			try
+			{
+				ProfileManager.addCreditCard(IDs.get(ccsCreated), (String)singleCCData.get("number"),  (String)singleCCData.get("sec_code"), 
+						Month.parseMonth(Integer.valueOf((String)singleCCData.get("exp_month"))), Integer.valueOf((String)singleCCData.get("exp_year")));
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static void populateEmails(File emailsFile) throws SQLException, IOException {
     	//Find a personID to attach the email to
         conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT * ");
+        builder.append("SELECT personid ");
         builder.append("FROM Person; ");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
@@ -331,9 +394,26 @@ public class DbDriver
 		testEmployeePopulated();
 		testMenu_ItemPopulated();
 		testPersonEmailAddressPopulated();
+		testCredit_CardPopulated();
 	}
 	
-    private static void testEmployeePopulated() throws SQLException {
+    private static void testCredit_CardPopulated() throws SQLException {
+    	StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Credit_Card; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+	 		System.out.println("Customer's Credit Card #: " + rs.getString("number"));
+	 		System.out.println("\tSecurity Code: " + rs.getString("sec_code")); 
+	 		System.out.println("\tExpiration Month: " + rs.getString("exp_month")); 
+	 		System.out.println("\tExpiration Year: " + rs.getString("exp_year")); 
+        }
+	}
+
+	private static void testEmployeePopulated() throws SQLException {
 		StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
         builder.append("SELECT * ");
@@ -462,7 +542,6 @@ public class DbDriver
         
         //BEGIN JEREMY'S DATA GENERATION
         populateTables();
-        
         testTablesPopulated();
     }
 }

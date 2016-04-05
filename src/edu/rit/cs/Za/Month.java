@@ -1,6 +1,7 @@
 /**
  * Month.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ * 					Jeremy Friedman (jsf6410@g.rit.edu)
  */
 
 package edu.rit.cs.Za;
@@ -13,4 +14,15 @@ public enum Month
     private int month;
     private Month(int month) { this.month = month; }
     public int value() { return month; }
+    public static Month parseMonth(int inputMonth)
+    {
+        for (Month month : Month.values())
+        {
+            if (inputMonth == month.month)
+            {
+            	return month;
+            }
+    	}	
+		return Month.JANAURY;
+	}
 }
