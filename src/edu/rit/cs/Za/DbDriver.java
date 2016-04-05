@@ -9,11 +9,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.security.NoSuchAlgorithmException;
 
@@ -22,6 +28,7 @@ public class DbDriver
 	
 	private static FileReader dataFileReader;
 	private static BufferedReader dataBufferedReader;
+	private static Connection conn;
 
     private static long testCustomerProfileCreation(Map<String,Object> customer, String pw)
         throws SQLException, NoSuchAlgorithmException
@@ -76,24 +83,51 @@ public class DbDriver
     }
     
     
-    private static void populateTables() {
+    private static void populateTables() throws SQLException, IOException {
+    	//Other tables rely on personid, so populate persons first
+    	dataFileReader = new FileReader(new File("table_data/person_data.txt"));
+    	dataBufferedReader = new BufferedReader(dataFileReader);
+		populatePersons(new File("table_data/person_data.txt")); 
+		
 		File[] dataFiles = new File("table_data/").listFiles();
 		for (File dataFile : dataFiles) {
 			try { dataFileReader = new FileReader(dataFile);}
 			catch (FileNotFoundException e) {e.printStackTrace();}
 			dataBufferedReader = new BufferedReader(dataFileReader);
 			switch(dataFile.getName()) {
-				case "person_data.txt": //common employee, customer data
-					populatePersons(dataFile);
+				case "person_data.txt":
 					break;
 				case "item_data.txt":
 					populateItems(dataFile);
+					break;
+				case "email_address_data.txt":
+					populateEmails(dataFile);
 					break;
 			}
 		}
     }
     
-    private static void populateItems(File itemsFile) {
+    private static void populateEmails(File emailsFile) throws SQLException, IOException {
+    	//Find a personID to attach the email to
+        conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Person; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        
+        String currLine = "";
+        while ((currLine = dataBufferedReader.readLine()) != null)
+        {
+        	if (rs.next()) 
+        	{
+            	Long id = Long.parseLong(rs.getString("personid"));
+            	ProfileManager.addEmailAddress(id, currLine);	
+        	}
+        } 
+    }
+    
+    private static void populateItems(File itemsFile) throws SQLException {
     	Map<String, ArrayList<Object>> itemData = new HashMap<String, ArrayList<Object>>();
     	itemData.put("name", new ArrayList<Object>()); 
     	itemData.put("type", new ArrayList<Object>());
@@ -149,7 +183,7 @@ public class DbDriver
 				try { singleItemData.put(itemKey, itemData.get(itemKey).get(itemsCreated));	}
 				catch(Exception e) { }
 			}
-			System.out.println("Item Data: " + singleItemData);
+			//System.out.println("Item Data: " + singleItemData);
 			try
 			{
 				MenuManager.addItem(singleItemData);
@@ -161,7 +195,7 @@ public class DbDriver
 		}
     }
 
-	private static void populatePersons(File personsFile) {
+	private static void populatePersons(File personsFile) throws SQLException {
     	//Initialize personData.
 		Map<String, ArrayList<Object>> personData = new HashMap<String, ArrayList<Object>>();
 		personData.put("street", new ArrayList<Object>()); 
@@ -290,7 +324,62 @@ public class DbDriver
 		}
 	}
     
-    public static void main(String[] args)
+	private static void testTablesPopulated() throws SQLException
+	{
+		testCustomerEmployeePopulated();
+		testMenu_ItemPopulated();
+		testPersonEmailAddressPopulated();
+	}
+	
+    private static void testCustomerEmployeePopulated() throws SQLException {
+		StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Person; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+        	System.out.println("Person ID: " + rs.getString("personid")); 
+         	System.out.println("\tPerson First Name: " + rs.getString("first_name")); 
+         	System.out.println("\tPerson Middle Name: " + rs.getString("middle_name")); 
+         	System.out.println("\tPerson Last Name: " + rs.getString("last_name")); 
+         	System.out.println("\tPerson DoB: " + rs.getString("date_of_birth")); 
+         	System.out.println("\tPerson Username: " + rs.getString("username")); 
+         	System.out.println("\tPerson Password Hash: " + rs.getString("password_hash")); 
+         	System.out.println("\tPerson Password Salt: " + rs.getString("password_salt")); 
+         	System.out.println("\tPerson Street: " + rs.getString("street")); 
+         	System.out.println("\tPerson City: " + rs.getString("city")); 
+         	System.out.println("\tPerson State: " + rs.getString("state")); 
+         	System.out.println("\tPerson ZIP: " + rs.getString("zip")); 
+        }
+	}
+
+	private static void testPersonEmailAddressPopulated() throws SQLException {
+
+	}
+
+	private static void testMenu_ItemPopulated() throws SQLException {
+		StringBuilder builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Menu_Item; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        StringBuilder testBuilder = new StringBuilder();
+        while(rs.next()) 
+        {
+        	System.out.println("Item Name: " + rs.getString("name")); 
+        	System.out.println("\tItem Type: " + rs.getString("type")); 
+        	System.out.println("\tItem Price: " + rs.getString("price")); 
+        	System.out.println("\tItem Small Price: " + rs.getString("small_price")); 
+        	System.out.println("\tItem Medium Price: " + rs.getString("medium_price")); 
+        	System.out.println("\tItem Large Price: " + rs.getString("large_price")); 
+        	System.out.println("\tItem Est. Prep. Time: " + rs.getString("est_prep_time")); 
+        	System.out.println("\tItem Availability: " + rs.getString("available")); 
+        }
+	}
+
+	public static void main(String[] args)
         throws Exception // test-driver program; swallow exceptions
     {
 
@@ -337,5 +426,7 @@ public class DbDriver
         
         //BEGIN JEREMY'S DATA GENERATION
         populateTables();
+        
+        testTablesPopulated();
     }
 }

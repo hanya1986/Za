@@ -711,7 +711,7 @@ public class ProfileManager
         List<String> numbers = new LinkedList<String>();
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT email_address ");
+        builder.append("SELECT email_addr ");
         builder.append("FROM PersonEmailAddress ");
         builder.append("WHERE personid=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
