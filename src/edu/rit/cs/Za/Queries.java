@@ -2,7 +2,7 @@ package edu.rit.cs.Za;
 
 /**
  * Queries.java
- * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ * Contributor(s):  Jordan Rosario (jar2119@rit.edu), Nicholas Marchionda (njm3348@rit.edu)
  */
 
 import java.sql.Date;
@@ -185,5 +185,23 @@ public class Queries
         stats.put("MAX_DAILY_REV", maxDailyRev);
         
         return stats;
+    }
+
+    //// TODO: 4/4/2016 Test this query, not sure if correct yet --Nick 
+    public static Map<String, Integer> getTopNItems(int N) throws SQLException {
+        Connection conn = ConnectionManager.getConnection();
+        Map<String, Integer> topNItems = new HashMap<String, Integer>();
+        String build = "";
+        build += "SELECT name, count(name) LIMIT ?";
+        build += "FROM Menu_Item INNER JOIN ZaOrderItem ON Menu_Item.name = ZaOrderItem.name ";
+        build += "ORDER BY count(name)";
+        PreparedStatement ps = conn.prepareStatement(build);
+        ps.setInt(1, N);
+        ResultSet results = ps.executeQuery();
+        while(results.next()){
+            topNItems.put(results.getString(1),results.getInt(2));
+        }
+        return topNItems;
+
     }
 }
