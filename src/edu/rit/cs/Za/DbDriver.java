@@ -326,12 +326,48 @@ public class DbDriver
     
 	private static void testTablesPopulated() throws SQLException
 	{
-		testCustomerEmployeePopulated();
+		testPersonPopulated();
+		testCustomerPopulated();
+		testEmployeePopulated();
 		testMenu_ItemPopulated();
 		testPersonEmailAddressPopulated();
 	}
 	
-    private static void testCustomerEmployeePopulated() throws SQLException {
+    private static void testEmployeePopulated() throws SQLException {
+		StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Employee; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+	 		System.out.println("Person's Employee ID: " + rs.getString("empid"));
+	 		System.out.println("\tPerson's Employee Hourly Rate: " + rs.getString("hourly_rate")); 
+	 		System.out.println("\tPerson's Employee SSN: " + rs.getString("ssn")); 
+	 		System.out.println("\tPerson's Employee Hours Per Week: " + rs.getString("hours_per_week")); 
+	 		System.out.println("\tPerson's Employee Date Hired: " + rs.getString("date_hired")); 
+	 		System.out.println("\tPerson's Employee Date Terminated: " + rs.getString("date_terminated")); 
+	 		System.out.println("\tPerson's Employee Job Title: " + rs.getString("job_title")); 
+        }
+	}
+
+	private static void testCustomerPopulated() throws SQLException {
+		StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Customer; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+	 		System.out.println("Person's Customer ID: " + rs.getString("cust_id"));
+	 		System.out.println("\tPerson's Customer Reward Pts: " + rs.getString("reward_pts")); 
+	 		System.out.println("\tPerson's Active Status: " + rs.getString("active")); 
+        }
+	}
+
+	private static void testPersonPopulated() throws SQLException {
 		StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
         builder.append("SELECT * ");
