@@ -107,11 +107,71 @@ public class DbDriver
 				case "credit_card_data.txt":
 					populateCreditCards(dataFile);
 					break;
+				case "phone_number_data.txt":
+					populatePhoneNumbers(dataFile);
+					break;
 			}
 		}
     }
     
-    private static void populateCreditCards(File dataFile) throws SQLException, NumberFormatException, IOException {
+    private static void populatePhoneNumbers(File dataFile) throws SQLException {
+    	Map<String, ArrayList<Object>> phoneData = new HashMap<String, ArrayList<Object>>();
+    	phoneData.put("personid", new ArrayList<Object>()); 
+    	phoneData.put("phone_number", new ArrayList<Object>());
+
+    	conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Person; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+    	
+        //RESULTSET HAS DATA HERE, BUT NOT IN LINE 139, NEVER ENTERS IF STATEMENT
+        /*for (int i = 0; i < 90; i++) {
+            if (rs.next()) 
+        	{
+    			System.out.println(rs.getRow());
+        	}	
+        }*/
+		String currLine;
+		ArrayList<Long> IDs = new ArrayList<Long>();;
+		try
+		{
+			while ((currLine = dataBufferedReader.readLine()) != null)
+			{
+				if (rs.next()) 
+		    	{
+	        		IDs.add(Long.parseLong(rs.getString("personid")));
+		    	}
+				phoneData.get("phone_number").add(currLine);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		System.out.println(phoneData);
+		System.out.println(IDs);
+		HashMap<String, Object> singlePhoneData = new HashMap<String, Object>();
+		for (int numbersCreated = 0; numbersCreated < 100; numbersCreated++) {
+			singlePhoneData = new HashMap<String, Object>();
+			for (String phoneKey : phoneData.keySet())
+			{
+				try { singlePhoneData.put(phoneKey, phoneData.get(phoneKey).get(numbersCreated));	}
+				catch(Exception e) { }
+			}
+			try
+			{
+				ProfileManager.addPhoneNumber(IDs.get(numbersCreated), (String)singlePhoneData.get("phone_number"));
+			}
+			catch (SQLException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static void populateCreditCards(File dataFile) throws SQLException, NumberFormatException, IOException {
     	Map<String, ArrayList<Object>> ccData = new HashMap<String, ArrayList<Object>>();
     	ccData.put("number", new ArrayList<Object>()); 
     	ccData.put("sec_code", new ArrayList<Object>());
@@ -389,15 +449,45 @@ public class DbDriver
     
 	private static void testTablesPopulated() throws SQLException
 	{
-		testPersonPopulated();
+		/*testPersonPopulated();
 		testCustomerPopulated();
 		testEmployeePopulated();
 		testMenu_ItemPopulated();
 		testPersonEmailAddressPopulated();
 		testCredit_CardPopulated();
+		testCustomerCardPopulated();
+		testPersonPhoneNumberPopulated();*/
 	}
 	
-    private static void testCredit_CardPopulated() throws SQLException {
+    private static void testPersonPhoneNumberPopulated() throws SQLException {
+    	StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM PersonPhoneNumber; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+	 		System.out.println("Person's ID: " + rs.getString("personid"));
+	 		System.out.println("\tPerson's Phone #: " + rs.getString("phone_number")); 
+        }
+	}
+
+	private static void testCustomerCardPopulated() throws SQLException {
+    	StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM CustomerCard; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+	 		System.out.println("Customer's ID: " + rs.getString("personid"));
+	 		System.out.println("\tCustomer's Credit Card #: " + rs.getString("card_number")); 
+        }
+	}
+
+	private static void testCredit_CardPopulated() throws SQLException {
     	StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
         builder.append("SELECT * ");
