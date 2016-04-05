@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Calendar;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -44,7 +45,7 @@ public class Queries
         rs.next();
         
         /*
-         * accordnig to H2 doumentation, SUM aggregate returns sum of INTs (int)
+         * accordnig to H2 documentation, SUM aggregate returns sum of INTs (int)
          * as BIGINT (long)
          */
         return rs.getLong(1);
@@ -236,5 +237,45 @@ public class Queries
             customers.put(results.getInt(1), results.getTimestamp(2));
         }
         return customers;
+    }
+
+    public static Map<String,BigDecimal> getMonthlyRevenueStats(Month startMonth, int startYear, Month endMonth, int endYear)
+        throws SQLException
+    {
+        if (endYear < startYear)
+        {
+            int tmpYear = startYear;
+            startYear = endYear;
+            endYear = tmpYear;
+        }
+        else if (startYear == endYear)
+        {
+            if (endMonth.value() < startMonth.value())
+            {
+                Month tmpMonth = startMonth;
+                startMonth = endMonth;
+                endMonth = tmpMonth;
+            }
+        }
+        
+        Date start = new Date(startYear - 1900, startMonth.value(), 1);
+        
+        Calendar cal = Calendar.getInstance();
+        cal.set(endYear, endMonth.value(), 1);
+        int endDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        
+        Date end = new Date(endYear - 1900, endMonth.value(), endDay);
+        
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT subtotal,YEAR(time_order_placed) AS order_year,MONTH(time_order_placed) AS order_month ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("ORDER BY order_year,order_month;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        
+        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
+        
+        return stats;
     }
 }
