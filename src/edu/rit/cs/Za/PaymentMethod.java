@@ -11,6 +11,7 @@ public enum PaymentMethod
     
     private String method;
     private PaymentMethod(String method) { this.method = method; }
+    public String toString() { return method; }
     public static PaymentMethod parsePaymentMethod(String s)
     {
         for (PaymentMethod payMeth : PaymentMethod.values())

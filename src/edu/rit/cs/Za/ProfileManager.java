@@ -3,6 +3,7 @@ package edu.rit.cs.Za;
 /**
  * ProfileManager.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ * 					Jeremy Friedman (jsf6410@g.rit.edu)
  */
 
 import java.sql.Connection;
@@ -282,6 +283,10 @@ public class ProfileManager
                 break;
             case "date_hired":
                 ps.setDate(paramIdx++, (Date)values.get("date_hired"));
+                break;
+            case "date_terminated":
+                ps.setDate(paramIdx++, (Date)values.get("date_terminated"));
+                break;
             case "job_title":
                 ps.setString(paramIdx++, (String)values.get("job_title"));
                 break;
@@ -556,7 +561,7 @@ public class ProfileManager
         
         builder.setLength(0);
         builder.append("INSERT INTO CustomerCard (personid,card_number) ");
-        builder.append("VALUES (?,?):");
+        builder.append("VALUES (?,?);");
         ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, cust_id);
         ps.setString(2, cardNumber);
@@ -656,7 +661,7 @@ public class ProfileManager
         return;
     }
     
-    public List<String> getPhoneNumbers(long personid)
+    public static List<String> getPhoneNumbers(long personid)
         throws SQLException
     {
         List<String> numbers = new LinkedList<String>();
@@ -701,13 +706,13 @@ public class ProfileManager
         return;
     }
     
-    public List<String> getEmailAddresses(long personid)
+    public static List<String> getEmailAddresses(long personid)
         throws SQLException
     {
         List<String> numbers = new LinkedList<String>();
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT email_address ");
+        builder.append("SELECT email_addr ");
         builder.append("FROM PersonEmailAddress ");
         builder.append("WHERE personid=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -718,7 +723,7 @@ public class ProfileManager
         return numbers;
     }
     
-    private Map<String,Object> getPersonInfo(long personid, List<String> attributes)
+    private static Map<String,Object> getPersonInfo(long personid, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> values = new HashMap<String,Object>();
@@ -780,7 +785,7 @@ public class ProfileManager
         return values;
     }
     
-    public Map<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
+    public static Map<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> values = getPersonInfo(cust_id, attributes);
@@ -839,7 +844,7 @@ public class ProfileManager
         return values;
     }
     
-    public Map<String,Object> getEmployeeInfo(long empid, List<String> attributes)
+    public static Map<String,Object> getEmployeeInfo(long empid, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> values = getPersonInfo(empid, attributes);
