@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Calendar;
 import java.util.Collections;
 import java.math.BigDecimal;
@@ -177,11 +176,13 @@ public class Queries
         minDailyRev.setScale(2, RoundingMode.HALF_UP);
         maxDailyRev.setScale(2, RoundingMode.HALF_UP);
         avgDailyRev.setScale(2, RoundingMode.HALF_UP);
+        sumDailyRev.setScale(2, RoundingMode.HALF_UP);
         
         stats.put("AVG_DAILY_REV", avgDailyRev);
         stats.put("MIN_DAILY_REV", minDailyRev);
         stats.put("MED_DAILY_REV", medDailyRev);
         stats.put("MAX_DAILY_REV", maxDailyRev);
+        stats.put("TOTAL_REV", sumDailyRev);
         
         return stats;
     }
@@ -322,11 +323,88 @@ public class Queries
         minMonthlyRev.setScale(2, RoundingMode.HALF_UP);
         maxMonthlyRev.setScale(2, RoundingMode.HALF_UP);
         avgMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        sumMonthlyRevs.setScale(2, RoundingMode.HALF_UP);
         
         stats.put("AVG_MONTHLY_REV", avgMonthlyRev);
         stats.put("MIN_MONTHLY_REV", minMonthlyRev);
         stats.put("MED_MONTHLY_REV", medMonthlyRev);
         stats.put("MAX_MONTHLY_REV", maxMonthlyRev);
+        stats.put("TOTAL_REV", sumMonthlyRevs);
+        
+        return stats;
+    }
+
+    public static Map<String,Float> getDailyOrderStats(Date start, Date end)
+        throws SQLException
+    {
+        if (end.compareTo(start) < 0)
+        {
+            Date tmpDate = start;
+            start = end;
+            end = tmpDate;
+        }
+        
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT orderid,YEAR(time_order_placed) AS order_year,");
+        builder.append("MONTH(time_order_placed) AS order_month,");
+        builder.append("DAY_OF_MONTH(time_order_placed) AS order_day ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("ORDER BY order_year,order_month,order_day;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        ResultSet rs = ps.executeQuery();
+        
+        Map<String,Float> stats = new HashMap<String,Float>();
+        if (!rs.next()) return stats;
+        
+        float avgDailyOrders = 0;
+        int minDailyOrders = Integer.MAX_VALUE;
+        int maxDailyOrders = Integer.MIN_VALUE;
+        float medDailyOrders;
+        int sumDailyOrders = 0;
+        int orders = 0;
+        int nDays = 1;
+        List<Integer> dailyOrders = new ArrayList<Integer>();
+        
+        int currDay = rs.getInt(3);
+        do
+        {
+            int day = rs.getInt(3);
+            if (day != currDay)
+            {
+                sumDailyOrders += orders;
+                ++nDays;
+                if (orders < minDailyOrders) minDailyOrders = orders;
+                if (orders > maxDailyOrders) maxDailyOrders = orders;
+                dailyOrders.add(orders);
+                orders = 0;
+                currDay = day;
+                continue;
+            }
+            ++orders;
+        } while (rs.next());
+        
+        Collections.sort(dailyOrders);
+        if (dailyOrders.size() % 2 == 0)
+        {
+            int a = dailyOrders.get(dailyOrders.size() / 2 - 1);
+            int b = dailyOrders.get(dailyOrders.size() / 2);
+            medDailyOrders = ((float)a + (float)b) / 2.0f;
+        }
+        else
+            medDailyOrders = (float)dailyOrders.get(dailyOrders.size() / 2);
+        
+        avgDailyOrders = (float)sumDailyOrders / (float)nDays;
+        
+        stats.put("AVG_DAILY_ORDERS", avgDailyOrders);
+        stats.put("MIN_DAILY_ORDERS", (float)minDailyOrders);
+        stats.put("MED_DAILY_ORDERS", medDailyOrders);
+        stats.put("MAX_DAILY_ORDERS", (float)maxDailyOrders);
+        stats.put("TOTAL_ORDERS", (float)sumDailyOrders);
         
         return stats;
     }
