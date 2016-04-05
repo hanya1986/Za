@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Calendar;
+import java.util.Collections;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -129,9 +130,9 @@ public class Queries
         ResultSet rs = ps.executeQuery();
         BigDecimal sumDailyRev = new BigDecimal("0.00");
         int nDays = 1;
-        BigDecimal minDailyRev = new BigDecimal("0.00");
-        BigDecimal maxDailyRev = new BigDecimal("0.00");
-        BigDecimal medDailyRev = new BigDecimal("0.00");
+        BigDecimal minDailyRev = new BigDecimal(Long.MAX_VALUE);
+        BigDecimal maxDailyRev = new BigDecimal(Long.MIN_VALUE);
+        BigDecimal medDailyRev;
         List<BigDecimal> dailyRevs = new ArrayList<BigDecimal>();
         BigDecimal rev = new BigDecimal("0.00");
         
@@ -150,8 +151,8 @@ public class Queries
                 sumDailyRev = sumDailyRev.add(rev);
                 ++nDays;
                 
-                if (rev.compareTo(minDailyRev) < 0) minDailyRev = rev;
-                if (rev.compareTo(maxDailyRev) > 0) maxDailyRev = rev;
+                if (rev.compareTo(minDailyRev) < 0) minDailyRev = new BigDecimal(rev.toString());
+                if (rev.compareTo(maxDailyRev) > 0) maxDailyRev = new BigDecimal(rev.toString());
                 dailyRevs.add(rev);
                 rev = new BigDecimal("0.00");
                 currDate = dt;
@@ -160,6 +161,7 @@ public class Queries
             rev = rev.add(rs.getBigDecimal(2));
         } while (rs.next());
         
+        Collections.sort(dailyRevs);
         if (dailyRevs.size() % 2 == 0)
         {
             BigDecimal a = dailyRevs.get(dailyRevs.size() / 2 - 1);
@@ -169,14 +171,10 @@ public class Queries
         else
             medDailyRev = dailyRevs.get(dailyRevs.size() / 2);
         
-        BigDecimal avgDailyRev = new BigDecimal("0.00");
-        Iterator<BigDecimal> dailyRevIt = dailyRevs.iterator();
-        while (dailyRevIt.hasNext())
-            avgDailyRev = avgDailyRev.add(dailyRevIt.next());
-        avgDailyRev = avgDailyRev.divide(new BigDecimal(nDays));
+        BigDecimal avgDailyRev = sumDailyRev.divide(new BigDecimal(nDays));
         
         medDailyRev.setScale(2, RoundingMode.HALF_UP);
-        minDailyRev.setScale(2,  RoundingMode.HALF_UP);
+        minDailyRev.setScale(2, RoundingMode.HALF_UP);
         maxDailyRev.setScale(2, RoundingMode.HALF_UP);
         avgDailyRev.setScale(2, RoundingMode.HALF_UP);
         
@@ -242,6 +240,8 @@ public class Queries
     public static Map<String,BigDecimal> getMonthlyRevenueStats(Month startMonth, int startYear, Month endMonth, int endYear)
         throws SQLException
     {
+        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
+        
         if (endYear < startYear)
         {
             int tmpYear = startYear;
@@ -273,8 +273,60 @@ public class Queries
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
         builder.append("ORDER BY order_year,order_month;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return stats;
         
-        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
+        List<BigDecimal> monthlyRevs = new ArrayList<BigDecimal>();
+        
+        BigDecimal minMonthlyRev = new BigDecimal(Long.MAX_VALUE);
+        BigDecimal maxMonthlyRev = new BigDecimal(Long.MIN_VALUE);
+        BigDecimal sumMonthlyRevs = new BigDecimal("0.00");
+        BigDecimal rev = new BigDecimal("0.00");
+        int nMonths = 1;
+        
+        int currMonth = rs.getInt(3);
+        do
+        {
+            int month = rs.getInt(3);
+            if (month != currMonth)
+            {
+                sumMonthlyRevs = sumMonthlyRevs.add(rev);
+                ++nMonths;
+                
+                if (rev.compareTo(minMonthlyRev) < 0) minMonthlyRev = new BigDecimal(rev.toString());
+                if (rev.compareTo(maxMonthlyRev) > 0) maxMonthlyRev = new BigDecimal(rev.toString());
+                monthlyRevs.add(rev);
+                rev = new BigDecimal("0.00");
+                currMonth = month;
+                continue;
+            }
+            rev = rev.add(rs.getBigDecimal(1));
+        } while (rs.next());
+        
+        BigDecimal medMonthlyRev;
+        Collections.sort(monthlyRevs);
+        if (monthlyRevs.size() % 2 == 0)
+        {
+            BigDecimal a = monthlyRevs.get(monthlyRevs.size() / 2 - 1);
+            BigDecimal b = monthlyRevs.get(monthlyRevs.size() / 2);
+            medMonthlyRev = a.add(b).divide(new BigDecimal(2));
+        }
+        else
+            medMonthlyRev = monthlyRevs.get(monthlyRevs.size() / 2);
+        
+        BigDecimal avgMonthlyRev = sumMonthlyRevs.divide(new BigDecimal(nMonths));
+        
+        medMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        minMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        maxMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        avgMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        
+        stats.put("AVG_MONTHLY_REV", avgMonthlyRev);
+        stats.put("MIN_MONTHLY_REV", minMonthlyRev);
+        stats.put("MED_MONTHLY_REV", medMonthlyRev);
+        stats.put("MAX_MONTHLY_REV", maxMonthlyRev);
         
         return stats;
     }
