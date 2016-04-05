@@ -187,7 +187,7 @@ public class Queries
         return stats;
     }
 
-    //// TODO: 4/4/2016 Test this query, not sure if correct yet --Nick 
+    //// TODO: 4/4/2016 Test the below queries, not sure if correct yet --Nick
     public static Map<String, Integer> getTopNItems(int N) throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         Map<String, Integer> topNItems = new HashMap<String, Integer>();
@@ -203,5 +203,22 @@ public class Queries
         }
         return topNItems;
 
+    }
+
+    public static Map<Integer, Integer> getFrequentCustomers(int N) throws SQLException {
+        Connection conn = ConnectionManager.getConnection();
+        //Result map, custId key, total number of orders value
+        Map<Integer, Integer> customers = new HashMap<Integer, Integer>();
+        String build = "";
+        build += "SELECT DISTINCT custid, count(custid) LIMIT ?";
+        build += "FROM ZaOrder";
+        build += "ORDER BY count(custid)";
+        PreparedStatement ps = conn.prepareStatement(build);
+        ps.setInt(1, N);
+        ResultSet results = ps.executeQuery();
+        while (results.next()){
+            customers.put(results.getInt(1), results.getInt(2));
+        }
+        return customers;
     }
 }
