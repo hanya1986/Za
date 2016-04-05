@@ -660,7 +660,7 @@ public class ProfileManager
         return;
     }
     
-    public List<String> getPhoneNumbers(long personid)
+    public static List<String> getPhoneNumbers(long personid)
         throws SQLException
     {
         List<String> numbers = new LinkedList<String>();
@@ -705,7 +705,7 @@ public class ProfileManager
         return;
     }
     
-    public List<String> getEmailAddresses(long personid)
+    public static List<String> getEmailAddresses(long personid)
         throws SQLException
     {
         List<String> numbers = new LinkedList<String>();
@@ -722,7 +722,7 @@ public class ProfileManager
         return numbers;
     }
     
-    private Map<String,Object> getPersonInfo(long personid, List<String> attributes)
+    private static Map<String,Object> getPersonInfo(long personid, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> values = new HashMap<String,Object>();
@@ -784,7 +784,7 @@ public class ProfileManager
         return values;
     }
     
-    public Map<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
+    public static Map<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> values = getPersonInfo(cust_id, attributes);
@@ -843,7 +843,7 @@ public class ProfileManager
         return values;
     }
     
-    public Map<String,Object> getEmployeeInfo(long empid, List<String> attributes)
+    public static Map<String,Object> getEmployeeInfo(long empid, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> values = getPersonInfo(empid, attributes);

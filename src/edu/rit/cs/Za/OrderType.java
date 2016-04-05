@@ -14,7 +14,7 @@ public enum OrderType
     {
         this.orderType = orderType;
     }
-    
+    public String toString() { return orderType; }
     public static OrderType parseOrderType(String s)
     {
         for (OrderType orderType : OrderType.values())
