@@ -65,7 +65,9 @@ public class Queries
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT AVG(subtotal),MIN(subtotal),MAX(subtotal) ");
         builder.append("FROM ZaOrder ");
-        builder.append("WHERE time_order_placed BETWEEN ? AND ?;");
+        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND active=FALSE ");
+        builder.append("AND subtotal IS NOT NULL;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
         ps.setDate(2, end);
@@ -81,6 +83,8 @@ public class Queries
         builder.append("SELECT subtotal ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND active=FALSE ");
+        builder.append("AND subtotal IS NOT NULL ");
         builder.append("ORDER BY subtotal ASC;");
         ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
@@ -122,6 +126,8 @@ public class Queries
         builder.append("SELECT time_order_placed,subtotal ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND active=FALSE ");
+        builder.append("AND subtotal IS NOT NULL ");
         builder.append("ORDER BY time_order_placed;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
@@ -272,6 +278,8 @@ public class Queries
         builder.append("SELECT subtotal,YEAR(time_order_placed) AS order_year,MONTH(time_order_placed) AS order_month ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND active=FALSE ");
+        builder.append("AND subtotal IS NOT NULL ");
         builder.append("ORDER BY order_year,order_month;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
