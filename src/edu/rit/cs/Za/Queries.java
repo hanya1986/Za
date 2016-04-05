@@ -106,13 +106,6 @@ public class Queries
         return stats;
     }
 
-    /*
-     * SELECT SUM(subtotal)
-     * FROM ZaOrder
-     * WHERE time_order_placed BETWEEN ? AND ?
-     * 
-     */
-    
     public static Map<String,BigDecimal> getDailyRevenueStats(Date start, Date end)
         throws SQLException
     {
