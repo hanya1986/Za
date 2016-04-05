@@ -49,7 +49,7 @@ public class Queries
         return rs.getLong(1);
     }
     
-    public static Map<String,BigDecimal> getCostStats(Date start, Date end)
+    public static Map<String,BigDecimal> getOrderCostStats(Date start, Date end)
         throws SQLException
     {
         if (end.compareTo(start) < 0)
@@ -104,4 +104,5 @@ public class Queries
         stats.put("MED_TOTAL", median);
         return stats;
     }
+  
 }
