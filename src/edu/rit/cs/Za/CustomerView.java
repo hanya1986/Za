@@ -11,6 +11,7 @@ import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
@@ -23,6 +24,7 @@ import javax.swing.JSpinner;
 import javax.swing.JMenuBar;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -52,7 +54,16 @@ public class CustomerView {
 	private JPanel orderButtonPanel;
 	private JPanel profilePanel;
 	private JSpinner DOBSpinner;
-	private JScrollPane profileScollPane;
+	private JPanel mainPanel;
+	private JButton signUpButton;
+	private JButton cancelButton;
+	
+	JPanel phoneNumberPanel;
+	JComboBox<String> phoneNumberComboBox;
+	JTextField phoneNumberTextField;
+	JButton addPhoneNumberButton;
+	JButton removePhoneNumberButton;
+	JLabel phoneNumberLabel;
 	
 	public void run(){
 		this.frame.setVisible(true);
@@ -127,9 +138,106 @@ public class CustomerView {
 		menuBar.add(logoutButton);
 	}
 	
+	private void initPhoneNumberPanel()
+	{
+	    phoneNumberPanel = new JPanel(new GridBagLayout());
+	    
+        phoneNumberComboBox = new JComboBox<String>();
+        phoneNumberComboBox.setEnabled(false);
+        
+        phoneNumberTextField = new JTextField();
+        
+        addPhoneNumberButton = new JButton("Add");
+        addPhoneNumberButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent evt)
+            {
+                String phoneNumber = phoneNumberTextField.getText();
+                phoneNumberTextField.setText("");
+                
+                for (int i = 0; i < phoneNumberComboBox.getItemCount(); ++i)
+                {
+                    String s = phoneNumberComboBox.getItemAt(i);
+                    if (s.equals(phoneNumber)) return;
+                }
+                
+                phoneNumberComboBox.addItem(phoneNumber);
+                if (!phoneNumberComboBox.isEnabled())
+                    phoneNumberComboBox.setEnabled(true);
+                if (!removePhoneNumberButton.isEnabled())
+                    removePhoneNumberButton.setEnabled(true);
+            }
+        });
+        
+        removePhoneNumberButton = new JButton("Remove");
+        removePhoneNumberButton.setEnabled(false);
+        removePhoneNumberButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent evt)
+            {
+                if (phoneNumberComboBox.getItemCount() < 1) return;
+                phoneNumberComboBox.removeItemAt(phoneNumberComboBox.getSelectedIndex());
+                if (phoneNumberComboBox.getItemCount() < 1)
+                {
+                    phoneNumberComboBox.setEnabled(false);
+                    removePhoneNumberButton.setEnabled(false);
+                }
+            }
+        });
+        
+        phoneNumberLabel = new JLabel("Phone Number:");
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        phoneNumberPanel.add(phoneNumberLabel, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        phoneNumberPanel.add(phoneNumberTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        phoneNumberPanel.add(addPhoneNumberButton, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        phoneNumberPanel.add(phoneNumberComboBox, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        phoneNumberPanel.add(removePhoneNumberButton, gbc);
+	}
+	
 	public void initializeProfileView(){
 		profilePanel = new JPanel(new GridBagLayout());
-		profileScollPane = new JScrollPane(profilePanel);
 		JLabel[] arrayLabel = new JLabel[profileFields.length];
 		JTextField[] arrayTextField = new JTextField[10];
 		SpinnerDateModel model;
@@ -138,18 +246,20 @@ public class CustomerView {
 		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		int j = 0;
+		initPhoneNumberPanel();
+		mainPanel = new JPanel(new GridBagLayout());
 		for(int i = 0; i < arrayLabel.length; i++){
 			arrayLabel[i] = new JLabel(profileFields[i]);
 			profilePanel.add(arrayLabel[i],gbc);
 			gbc.gridx++;
 			if(i == 3){
 				Calendar calendar = Calendar.getInstance();
-				Date currentDate = calendar.getTime();
-				calendar.add(Calendar.YEAR, -100);
+				calendar.add(Calendar.YEAR, -120);
 				Date firstDate = calendar.getTime();
-				calendar.add(Calendar.YEAR, 200);
+				calendar.add(Calendar.YEAR, 120);
+				calendar.add(Calendar.YEAR, -13);
 				Date lastDate = calendar.getTime();
-				model = new SpinnerDateModel(currentDate, firstDate, lastDate, Calendar.YEAR);
+				model = new SpinnerDateModel(lastDate, firstDate, lastDate, Calendar.YEAR);
 				DOBSpinner = new JSpinner(model);
 				DOBSpinner.setEditor(new JSpinner.DateEditor(DOBSpinner, "MM/dd/yyyy"));
 				profilePanel.add(DOBSpinner,gbc);
@@ -161,16 +271,43 @@ public class CustomerView {
 			gbc.gridy++;
 			gbc.gridx--;
 		}
-		bottomPanel = new JPanel();
 		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.VERTICAL;
-		JButton updateButton = new JButton("Update");
-		gbc.gridx++;
-		bottomPanel.add(updateButton, gbc);
-		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
-		frame.getContentPane().add(profileScollPane, BorderLayout.CENTER);
+		gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.anchor = GridBagConstraints.PAGE_END;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+		mainPanel.add(profilePanel, gbc);
+		
+		gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+		mainPanel.add(phoneNumberPanel, gbc);
+		
+		signUpButton = new JButton("Submit");
+		cancelButton = new JButton("Cancel");
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.add(signUpButton);
+		buttonPanel.add(cancelButton);
+		
+		gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.PAGE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+		mainPanel.add(buttonPanel, gbc);
+		
+		frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 	}
 	
 	public void initializeOrderView(){
@@ -274,9 +411,7 @@ public class CustomerView {
 	}
 	
 	private void loadOrderView(){
-		frame.getContentPane().remove(profilePanel);
-		frame.getContentPane().remove(profileScollPane);
-		frame.getContentPane().remove(bottomPanel);
+		frame.getContentPane().remove(mainPanel);
 		initializeOrderView();
 	}
 
