@@ -43,7 +43,6 @@ public class CustomerView {
 		"State",
 		"Zip",
 		"Email",
-		"Phone"
 	};
 	
 	private JFrame frame;
@@ -239,7 +238,7 @@ public class CustomerView {
 	public void initializeProfileView(){
 		profilePanel = new JPanel(new GridBagLayout());
 		JLabel[] arrayLabel = new JLabel[profileFields.length];
-		JTextField[] arrayTextField = new JTextField[10];
+		JTextField[] arrayTextField = new JTextField[profileFields.length - 1];
 		SpinnerDateModel model;
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;

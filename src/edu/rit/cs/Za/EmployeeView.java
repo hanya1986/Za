@@ -44,7 +44,6 @@ public class EmployeeView {
 			"State",
 			"Zip",
 			"Email",
-			"Phone",
 			"SSN",
 			"Hourly Rate",
 			"Hours/Week",
@@ -374,11 +373,21 @@ public class EmployeeView {
 	
 	public void initializeProfileView(){
 		profilePanel = new JPanel(new GridBagLayout());
-		profileScollPane = new JScrollPane(profilePanel);
+		JPanel profilePhonePanel = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.anchor = GridBagConstraints.PAGE_END;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        profilePhonePanel.add(profilePanel, gbc);
+        profileScollPane = new JScrollPane(profilePhonePanel);
 		JLabel[] arrayLabel = new JLabel[profileFields.length];
 		JTextField[] arrayTextField = new JTextField[profileFields.length - 1];
 		SpinnerDateModel model;
-		GridBagConstraints gbc = new GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -406,6 +415,16 @@ public class EmployeeView {
 			gbc.gridy++;
 			gbc.gridx--;
 		}
+		initPhoneNumberPanel();
+		gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        profilePhonePanel.add(phoneNumberPanel, gbc);
 		bottomPanel = new JPanel();
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
