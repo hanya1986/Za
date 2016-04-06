@@ -3,7 +3,7 @@ package edu.rit.cs.Za;
 /**
  * ProfileManager.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
- * 					Jeremy Friedman (jsf6410@g.rit.edu)
+ * 					Jeremy Friedman(jsf6410@g.rit.edu)
  */
 
 import java.sql.Connection;
