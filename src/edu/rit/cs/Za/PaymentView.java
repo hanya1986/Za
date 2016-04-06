@@ -1,5 +1,10 @@
 package edu.rit.cs.Za;
 
+/**
+ * SignupView.java
+ * Contributor(s):  Yihao Cheng (yc7816@rit.edu)
+ */
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -25,6 +30,15 @@ public class PaymentView {
 	private JFrame frame;
 	private JPanel paymentPanel; 
 	private JPanel creditPanel;
+	private JPanel crUserPanel;
+	private JPanel userPanel;
+	private GridBagConstraints gbc;
+	private boolean includeAddr;
+	
+	public PaymentView(boolean includeAddr){
+		this.includeAddr = includeAddr;
+	}
+	
 	public void runGUI(){
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -42,6 +56,8 @@ public class PaymentView {
 		frame = new JFrame();
 		paymentPanel = new JPanel(new BorderLayout());
 		creditPanel = new JPanel(new GridBagLayout());
+		userPanel = new JPanel (new GridBagLayout());
+		crUserPanel = new JPanel(new GridBagLayout());
 		creditPanel.setBorder(new EmptyBorder(50,0,50,0));
 		JPanel radioPanel = new JPanel(new GridLayout(1,2));
 		frame.getContentPane().setLayout(new BorderLayout());
@@ -51,10 +67,13 @@ public class PaymentView {
 		frame.getContentPane().setLayout(new BorderLayout());
 		frame.getContentPane().add(paymentPanel, BorderLayout.NORTH);
 		JRadioButton CRButton = new JRadioButton("Pay by credit card");
+		CRButton.setSelected(true);
 		CRButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				paymentPanel.add(creditPanel, BorderLayout.CENTER);
+				gbc.gridx = 0;
+				gbc.gridy = 1;
+				crUserPanel.add(creditPanel, gbc);
 				frame.validate();
 			}
 		});
@@ -64,7 +83,7 @@ public class PaymentView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				paymentPanel.remove(creditPanel);
+				crUserPanel.remove(creditPanel);
 				frame.validate();
 			}
 			
@@ -75,7 +94,7 @@ public class PaymentView {
 		RButton.add(CRButton);
 		RButton.add(CashButton);
 		
-		GridBagConstraints gbc = new GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.WEST;
@@ -104,7 +123,27 @@ public class PaymentView {
 		creditPanel.add(secLabel, gbc);
 		gbc.gridx++;
 		creditPanel.add(securityField, gbc);
-		paymentPanel.add(creditPanel, BorderLayout.CENTER);
+		if(includeAddr){
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.weighty = 1;
+			gbc.weightx = 1;
+			JLabel userLabel = new JLabel("UserName:");
+			userPanel.add(userLabel, gbc);
+			JTextField userField = new JTextField();
+			userField.setPreferredSize(new Dimension(150,20));
+			gbc.gridx++;
+			userPanel.add(userField, gbc);
+		}
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		crUserPanel.add(userPanel, gbc);
+		gbc.gridy++;
+		crUserPanel.add(creditPanel, gbc);
+		paymentPanel.add(crUserPanel, BorderLayout.CENTER);
 		
 		JPanel bottomPanel = new JPanel();
 		JButton selectButton = new JButton("Submit");

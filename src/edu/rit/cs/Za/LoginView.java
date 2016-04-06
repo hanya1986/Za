@@ -1,5 +1,10 @@
 package edu.rit.cs.Za;
 
+/**
+ * SignupView.java
+ * Contributor(s):  Yihao Cheng (yc7816@rit.edu)
+ */
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;

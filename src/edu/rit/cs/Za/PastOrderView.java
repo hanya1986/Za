@@ -1,5 +1,10 @@
 package edu.rit.cs.Za;
 
+/**
+ * SignupView.java
+ * Contributor(s):  Yihao Cheng (yc7816@rit.edu)
+ */
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;

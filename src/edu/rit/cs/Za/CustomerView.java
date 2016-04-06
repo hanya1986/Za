@@ -1,4 +1,10 @@
 package edu.rit.cs.Za;
+
+/**
+ * SignupView.java
+ * Contributor(s):  Yihao Cheng (yc7816@rit.edu)
+ */
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -12,23 +18,15 @@ import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JMenuBar;
-import javax.swing.JList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JMenu;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
-import javax.swing.SpringLayout;
-import javax.swing.border.Border;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 
 public class CustomerView {
@@ -259,7 +257,7 @@ public class CustomerView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PaymentView pv = new PaymentView();
+				PaymentView pv = new PaymentView(false);
 				pv.runGUI();
 			}
 			
