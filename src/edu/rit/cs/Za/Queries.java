@@ -63,7 +63,7 @@ public class Queries
         
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT AVG(subtotal),MIN(subtotal),MAX(subtotal) ");
+        builder.append("SELECT AVG(subtotal),MIN(subtotal),MAX(subtotal),SUM(subtotal) ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
         builder.append("AND active=FALSE ");
@@ -75,9 +75,9 @@ public class Queries
         rs.next();
         
         Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
-        stats.put("AVG_TOTAL", rs.getBigDecimal(1));
-        stats.put("MIN_TOTAL", rs.getBigDecimal(2));
-        stats.put("MAX_TOTAL", rs.getBigDecimal(3));
+        stats.put("AVG_ORDER_COST", rs.getBigDecimal(1));
+        stats.put("MIN_ORDER_COST", rs.getBigDecimal(2));
+        stats.put("MAX_ORDER_COST", rs.getBigDecimal(3));
         
         builder.setLength(0);
         builder.append("SELECT subtotal ");
@@ -107,7 +107,13 @@ public class Queries
         
         median.setScale(2, RoundingMode.HALF_UP);
         
-        stats.put("MED_TOTAL", median);
+        stats.put("MED_ORDER_COST", median);
+        
+        BigDecimal total = rs.getBigDecimal(4);
+        total.setScale(2, RoundingMode.HALF_UP);
+        
+        stats.put("TOTAL_ORDER_COST", total);
+        
         return stats;
     }
 
@@ -188,7 +194,7 @@ public class Queries
         stats.put("MIN_DAILY_REV", minDailyRev);
         stats.put("MED_DAILY_REV", medDailyRev);
         stats.put("MAX_DAILY_REV", maxDailyRev);
-        stats.put("TOTAL_REV", sumDailyRev);
+        stats.put("TOTAL_DAILY_REV", sumDailyRev);
         
         return stats;
     }
@@ -337,7 +343,7 @@ public class Queries
         stats.put("MIN_MONTHLY_REV", minMonthlyRev);
         stats.put("MED_MONTHLY_REV", medMonthlyRev);
         stats.put("MAX_MONTHLY_REV", maxMonthlyRev);
-        stats.put("TOTAL_REV", sumMonthlyRevs);
+        stats.put("TOTAL_MONTHLY_REV", sumMonthlyRevs);
         
         return stats;
     }
@@ -412,7 +418,98 @@ public class Queries
         stats.put("MIN_DAILY_ORDERS", (float)minDailyOrders);
         stats.put("MED_DAILY_ORDERS", medDailyOrders);
         stats.put("MAX_DAILY_ORDERS", (float)maxDailyOrders);
-        stats.put("TOTAL_ORDERS", (float)sumDailyOrders);
+        stats.put("TOTAL_DAILY_ORDERS", (float)sumDailyOrders);
+        
+        return stats;
+    }
+
+    public static Map<String,Float> getMonthlyOrderStats(Month startMonth, int startYear, Month endMonth, int endYear)
+        throws SQLException
+    {
+        Map<String,Float> stats = new HashMap<String,Float>();
+        
+        if (endYear < startYear)
+        {
+            int tmpYear = startYear;
+            startYear = endYear;
+            endYear = tmpYear;
+        }
+        else if (startYear == endYear)
+        {
+            if (endMonth.value() < startMonth.value())
+            {
+                Month tmpMonth = startMonth;
+                startMonth = endMonth;
+                endMonth = tmpMonth;
+            }
+        }
+        
+        Date start = new Date(startYear - 1900, startMonth.value(), 1);
+        
+        Calendar cal = Calendar.getInstance();
+        cal.set(endYear, endMonth.value(), 1);
+        int endDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        
+        Date end = new Date(endYear - 1900, endMonth.value(), endDay);
+        
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT orderid,YEAR(time_order_placed) AS order_year,");
+        builder.append("MONTH(time_order_placed) AS order_month ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("ORDER BY order_year,order_month;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return stats;
+        
+        List<Integer> monthlyOrders = new ArrayList<Integer>();
+        float avgMonthlyOrders;
+        float medMonthlyOrders;
+        int minMonthlyOrders = Integer.MAX_VALUE;
+        int maxMonthlyOrders = Integer.MIN_VALUE;
+        int sumMonthlyOrders = 0;
+        int orders = 0;
+        int nMonths = 1;
+        
+        int currMonth = rs.getInt(3);
+        do
+        {
+            int month = rs.getInt(3);
+            if (month != currMonth)
+            {
+                sumMonthlyOrders += orders;
+                ++nMonths;
+                
+                if (orders < minMonthlyOrders) minMonthlyOrders = orders;
+                if (orders > maxMonthlyOrders) maxMonthlyOrders = orders;
+                monthlyOrders.add(orders);
+                orders = 0;
+                currMonth = month;
+                continue;
+            }
+            ++orders;
+        } while (rs.next());
+        
+        Collections.sort(monthlyOrders);
+        if (monthlyOrders.size() % 2 == 0)
+        {
+            int a = monthlyOrders.get(monthlyOrders.size() / 2 - 1);
+            int b = monthlyOrders.get(monthlyOrders.size() / 2);
+            medMonthlyOrders = (float)(a + b) / 2.0f;
+        }
+        else
+            medMonthlyOrders = (float)monthlyOrders.get(monthlyOrders.size() / 2);
+        
+        avgMonthlyOrders = (float)sumMonthlyOrders / (float)nMonths;
+        
+        stats.put("AVG_MONTHLY_ORDERS", avgMonthlyOrders);
+        stats.put("MIN_MONTHLY_ORDERS", (float)minMonthlyOrders);
+        stats.put("MED_MONTHLY_ORDERS", medMonthlyOrders);
+        stats.put("MAX_MONTHLY_ORDERS", (float)maxMonthlyOrders);
+        stats.put("TOTAL_ORDERS", (float)sumMonthlyOrders);
         
         return stats;
     }
