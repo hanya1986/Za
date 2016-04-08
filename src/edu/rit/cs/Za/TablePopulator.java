@@ -14,9 +14,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -74,6 +73,9 @@ public class TablePopulator
     	orderData.put("time_order_placed", new ArrayList<Object>());
     	orderData.put("time_order_out", new ArrayList<Object>());
     	orderData.put("time_order_delivered", new ArrayList<Object>());
+    	orderData.put("empid_took_order", new ArrayList<Object>());
+    	orderData.put("empid_prepared_order", new ArrayList<Object>());
+    	orderData.put("empid_delivered_order", new ArrayList<Object>());
     	orderData.put("subtotal", new ArrayList<Object>());
     	orderData.put("tax", new ArrayList<Object>());
     	orderData.put("total", new ArrayList<Object>());
@@ -93,12 +95,25 @@ public class TablePopulator
     	//orderid, size (?) taken care of, items dict maps menuitem names to 
         //Dict maps String([SIZE] [MENU_ITEM_NAME]) to Integer(quantity)
         //subtotal, tax, total taken care of by Jordan's code as well (see updateTotal)
-	
+        
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM Employee; ");
+        PreparedStatement employeeID_PS = conn.prepareStatement(builder.toString());
+        ResultSet employeeID_RS = employeeID_PS.executeQuery();
+        
+        ArrayList<Long> employeeIDs = new ArrayList<Long>();
+        while (employeeID_RS.next()) 
+        {
+        	employeeIDs.add(Long.parseLong(employeeID_RS.getString("empid")));
+        }
+         
 		String currLine;
-		ArrayList<Long> IDs = new ArrayList<Long>();;
+		ArrayList<Long> IDs = new ArrayList<Long>();
 		try
 		{
 			String currKey = "";
+			Random r = new Random();
 			while ((currLine = dataBufferedReader.readLine()) != null)
 			{
 				if (currLine.startsWith("---"))
@@ -115,6 +130,9 @@ public class TablePopulator
 					orderData.get(currKey).add(new Date(Long.parseLong(currLine)));
 					orderData.get("time_order_out").add(new Date((long) (Long.parseLong(currLine) * .01)));
 					orderData.get("time_order_delivered").add(new Date((long) (Long.parseLong(currLine) * .02)));
+					orderData.get("empid_took_order").add(employeeIDs.get(r.nextInt(employeeIDs.size())));
+					orderData.get("empid_prepared_order").add(employeeIDs.get(r.nextInt(employeeIDs.size())));
+					orderData.get("empid_delivered_order").add(employeeIDs.get(r.nextInt(employeeIDs.size())));
 				}
 				else if (currKey.equals("subtotal"))
 				{
@@ -157,8 +175,9 @@ public class TablePopulator
 			{
 				items = new HashMap<String, Integer>();
 				items.put((String) singleOrderData.get("items"), (Integer) singleOrderData.get("quantity"));
-				System.out.println("ITEMS :" + items);
 				OrderManager.createOrder(IDs.get(ordersCreated), OrderType.parseOrderType(singleOrderData.get("order_type").toString()), items); 
+				System.out.println(singleOrderData);
+				OrderManager.modifyOrder(IDs.get(ordersCreated), singleOrderData);
 			}
 			catch (SQLException e)
 			{
@@ -499,10 +518,39 @@ public class TablePopulator
 		testPersonEmailAddressPopulated();
 		testCredit_CardPopulated();
 		testCustomerCardPopulated();
-		testPersonPhoneNumberPopulated();*/
+		testPersonPhoneNumberPopulated();
+		testOrderTablesPopulated();*/
 	}
 	
-    private static void testPersonPhoneNumberPopulated() throws SQLException {
+    private static void testOrderTablesPopulated() throws SQLException {
+    	StringBuilder builder = new StringBuilder();
+        builder = new StringBuilder();
+        builder.append("SELECT * ");
+        builder.append("FROM ZaOrder; ");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) 
+        {
+	 		System.out.println("Order ID: " + rs.getString("orderid"));
+	 		System.out.println("\tCustomer's ID: " + rs.getString("custid")); 
+	 		System.out.println("\tOrder Type: " + rs.getString("order_type"));
+	 		System.out.println("\tActive: " + rs.getString("active"));
+	 		System.out.println("\tID of Employee who Took Order: " + rs.getString("empid_took_order"));
+	 		System.out.println("\tID of Employee who Prepared Order: " + rs.getString("empid_prepared_order"));
+	 		System.out.println("\tID of Employee who Delivered Order: " + rs.getString("empid_delivered_order"));
+	 		System.out.println("\tTime Order Placed: " + rs.getString("time_order_placed"));
+	 		System.out.println("\tTime Order Sent: " + rs.getString("time_order_out"));
+	 		System.out.println("\tTime Delivered: " + rs.getString("time_order_delivered"));
+	 		System.out.println("\tSubtotal: " + rs.getString("subtotal"));
+	 		System.out.println("\tTax: " + rs.getString("tax"));
+	 		System.out.println("\tTotal: " + rs.getString("total"));
+	 		System.out.println("\tTip: " + rs.getString("tip"));
+	 		System.out.println("\tPayment Method: " + rs.getString("pay_method"));
+        }
+		
+	}
+
+	private static void testPersonPhoneNumberPopulated() throws SQLException {
     	StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
         builder.append("SELECT * ");

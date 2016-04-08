@@ -5,6 +5,8 @@
 
 package edu.rit.cs.Za;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +59,7 @@ public class OrderManager
         tax.setScale(2, RoundingMode.HALF_UP);
         total.setScale(2, RoundingMode.HALF_UP);
         
+        builder = new StringBuilder();
         builder.append("UPDATE ZaOrder ");
         builder.append("SET subtotal=?,tax=?,total=? ");
         builder.append("WHERE orderid=?;");
@@ -111,7 +114,6 @@ public class OrderManager
         builder.append("INSERT INTO ZaOrderItem (orderid,itemid,quantity,size) ");
         builder.append("VALUES ");
         Iterator<String> itemIt = items.keySet().iterator();
-        System.out.println("TEST: " + items.keySet().toString());
         while (itemIt.hasNext())
         {
         	itemIt.next();
@@ -247,7 +249,7 @@ public class OrderManager
         if (columns.size() == 0) return;
         
         StringBuilder builder = new StringBuilder();
-        builder.append("UPDATE Order ");
+        builder.append("UPDATE ZaOrder ");
         builder.append("SET ");
         colIt = columns.iterator();
         while (colIt.hasNext())
@@ -262,6 +264,7 @@ public class OrderManager
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         colIt = columns.iterator();
         int paramIdx = 1;
+    	Calendar cal = Calendar.getInstance();
         while (colIt.hasNext())
         {
             String col = colIt.next();
@@ -280,13 +283,19 @@ public class OrderManager
                 ps.setLong(paramIdx++, (long)values.get(col));
                 break;
             case "time_order_placed":
-                ps.setTimestamp(paramIdx++, (Timestamp)values.get(col));
+            	cal.setTime((Date) values.get(col));
+            	cal.set(Calendar.MILLISECOND, 0);
+                ps.setTimestamp(paramIdx++, new Timestamp (cal.getTimeInMillis()));
                 break;
             case "time_order_out":
-                ps.setTimestamp(paramIdx++, (Timestamp)values.get(col));
+            	cal.setTime((Date) values.get(col));
+            	cal.set(Calendar.MILLISECOND, 0);
+                ps.setTimestamp(paramIdx++, new Timestamp (cal.getTimeInMillis()));
                 break;
             case "time_order_delivered":
-                ps.setTimestamp(paramIdx++, (Timestamp)values.get(col));
+            	cal.setTime((Date) values.get(col));
+            	cal.set(Calendar.MILLISECOND, 0);
+                ps.setTimestamp(paramIdx++, new Timestamp (cal.getTimeInMillis()));
                 break;
             case "tip":
                 ps.setBigDecimal(paramIdx++, (BigDecimal)values.get(col));
