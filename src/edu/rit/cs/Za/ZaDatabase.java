@@ -186,7 +186,7 @@ public class ZaDatabase
         builder.append("  empid_took_order BIGINT,");
         builder.append("  empid_prepared_order BIGINT,");
         builder.append("  empid_delivered_order BIGINT,");
-        builder.append("  time_order_placed TIMESTAMP,");
+        builder.append("  time_order_placed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,");
         builder.append("  time_order_out TIMESTAMP,");
         builder.append("  time_order_delivered TIMESTAMP,");
         builder.append("  subtotal DECIMAL(9,2),");
