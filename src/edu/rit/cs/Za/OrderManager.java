@@ -1,3 +1,4 @@
+
 /**
  * OrderManager.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
@@ -259,7 +260,7 @@ public class OrderManager
             builder.append("=?");
             if (colIt.hasNext()) builder.append(',');
         }
-        builder.append(" WHERE orderid=?;");
+        builder.append(" WHERE orderid= " + orderid + ";");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         colIt = columns.iterator();

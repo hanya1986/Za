@@ -61,7 +61,7 @@ public class TablePopulator
 					populatePhoneNumbers(dataFile);
 					break;
 				case "order_data.txt":
-					//populateOrders(dataFile);
+					populateOrders(dataFile);
 					break;
 			}
 		}
@@ -69,7 +69,7 @@ public class TablePopulator
     
     private static void populateOrders(File dataFile) throws SQLException {
     	Map<String, ArrayList<Object>> orderData = new HashMap<String, ArrayList<Object>>();
-    	orderData.put("order_type", new ArrayList<Object>()); 
+    	orderData.put("order_type", new ArrayList<Object>());
     	orderData.put("time_order_placed", new ArrayList<Object>());
     	orderData.put("time_order_out", new ArrayList<Object>());
     	orderData.put("time_order_delivered", new ArrayList<Object>());
@@ -91,10 +91,6 @@ public class TablePopulator
         builder.append("FROM Person; ");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
-        
-    	//orderid, size (?) taken care of, items dict maps menuitem names to 
-        //Dict maps String([SIZE] [MENU_ITEM_NAME]) to Integer(quantity)
-        //subtotal, tax, total taken care of by Jordan's code as well (see updateTotal)
         
         builder = new StringBuilder();
         builder.append("SELECT * ");
@@ -176,7 +172,6 @@ public class TablePopulator
 				items = new HashMap<String, Integer>();
 				items.put((String) singleOrderData.get("items"), (Integer) singleOrderData.get("quantity"));
 				OrderManager.createOrder(IDs.get(ordersCreated), OrderType.parseOrderType(singleOrderData.get("order_type").toString()), items); 
-				System.out.println(singleOrderData);
 				OrderManager.modifyOrder(IDs.get(ordersCreated), singleOrderData);
 			}
 			catch (SQLException e)
