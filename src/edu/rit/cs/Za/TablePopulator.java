@@ -34,6 +34,14 @@ public class TablePopulator
         testTablesPopulated();
 	}
 	
+	public static void wipeTableData(String tableName) throws SQLException 
+	{
+		conn = ConnectionManager.getConnection();
+        String query = "DELETE FROM " + tableName + ";";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.executeUpdate();
+	}
+	
     private static void populateTables() throws SQLException, IOException {
     	//Other tables rely on personid, so populate persons first
     	dataFileReader = new FileReader(new File("table_data/person_data.txt"));
@@ -504,9 +512,9 @@ public class TablePopulator
 		}
 	}
     
-	private static void testTablesPopulated() throws SQLException
+	public static void testTablesPopulated() throws SQLException
 	{
-		/*testPersonPopulated();
+		testPersonPopulated();
 		testCustomerPopulated();
 		testEmployeePopulated();
 		testMenu_ItemPopulated();
@@ -514,7 +522,7 @@ public class TablePopulator
 		testCredit_CardPopulated();
 		testCustomerCardPopulated();
 		testPersonPhoneNumberPopulated();
-		testOrderTablesPopulated();*/
+		testOrderTablesPopulated();
 	}
 	
     private static void testOrderTablesPopulated() throws SQLException {

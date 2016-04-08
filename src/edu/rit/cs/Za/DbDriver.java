@@ -128,6 +128,20 @@ public class DbDriver
         
         Map<String,Object> employee = new HashMap<String,Object>();
         
+        System.out.println("POPULATING TABLES...\n");
         TablePopulator tp = new TablePopulator();
+        /*TablePopulator.testTablesPopulated();
+        System.out.println("\n******* DELETING TABLES... *******\n");
+        TablePopulator.wipeTableData("PersonEmailAddress");
+        TablePopulator.wipeTableData("PersonPhoneNumber");
+        TablePopulator.wipeTableData("ZaOrderItem");
+        TablePopulator.wipeTableData("CustomerCard");
+        TablePopulator.wipeTableData("Credit_Card");
+        TablePopulator.wipeTableData("Menu_Item");
+        TablePopulator.wipeTableData("ZaOrder");
+        TablePopulator.wipeTableData("Employee");
+        TablePopulator.wipeTableData("Customer");
+        TablePopulator.wipeTableData("Person");
+        TablePopulator.testTablesPopulated();*/
     }
 }
