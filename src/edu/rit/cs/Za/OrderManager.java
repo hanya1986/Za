@@ -111,8 +111,10 @@ public class OrderManager
         builder.append("INSERT INTO ZaOrderItem (orderid,itemid,quantity,size) ");
         builder.append("VALUES ");
         Iterator<String> itemIt = items.keySet().iterator();
+        System.out.println("TEST: " + items.keySet().toString());
         while (itemIt.hasNext())
         {
+        	itemIt.next();
             builder.append("(?,?,?,?)");
             if (itemIt.hasNext()) builder.append(',');
         }
