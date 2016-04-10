@@ -29,7 +29,9 @@ public class TablePopulator
 	private static BufferedReader dataBufferedReader;
 	private static Connection conn;    
     
-	public TablePopulator() throws SQLException, IOException {
+	public TablePopulator() throws SQLException, IOException
+	{
+	    wipeTables();
 		populateTables();
         testTablesPopulated();
 	}
@@ -40,6 +42,21 @@ public class TablePopulator
         String query = "DELETE FROM " + tableName + ";";
         PreparedStatement ps = conn.prepareStatement(query);
         ps.executeUpdate();
+	}
+	
+	public static void wipeTables()
+	    throws SQLException
+	{
+	    wipeTableData("ZaOrderItem");
+	    wipeTableData("ZaOrder");
+	    wipeTableData("Menu_Item");
+	    wipeTableData("CustomerCard");
+	    wipeTableData("Credit_Card");
+	    wipeTableData("PersonEmailAddress");
+	    wipeTableData("PersonPhoneNumber");
+	    wipeTableData("Employee");
+	    wipeTableData("Customer");
+	    wipeTableData("Person");
 	}
 	
     private static void populateTables() throws SQLException, IOException {
@@ -687,5 +704,49 @@ public class TablePopulator
         	System.out.println("\tItem Est. Prep. Time: " + rs.getString("est_prep_time")); 
         	System.out.println("\tItem Availability: " + rs.getString("available")); 
         }
+	}
+
+	public static void main(String[] args)
+	{
+	    String db_location = "./ZADB/za";
+	    String username = "username";
+        String password = "password";
+	    
+	    try
+	    {
+	        ConnectionManager.initConnection(db_location, username, password);
+	    }
+	    catch (SQLException ex)
+	    {
+	        System.out.println("A SQL error occurred while attempting to initialize the database connection.");
+	        System.out.println(ex);
+	        return;
+	    }
+	    
+	    try
+	    {
+	        ZaDatabase.createDatabase();
+	    }
+	    catch (SQLException ex)
+	    {
+	        System.out.println("A SQL error occurred while attempting to create the database.");
+	        System.out.println(ex);
+	        return;
+	    }
+	    
+	    try
+	    {
+	        new TablePopulator();
+	    }
+	    catch (IOException ex)
+	    {
+	        System.out.println("An error occurred while attempting to read one of the data files.");
+	        System.out.println(ex);
+	    }
+	    catch (SQLException ex)
+	    {
+	        System.out.println("A SQL error occurred while attempting to recreate the test database.");
+	        System.out.println(ex);
+	    }
 	}
 }
