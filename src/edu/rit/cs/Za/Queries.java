@@ -249,6 +249,41 @@ public class Queries
         }
         return customers;
     }
+    
+    public static long getAverageDeliveryTime(long empid) throws SQLException {
+        Connection conn = ConnectionManager.getConnection();
+        String query = "SELECT avg(DATEDIFF('MS', time_order_out, time_order_delivered)) FROM ZaOrder WHERE empid_delivered_order = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setLong(1, empid);
+        ResultSet results = ps.executeQuery();
+        long avgDeliveryTimeMillis = 0;
+        if (results.next()) {
+        	avgDeliveryTimeMillis = results.getLong(1);
+        }
+        return avgDeliveryTimeMillis;
+    }
+    
+    public static class DelivererTime {
+    	public Long empid;
+    	public Long avgDeliveryTimeMillis;
+    }
+    
+    public static List<DelivererTime> getFastestDeliverers() throws SQLException {
+        Connection conn = ConnectionManager.getConnection();
+        String query = "SELECT empid_delivered_order, avg_delivery_time "
+        		+ "FROM (SELECT empid_delivered_order, AVG(DATEDIFF('MS', time_order_out, time_order_delivered)) AS avg_delivery_time "
+        		+ "FROM ZaOrder GROUP BY empid_delivered_order) ORDER BY avg_delivery_time";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ResultSet results = ps.executeQuery();
+        List<DelivererTime> fastestDeliverers = new ArrayList<>();
+        while (results.next()) {
+        	DelivererTime dt = new DelivererTime();
+            dt.empid = results.getLong(1);
+        	dt.avgDeliveryTimeMillis = results.getLong(2);
+        	fastestDeliverers.add(dt);
+        }
+        return fastestDeliverers;
+    }
 
     public static Map<String,BigDecimal> getMonthlyRevenueStats(Month startMonth, int startYear, Month endMonth, int endYear)
         throws SQLException
