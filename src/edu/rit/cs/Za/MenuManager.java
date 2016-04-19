@@ -17,8 +17,16 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.math.BigDecimal;
 
+/**
+ * Static class for managing the 'Za menu, providing methods to see what's on
+ * the menu and modify its contents.
+ */
 public class MenuManager
 {
+    /**
+     * Adds an item to the menu.
+     * @param menuItem  contains the attributes of the item
+     */
     public static void addItem(Map<String,Object> menuItem)
         throws SQLException
     {
@@ -101,6 +109,14 @@ public class MenuManager
         return;
     }
 
+    /**
+     * Sets a menu item's availability (i.e., whether or not it can currently be
+     * ordered).
+     * 
+     * @param itemName  the name of the item
+     * @param available indicates whether to make the item available (true) or
+     *                  unavailable (false)
+     */
     public static void setItemAvailability(String itemName, boolean available)
         throws SQLException
     {
@@ -116,6 +132,10 @@ public class MenuManager
         return;
     }
     
+    /**
+     * Gets those menu items which are currently available to order.
+     * @return a collection of available menu items
+     */
     public static List<String> getAvailableItems()
         throws SQLException
     {
@@ -132,6 +152,13 @@ public class MenuManager
         return items;
     }
     
+    /**
+     * Gets the desired information about a particular menu item.
+     * @param itemName      the name of the menu item
+     * @param attributes    the attributes to look up
+     * @return  a map whose keys are the desired attributes and whose values are
+     *          the values of those attributes
+     */
     public Map<String,Object> getItemInfo(String itemName, List<String> attributes)
         throws SQLException
     {
@@ -189,6 +216,11 @@ public class MenuManager
         return menuItem;
     }
 
+    /**
+     * Sets the attributes of a particular menu item.
+     * @param itemName  the name of the menu item
+     * @param values    collection of attributes mapped to their new values
+     */
     public void modifyItem(String itemName, Map<String,Object> values)
         throws SQLException
     {
@@ -206,7 +238,7 @@ public class MenuManager
             case "type":
             case "price":
             case "est_prep_time":
-            case "availability":
+            case "available":
                 columns.add(col);
                 break;
             }

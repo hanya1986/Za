@@ -21,10 +21,19 @@ import java.sql.Timestamp;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+ * Static class for the creation and modification of 'Za orders.
+ */
 public class OrderManager
 {   
+    /* the tax rate to use when computing sales tax; default to 8% */
     public static BigDecimal TAX_RATE = new BigDecimal("0.08");
     
+    /**
+     * Recompute's the specified order's total and updates the subtotal, tax,
+     * and total attributes of the order.
+     * @param orderid   the ID of the order whose total needs to be recomputed
+     */
     private static void updateTotal(long orderid)
         throws SQLException
     {
@@ -73,6 +82,16 @@ public class OrderManager
         return;
     }
     
+    
+    /**
+     * Creates a new order that initially includes the specified items from the
+     * menu.
+     * @param custid    the ID of the customer whom the order is for
+     * @param orderType specifies whether or not the order is delivery or
+     *                  carry-out
+     * @param items     map from sizes and names of items to their quantities
+     * @return          the unique ID number for the new order
+     */
     public static long createOrder(long custid, OrderType orderType, Map<String,Integer> items)
         throws SQLException
     {
@@ -91,6 +110,11 @@ public class OrderManager
         return orderid;
     }
     
+    /**
+     * Gets a list of currently active orders (i.e., orders that are not yet in
+     * the customer's possession).
+     * @return a list of active orders
+     */
     public static List<Long> getActiveOrders()
         throws SQLException
     {
@@ -107,6 +131,11 @@ public class OrderManager
         return activeIDs;
     }
     
+    /**
+     * Adds additional items from the menu to the specified order.
+     * @param orderid   the ID of the order to amend
+     * @param items     map from item sizes and names to their quantities
+     */
     public static void addItems(long orderid, Map<String,Integer> items)
         throws SQLException
     {
@@ -146,6 +175,11 @@ public class OrderManager
         updateTotal(orderid);
     }
     
+    /**
+     * Changes the quantities of items in the specified order.
+     * @param orderid   the ID of the order being altered
+     * @param items     map from item sizes and names to their updated numbers
+     */
     public static void changeQuantities(long orderid, Map<String,Integer> items)
         throws SQLException
     {
@@ -179,6 +213,11 @@ public class OrderManager
         return;
     }
     
+    /**
+     * Removes items from the specified order.
+     * @param orderid   the ID of the order from which to remove items
+     * @param items     list of item sizes and names to remove from the order
+     */
     public static void removeItems(long orderid, List<String> items)
         throws SQLException
     {
@@ -222,6 +261,11 @@ public class OrderManager
         return;
     }
     
+    /**
+     * Changes attributes of the order itself.
+     * @param orderid   the ID of the order to modify
+     * @param values    map from attributes to change to their updated values
+     */
     public static void modifyOrder(long orderid, Map<String,Object> values)
         throws SQLException
     {
@@ -310,6 +354,11 @@ public class OrderManager
         return;
     }
     
+    /**
+     * Retrieves the menu items currently in the order. 
+     * @param orderid   the ID of the order
+     * @return  a map from item sizes and names to their quantities in the order
+     */
     public static Map<String,Integer> getOrderItems(long orderid)
         throws SQLException
     {
@@ -329,6 +378,12 @@ public class OrderManager
         return items;
     }
     
+    /**
+     * Retrivies the desired information about the specified order.
+     * @param orderid       the order of interest      
+     * @param attributes    list of the desired attributes
+     * @return  map from desired order attributes to their values
+     */
     public static Map<String,Object> getOrderInfo(long orderid, List<String> attributes)
         throws SQLException
     {
