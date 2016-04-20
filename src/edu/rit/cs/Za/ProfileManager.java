@@ -22,14 +22,34 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.math.BigDecimal;
 
+/**
+ * A static class that provides methods for the creation and management of
+ * profiles for people associated with 'Za somehow, whether they are customers
+ * or employees.
+ */
 public class ProfileManager
 {
+    /* SHA-512 procudes 64 byte digest */
     private static final int DIGEST_BYTE_SIZE = 64;
+    
+    /* indicates that a username does not exist in the Person table */
     public static final long USERNAME_NOT_IN_TABLE = -1L;
+    
+    /* indicates that a password provided with a username is incorrect */
     public static final long INCORRECT_PASSWORD = -2L;
     
+    /* secure random number generator for generating salts */
     private static final SecureRandom sr = new SecureRandom();
     
+    /**
+     * Helper method for computing the SHA-512 digest of a combination of a
+     * password and a salt.
+     * @param password  a user's password
+     * @param salt      the salt associated with the user's password
+     * @return the SHA-512 digest of the password concatenated with the salt
+     * @throws NoSuchAlgorithmException if SHA-512 not supported by
+     *                                  implementation
+     */
     private static byte[] computeHash(byte[] password, byte[] salt)
         throws NoSuchAlgorithmException
     {   
@@ -53,6 +73,17 @@ public class ProfileManager
         return md.digest();
     }
     
+    /**
+     * Given a combination of a username and password, this method determines
+     * whether the pair of credentials is valid.
+     * @param username  a user's username
+     * @param password  the password to check
+     * @return  USERNAME_NOT_IN_TABLE if the usernmae does not exist in Person,
+     *          INCORRECT_PASSWORD if the password is incorrect, or the ID
+     *          number of the person if the credentials are correct
+     * @throws NoSuchAlgorithmException if SHA-512 not supported by
+     *                                  implementation
+     */
     public static long validateCredentials(String username, String password)
         throws SQLException, NoSuchAlgorithmException
     {
@@ -75,6 +106,13 @@ public class ProfileManager
         return result.getLong("personid");
     }
     
+    /**
+     * Determines whether an ID number is associated with a customer or an
+     * employee.
+     * @param personid  a person's ID number
+     * @return  PersonType.NOT_A_PERSON if the ID number is invalid, otherwise
+     *          either PersonType.CUSTOMER or PersonType.EMPLOYEE as appropriate
+     */
     public PersonType getPersonType(long personid)
         throws SQLException
     {
@@ -90,11 +128,16 @@ public class ProfileManager
         return PersonType.NOT_A_PERSON;
     }
     
-    /*
-     * THIS METHOD WAS INTENTIONALLY MADE PRIVATE.
-     * WHEN createCustomer OR createEmployee IS CALLED, THIS METHOD IS CALLED IN
-     * TURN TO INSERT A NEW PERSON WHOSE personid IS USED IN EITHER THE Customer
-     * OR THE Employee TABLE, RESPECTIVELY. 
+    /**
+     * Helper method to create a corresponding Person record whenever a Customer
+     * or an Employee is added. Person is a total generalization, so each Person
+     * record must have either a corresponding Customer record or corresponding
+     * Employee record, which are disjoint entity sets themselves.
+     * @param values    map from Person attribute names to attribute values
+     * @param password  the password to securely store for the new Person
+     * @return the unique ID number for the new Person
+     * @throws NoSuchAlgorithmException if SHA-512 not supported by the
+     *                                  implementation
      */
     private static long createPerson(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
@@ -190,10 +233,14 @@ public class ProfileManager
         return generatedKey.getLong(1);
     }
     
-    /*
-     * DO NOT PROVIDE A PASSWORD HASH OR SALT IN values. IF ONE OR BOTH ARE
-     * PROVIDED, THEY WILL BE IGNORED. A SALT WILL BE CREATED FOR COMPUTING THE
-     * HASH OF THE PASSWORD PROVIDED AS AN ARGUMENT.
+    /**
+     * Creates a new Customer and corresponding Person record (Person is a total
+     * generalization, and Customer and Employee are disjoint entity sets).
+     * @param values    map from Customer attribute names to attribute values
+     * @param password  the password to securely store for the new Customer
+     * @return the unique ID number for the new Customer
+     * @throws NoSuchAlgorithmException if SHA-512 not supported by the
+     *                                  implementation
      */
     public static long createCustomer(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
@@ -215,10 +262,14 @@ public class ProfileManager
         return personid;
     }
     
-    /*
-     * DO NOT PROVIDE A PASSWORD HASH OR SALT IN values. IF ONE OR BOTH ARE
-     * PROVIDED, THEY WILL BE IGNORED. A SALT WILL BE CREATED FOR COMPUTING THE
-     * HASH OF THE PASSWORD PROVIDED AS AN ARGUMENT.
+    /**
+     * Creates a new Employee and corresponding Person record (Person is a total
+     * generalization, and Employee and Customer are disjoint entity sets).
+     * @param values    map from Employee attribute names to attribute values
+     * @param password  the password to securely store for the new Employee
+     * @return the unique ID number for the new Employee
+     * @throws NoSuchAlgorithmException if SHA-512 not supported by the
+     *                                  implementation
      */
     public static long createEmployee(Map<String,Object> values, String password)
         throws SQLException, NoSuchAlgorithmException
@@ -296,10 +347,14 @@ public class ProfileManager
         return personid;
     }
 
-    /*
-     * AS IS THE CASE WITH ALL OF THE METHODS IN THIS CLASS THAT TAKE A personid
-     * PARAMETER, THE personid PARAMETER REALLY REFERS TO cust_id IF THE PERSON
-     * IS A CUSTOMER AND empid IF THE PERSON IS AN EMPLOYEE.
+    /**
+     * Changes a Person's password by securely generating a new salt value and
+     * securely storing the new combination of the hashed password and the salt.
+     * @param personid  the unique ID number of the Person whose password needs
+     *                  to be changed
+     * @param password  the new password
+     * @throws NoSuchAlgorithmException if SHA-512 not supported by the
+     *                                  implementation
      */
     public static void changePassword(long personid, String password)
         throws NoSuchAlgorithmException, SQLException
@@ -321,6 +376,14 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
+    /**
+     * Whenever the attributes common to Customers and Employees *i.e., to
+     * Persons) need to be changed, they are changed by a call to this helper
+     * method.
+     * @param personid  the unique ID number identifying the Person whose
+     *                  attributes need updating
+     * @param values    map from Person attribute names to new values
+     */
     private static void modifyPerson(long personid, Map<String,Object> values)
         throws SQLException
     {
@@ -404,6 +467,11 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
+    /**
+     * Modifies the attributes of a specific Customer.
+     * @param cust_id   the unique ID number identifying the Customer
+     * @param values    map from attribute names to new values
+     */
     public static void modifyCustomer(long cust_id, Map<String,Object> values)
         throws SQLException
     {
@@ -461,6 +529,11 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
+    /**
+     * Modifies the attributes of a specific Employee.
+     * @param empid     the unique ID number identifying the Employee
+     * @param values    map from attribute names to new values
+     */
     public static void modifyEmployee(long empid, Map<String,Object> values)
         throws SQLException
     {
@@ -534,6 +607,16 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
+    /**
+     * Associates a customer with a credit card. If the credit card does not
+     * exist in the credit card table, it is first added. Credit cards are weak
+     * entities in a many-to-many relationship with customer entities.
+     * @param cust_id       unique ID number for the Customer using the card
+     * @param cardNumber    the 16-digit card number
+     * @param securityCode  the 3-digit security code on the back of the card
+     * @param expMonth      the month of the card expiration date
+     * @param expYear       the year of the card expiration date
+     */
     public static void addCreditCard(long cust_id, String cardNumber, String securityCode, Month expMonth, int expYear)
         throws SQLException
     {
@@ -568,6 +651,16 @@ public class ProfileManager
         ps.executeUpdate();
     }
     
+    /**
+     * Removes the association between a customer and a credit card. If after
+     * breaking the association, no customer is associated with the card, then
+     * the card is removed from the credit card table because credit cards are
+     * weak entities (i.e., they cannot exist in the 'Za database if no one is
+     * using them).
+     * @param cust_id       the unique ID number of the customer no longer using
+     *                      the card  
+     * @param cardNumber    the 16-digit card number
+     */
     public static void removeCreditCard(long cust_id, String cardNumber)
         throws SQLException
     {
@@ -600,6 +693,11 @@ public class ProfileManager
         return;
     }
 
+    /**
+     * Retrieves a list of credit cards associated with a customer's account.
+     * @param cust_id   the unique ID number of the customer
+     * @return a list of the customer's credit cards
+     */
     public static List<CreditCard> getCreditCards(long cust_id)
         throws SQLException
     {
@@ -633,6 +731,12 @@ public class ProfileManager
         return cards;
     }
     
+    /**
+     * Adds a phone number to a person's list of phone numbers.
+     * @param personid      the unique ID number of the person adding a phone
+     *                      number
+     * @param phoneNumber   the phone number to add
+     */
     public static void addPhoneNumber(long personid, String phoneNumber)
         throws SQLException
     {
@@ -647,6 +751,12 @@ public class ProfileManager
         return;
     }
     
+    /**
+     * Removes a phone number from a person's list of phone numbers.
+     * @param personid      the unique ID number of the person removing a phone
+     *                      number
+     * @param phoneNumber   the phone number to remove
+     */
     public static void removePhoneNumber(long personid, String phoneNumber)
         throws SQLException
     {
@@ -661,6 +771,11 @@ public class ProfileManager
         return;
     }
     
+    /**
+     * Retrieves a list of the phone numbers associated with a person's account.
+     * @param personid  the unique ID number of the person
+     * @return a list of phone numbers associated with a person's account.
+     */
     public static List<String> getPhoneNumbers(long personid)
         throws SQLException
     {
@@ -678,6 +793,12 @@ public class ProfileManager
         return numbers;
     }
 
+    /**
+     * Adds an email address to a person's list of email addresses.
+     * @param personid      the unique ID number of the person adding an email
+     *                      address
+     * @param emailAddress  the email address to add
+     */
     public static void addEmailAddress(long personid, String emailAddress)
         throws SQLException
     {
@@ -692,6 +813,12 @@ public class ProfileManager
         return;
     }
     
+    /**
+     * Removes an email address from a person's list of email addresses.
+     * @param personid      the unique ID number of the person removing an email
+     *                      address
+     * @param emailAddress  the email address to remove
+     */
     public static void removeEmailAddress(long personid, String emailAddress)
         throws SQLException
     {
@@ -706,6 +833,12 @@ public class ProfileManager
         return;
     }
     
+    /**
+     * Retrieves a list of the email addresses associated with a person's
+     * account.
+     * @param personid  the unique ID number of the person
+     * @return a list of email addresses associated with a person's account.
+     */
     public static List<String> getEmailAddresses(long personid)
         throws SQLException
     {
@@ -723,6 +856,13 @@ public class ProfileManager
         return numbers;
     }
     
+    /**
+     * Helper method to retrieve the values of those attributes common to
+     * customers and employees.
+     * @param personid      the unique ID of the person of interest
+     * @param attributes    list of desired attributes whose values to retrieve
+     * @return a map from person attribute names to their values
+     */
     private static Map<String,Object> getPersonInfo(long personid, List<String> attributes)
         throws SQLException
     {
@@ -785,6 +925,13 @@ public class ProfileManager
         return values;
     }
     
+    /**
+     * Retrieves the desired information about a customer.
+     * @param cust_id       the unique ID number identifying the customer in
+     *                      question
+     * @param attributes    list of desired attributes whose values to retrieve
+     * @return map from attribute names to their current values
+     */
     public static Map<String,Object> getCustomerInfo(long cust_id, List<String> attributes)
         throws SQLException
     {
@@ -844,6 +991,13 @@ public class ProfileManager
         return values;
     }
     
+    /**
+     * Retrieves the desired information about an employee.
+     * @param empid         the unique ID number identifying the employee in
+     *                      question
+     * @param attributes    list of desired attributes whose values to retrieve
+     * @return map from attribute names to their current values
+     */
     public static Map<String,Object> getEmployeeInfo(long empid, List<String> attributes)
         throws SQLException
     {
@@ -918,6 +1072,13 @@ public class ProfileManager
         return values;
     }
 
+    /**
+     * Gets the ID number associated with the person with the specified
+     * username.
+     * @param username  the username of the person whose ID number is wanted
+     * @return  USERNAME_NOT_IN_TABLE if the username does not exist in the
+     *          Person table, or the unique ID number of the person
+     */
     public static long getPersonID(String username)
         throws SQLException
     {
