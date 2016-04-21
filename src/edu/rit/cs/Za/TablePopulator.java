@@ -29,6 +29,9 @@ public class TablePopulator
     private static BufferedReader dataBufferedReader;
     private static Connection conn;    
     
+    /**
+     * Clears, and then populates tables
+     */
     public TablePopulator() throws SQLException, IOException
     {
         wipeTables();
@@ -36,6 +39,10 @@ public class TablePopulator
         testTablesPopulated();
     }
     
+    /**
+     * Clear all rows from all table tableName
+     * @param tableName the table whose rows will get removed
+     */
     public static void wipeTableData(String tableName) throws SQLException 
     {
         conn = ConnectionManager.getConnection();
@@ -44,6 +51,9 @@ public class TablePopulator
         ps.executeUpdate();
     }
     
+    /**
+     * Clears all rows from all tables
+     */
     public static void wipeTables()
         throws SQLException
     {
@@ -59,6 +69,10 @@ public class TablePopulator
         wipeTableData("Person");
     }
     
+    /**
+     * Populates all tables. Depends on the existence and formatting of files contained within
+     * the table_data directory.
+     */
     private static void populateTables() throws SQLException, IOException {
         //Other tables rely on personid, so populate persons first
         dataFileReader = new FileReader(new File("table_data/person_data.txt"));
@@ -92,6 +106,10 @@ public class TablePopulator
         }
     }
     
+    /**
+     * Populates Orders table.
+     * @param dataFile  the file containing order data
+     */
     private static void populateOrders(File dataFile) throws SQLException {
         Map<String, ArrayList<Object>> orderData = new HashMap<String, ArrayList<Object>>();
         orderData.put("order_type", new ArrayList<Object>());
@@ -206,6 +224,10 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Populates PhoneNumbers table.
+     * @param dataFile  the file containing phone number data
+     */
     private static void populatePhoneNumbers(File dataFile) throws SQLException {
         Map<String, ArrayList<Object>> phoneData = new HashMap<String, ArrayList<Object>>();
         phoneData.put("phone_number", new ArrayList<Object>());
@@ -253,6 +275,10 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Populates CreditCards table.
+     * @param dataFile  the file containing credit card data
+     */
     private static void populateCreditCards(File dataFile) throws SQLException, NumberFormatException, IOException {
         Map<String, ArrayList<Object>> ccData = new HashMap<String, ArrayList<Object>>();
         ccData.put("number", new ArrayList<Object>()); 
@@ -312,6 +338,10 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Populates Emails table.
+     * @param emailsFile  the file containing email data
+     */
     private static void populateEmails(File emailsFile) throws SQLException, IOException {
         //Find a personID to attach the email to
         conn = ConnectionManager.getConnection();
@@ -332,6 +362,10 @@ public class TablePopulator
         } 
     }
     
+    /**
+     * Populates Items table.
+     * @param itemsFile  the file containing item data
+     */
     private static void populateItems(File itemsFile) throws SQLException {
         Map<String, ArrayList<Object>> itemData = new HashMap<String, ArrayList<Object>>();
         itemData.put("name", new ArrayList<Object>()); 
@@ -400,6 +434,10 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Populates Persons table.
+     * @param personsFile  the file containing person data
+     */
     private static void populatePersons(File personsFile) throws SQLException {
         //Initialize personData.
         Map<String, ArrayList<Object>> personData = new HashMap<String, ArrayList<Object>>();
@@ -529,6 +567,9 @@ public class TablePopulator
         }
     }
     
+    /**
+     * Prints to std. out. the content of all tables.
+     */
     public static void testTablesPopulated() throws SQLException
     {
         testPersonPopulated();
@@ -542,6 +583,9 @@ public class TablePopulator
         testOrderTablesPopulated();
     }
     
+    /**
+     * Prints to std. out. the content of all the order table.
+     */
     private static void testOrderTablesPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -570,6 +614,9 @@ public class TablePopulator
         
     }
 
+    /**
+     * Prints to std. out. the content of all the PersonPhoneNumber table.
+     */
     private static void testPersonPhoneNumberPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -584,6 +631,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the CustomerCard table.
+     */
     private static void testCustomerCardPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -598,6 +648,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the Credit_Card table.
+     */
     private static void testCredit_CardPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -614,6 +667,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the Employee table.
+     */
     private static void testEmployeePopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -633,6 +689,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the Customer table.
+     */
     private static void testCustomerPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -648,6 +707,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the Person table.
+     */
     private static void testPersonPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -672,6 +734,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the PersonEmailAddress table.
+     */
     private static void testPersonEmailAddressPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder = new StringBuilder();
@@ -686,6 +751,9 @@ public class TablePopulator
         }
     }
 
+    /**
+     * Prints to std. out. the content of all the Menu_Item table.
+     */
     private static void testMenu_ItemPopulated() throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT * ");
