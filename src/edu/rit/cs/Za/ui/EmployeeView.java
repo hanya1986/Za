@@ -1,4 +1,4 @@
-package edu.rit.cs.Za;
+package edu.rit.cs.Za.ui;
 
 /**
  * SignupView.java

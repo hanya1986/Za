@@ -1,4 +1,4 @@
-package edu.rit.cs.Za;
+package edu.rit.cs.Za.ui;
 
 /**
  * SignupView.java
@@ -20,6 +20,8 @@ import java.awt.Dimension;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+
+import edu.rit.cs.Za.SignupView;
 
 import java.awt.Point;
 import java.awt.Rectangle;
