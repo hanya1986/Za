@@ -45,7 +45,7 @@ public class Queries
         rs.next();
         
         /*
-         * accordnig to H2 documentation, SUM aggregate returns sum of INTs (int)
+         * according to H2 documentation, SUM aggregate returns sum of INTs (int)
          * as BIGINT (long)
          */
         return rs.getLong(1);
