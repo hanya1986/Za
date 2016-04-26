@@ -33,8 +33,8 @@ public class Queries
      * Gets the quantity of an item sold in a given time period. Does not
      * distinguish between different sizes of the same item.
      * @param itemName  the name of the item (without the size)
-     * @param start     the beginning of the time period
-     * @param end       the end of the time period
+     * @param start     the beginning of the time period (inclusive)
+     * @param end       the end of the time period (exclusive)
      * @return the number of the item sold in the given time period
      */
     public static long getQuantitySold(String itemName, Date start, Date end)
@@ -71,8 +71,8 @@ public class Queries
     
     /**
      * Gets order cost statistics for the given time period.
-     * @param start the beginning of the time period
-     * @param end   the end of the time period
+     * @param start the beginning of the time period (inclusive)
+     * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
      *          Key                 Value
      *          ----------------    --------------------------------
@@ -147,8 +147,8 @@ public class Queries
     /**
      * Gets statistics for revenue generated on a daily basis for the given time
      * period.
-     * @param start the beginning of the time period
-     * @param end   the end of the time period
+     * @param start the beginning of the time period (inclusive)
+     * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
      *          Key                 Value
      *          ----------------    ------------------------------------
@@ -329,10 +329,10 @@ public class Queries
     /**
      * Gets statistics for revenue generated on a monthly basis for the given
      * time period.
-     * @param startMonth    the month of the beginning of the time period
-     * @param startYear     the year of the beginning of the time period
-     * @param endMonth      the month of the end of the time period
-     * @param endYear       the year of the end of the time period
+     * @param startMonth    month of beginning of time period (inclusive)
+     * @param startYear     year of beginning of time period (inclusive)
+     * @param endMonth      month of end of time period (inclusive)
+     * @param endYear       year of end of time period (inclusive)
      * @return  map from statistic keys to their values or empty map if no data
      *          Key                 Value
      *          ----------------    --------------------------------------------
@@ -368,8 +368,9 @@ public class Queries
         Calendar cal = Calendar.getInstance();
         cal.set(endYear, endMonth.value(), 1);
         int endDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        
-        Date end = new Date(endYear - 1900, endMonth.value(), endDay);
+        cal.set(Calendar.DAY_OF_MONTH, endDay);
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        Date end = new Date(cal.get(Calendar.YEAR) - 1900, cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
         
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
@@ -443,8 +444,8 @@ public class Queries
     /**
      * Gets statistics for the number of orders placed on a daily basis for the
      * given time period.
-     * @param start the beginning of the time period
-     * @param end   the end of the time period
+     * @param start the beginning of the time period (inclusive)
+     * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
      *          Key                     Value
      *          --------------------    ----------------------------------------
@@ -532,10 +533,10 @@ public class Queries
     /**
      * Gets statistics for the number of orders placed on a monthly basis for
      * the given time period.
-     * @param startMonth    the month of the beginning of the time period
-     * @param startYear     the year of the beginning of the time period
-     * @param endMonth      the month of the end of the time period
-     * @param endYear       the year of the end of the time period
+     * @param startMonth    month of beginning of time period (inclusive)
+     * @param startYear     year of beginning of time period (inclusive)
+     * @param endMonth      month of end of time period (inclusive)
+     * @param endYear       year of end of time period (inclusive)
      * @return  map from statistics keys to their values or empty map if no data
      *          Key                     Value
      *          --------------------    ------------------------------------
@@ -571,8 +572,9 @@ public class Queries
         Calendar cal = Calendar.getInstance();
         cal.set(endYear, endMonth.value(), 1);
         int endDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        
-        Date end = new Date(endYear - 1900, endMonth.value(), endDay);
+        cal.set(Calendar.DAY_OF_MONTH, endDay);
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        Date end = new Date(cal.get(Calendar.YEAR) - 1900, cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
         
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
