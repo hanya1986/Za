@@ -777,7 +777,7 @@ public class TablePopulator
     public static void main(String[] args)
     {
         String db_location = "./ZADB/za";
-        String db_path = db_location + ".mv.db";
+        String db_path = db_location + ".h2.db";
 
         File f = new File(db_path);
         if (f.exists()) f.delete();

@@ -50,7 +50,10 @@ public class Queries
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT SUM(quantity) ");
         builder.append("FROM ZaOrder INNER JOIN ZaOrderItem ON ZaOrder.orderid=ZaOrderItem.orderid ");
-        builder.append("WHERE itemid=? AND time_order_placed BETWEEN ? AND ?;");
+        builder.append("WHERE itemid=? ");
+        builder.append("AND time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND ZaOrder.subtotal IS NOT NULL ");
+        builder.append("AND ZaOrder.active=FALSE;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setString(1, itemName);
         ps.setDate(2, start);

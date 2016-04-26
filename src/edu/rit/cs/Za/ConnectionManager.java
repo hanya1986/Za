@@ -31,7 +31,7 @@ public class ConnectionManager
         throws SQLException
     {
         closeConnection();
-        String url = "jdbc:h2:" + location;
+        String url = "jdbc:h2:" + location + ";mv_store=false";
         connection = DriverManager.getConnection(url, username, password);
     }
     
