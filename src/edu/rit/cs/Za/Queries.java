@@ -2,7 +2,8 @@ package edu.rit.cs.Za;
 
 /**
  * Queries.java
- * Contributor(s):  Jordan Rosario (jar2119@rit.edu), Nicholas Marchionda (njm3348@rit.edu)
+ * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ *                  Nicholas Marchionda (njm3348@rit.edu)
  */
 
 import java.sql.Date;
@@ -20,8 +21,21 @@ import java.util.Collections;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+ * Static class that provides methods to obtain information about 'Za operations
+ * from the database. These can be used to present reports to the manager about
+ * employee, product, and store performance.
+ */
 public class Queries
 {
+    /**
+     * Gets the quantity of an item sold in a given time period. Does not
+     * distinguish between different sizes of the same item.
+     * @param itemName  the name of the item (without the size)
+     * @param start     the beginning of the time period
+     * @param end       the end of the time period
+     * @return the number of the item sold in the given time period
+     */
     public static long getQuantitySold(String itemName, Date start, Date end)
         throws SQLException
     {
@@ -42,18 +56,33 @@ public class Queries
         ps.setDate(2, start);
         ps.setDate(3, end);
         ResultSet rs = ps.executeQuery();
-        rs.next();
+        if (!rs.next()) return 0;
         
         /*
-         * according to H2 documentation, SUM aggregate returns sum of INTs (int)
-         * as BIGINT (long)
+         * according to H2 documentation, SUM aggregate returns the sum of an
+         * INT column (int) as a BIGINT (long)
          */
         return rs.getLong(1);
     }
     
+    /**
+     * Gets order cost statistics for the given time period.
+     * @param start the beginning of the time period
+     * @param end   the end of the time period
+     * @return  map from statistic keys to their values or empty map if no data
+     *          Key                 Value
+     *          ----------------    --------------------------------
+     *          AVG_ORDER_COST      Average cost of an order
+     *          MIN_ORDER_COST      Least expensive cost of an order
+     *          MAX_ORDER_COST      Most expensive cost of an order
+     *          MED_ORDER_COST      Median cost of an order
+     *          TOTAL_ORDER_COST    Total revenue from all orders
+     */
     public static Map<String,BigDecimal> getOrderCostStats(Date start, Date end)
         throws SQLException
     {
+        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
+        
         if (end.compareTo(start) < 0)
         {
             Date tmp = start;
@@ -72,12 +101,13 @@ public class Queries
         ps.setDate(1, start);
         ps.setDate(2, end);
         ResultSet rs = ps.executeQuery();
-        rs.next();
         
-        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
+        if (!rs.next()) return stats;
+        
         stats.put("AVG_ORDER_COST", rs.getBigDecimal(1));
         stats.put("MIN_ORDER_COST", rs.getBigDecimal(2));
         stats.put("MAX_ORDER_COST", rs.getBigDecimal(3));
+        stats.put("TOTAL_ORDER_COST", rs.getBigDecimal(4));
         
         builder.setLength(0);
         builder.append("SELECT subtotal ");
@@ -102,21 +132,29 @@ public class Queries
             BigDecimal b = totals.get(totals.size() / 2);
             median = a.add(b).divide(new BigDecimal(2));
         }
-        else
-            median = totals.get(totals.size() / 2);
+        else median = totals.get(totals.size() / 2);
         
         median.setScale(2, RoundingMode.HALF_UP);
-        
         stats.put("MED_ORDER_COST", median);
-        
-        BigDecimal total = rs.getBigDecimal(4);
-        total.setScale(2, RoundingMode.HALF_UP);
-        
-        stats.put("TOTAL_ORDER_COST", total);
         
         return stats;
     }
 
+    /**
+     * Gets statistics for revenue generated on a daily basis for the given time
+     * period.
+     * @param start the beginning of the time period
+     * @param end   the end of the time period
+     * @return  map from statistic keys to their values or empty map if no data
+     *          Key                 Value
+     *          ----------------    ------------------------------------
+     *          AVG_DAILY_REV       Average revenue made in a day
+     *          MIN_DAILY_REV       Least amount of revenue made in a day
+     *          MED_DAILY_REV       Median amount of revenue made in a day
+     *          MAX_DAILY_REV       Greatest amount of revenue made in a day
+     *          TOTAL_DAILY_REV     Total revenue for entire duration
+     * @throws SQLException
+     */
     public static Map<String,BigDecimal> getDailyRevenueStats(Date start, Date end)
         throws SQLException
     {
@@ -179,8 +217,7 @@ public class Queries
             BigDecimal b = dailyRevs.get(dailyRevs.size() / 2);
             medDailyRev = a.add(b).divide(new BigDecimal(2));
         }
-        else
-            medDailyRev = dailyRevs.get(dailyRevs.size() / 2);
+        else medDailyRev = dailyRevs.get(dailyRevs.size() / 2);
         
         BigDecimal avgDailyRev = sumDailyRev.divide(new BigDecimal(nDays));
         
@@ -285,6 +322,22 @@ public class Queries
         return fastestDeliverers;
     }
 
+    /**
+     * Gets statistics for revenue generated on a monthly basis for the given
+     * time period.
+     * @param startMonth    the month of the beginning of the time period
+     * @param startYear     the year of the beginning of the time period
+     * @param endMonth      the month of the end of the time period
+     * @param endYear       the year of the end of the time period
+     * @return  map from statistic keys to their values or empty map if no data
+     *          Key                 Value
+     *          ----------------    --------------------------------------------
+     *          AVG_MONTHLY_REV     Average revenue made during a month
+     *          MIN_MONTHLY_REV     Least amount of revenue made during a month
+     *          MED_MONTHLY_REV     Median amount of revenue made during a month
+     *          MAX_MONTHLY_REV     Greatest amount of revenue made during a month
+     *          TOTAL_MONTHLY_REV   Total revenue for entire duration
+     */
     public static Map<String,BigDecimal> getMonthlyRevenueStats(Month startMonth, int startYear, Month endMonth, int endYear)
         throws SQLException
     {
@@ -383,6 +436,20 @@ public class Queries
         return stats;
     }
 
+    /**
+     * Gets statistics for the number of orders placed on a daily basis for the
+     * given time period.
+     * @param start the beginning of the time period
+     * @param end   the end of the time period
+     * @return  map from statistic keys to their values or empty map if no data
+     *          Key                     Value
+     *          --------------------    ----------------------------------------
+     *          AVG_DAILY_ORDERS        Average number of orders placed in a day
+     *          MIN_DAILY_ORDERS        Least number of orders placed in a day
+     *          MED_DAILY_ORDERS        Median number of orders placed in a day
+     *          MAX_DAILY_ORDERS        Greatest number of orders placed in a day
+     *          TOTAL_DAILY_ORDERS      Total number of orders placed
+     */
     public static Map<String,Float> getDailyOrderStats(Date start, Date end)
         throws SQLException
     {
@@ -458,6 +525,22 @@ public class Queries
         return stats;
     }
 
+    /**
+     * Gets statistics for the number of orders placed on a monthly basis for
+     * the given time period.
+     * @param startMonth    the month of the beginning of the time period
+     * @param startYear     the year of the beginning of the time period
+     * @param endMonth      the month of the end of the time period
+     * @param endYear       the year of the end of the time period
+     * @return  map from statistics keys to their values or empty map if no data
+     *          Key                     Value
+     *          --------------------    ------------------------------------
+     *          AVG_MONTHLY_ORDERS      Average number of orders in a month
+     *          MIN_MONTHLY_ORDERS      Least number of orders in a month
+     *          MED_MONTHLY_ORDERS      Median number of orders in a month
+     *          MAX_MONTHLY_ORDERS      Greatest number of orders in a month
+     *          TOTAL_MONTHLY_ORDERS    Total number of orders placed
+     */
     public static Map<String,Float> getMonthlyOrderStats(Month startMonth, int startYear, Month endMonth, int endYear)
         throws SQLException
     {
@@ -544,7 +627,7 @@ public class Queries
         stats.put("MIN_MONTHLY_ORDERS", (float)minMonthlyOrders);
         stats.put("MED_MONTHLY_ORDERS", medMonthlyOrders);
         stats.put("MAX_MONTHLY_ORDERS", (float)maxMonthlyOrders);
-        stats.put("TOTAL_ORDERS", (float)sumMonthlyOrders);
+        stats.put("TOTAL_MONTHLY_ORDERS", (float)sumMonthlyOrders);
         
         return stats;
     }
