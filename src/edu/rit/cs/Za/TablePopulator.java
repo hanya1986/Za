@@ -207,9 +207,15 @@ public class TablePopulator
             singleOrderData = new HashMap<String, Object>();
             for (String orderKey : orderData.keySet())
             {
-                try { singleOrderData.put(orderKey, orderData.get(orderKey).get(ordersCreated));    }
+                try
+                {
+                    singleOrderData.put(orderKey, orderData.get(orderKey).get(ordersCreated));
+                    singleOrderData.put("active", false);
+                }
                 catch(Exception e) { }
             }
+            
+            
             try
             {
                 items = new HashMap<String, Integer>();

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -633,5 +634,58 @@ public class Queries
         stats.put("TOTAL_MONTHLY_ORDERS", (float)sumMonthlyOrders);
         
         return stats;
+    }
+
+    public static void main(String[] args)
+        throws SQLException
+    {
+        String db_location = "./ZADB/za";
+        String db_path = db_location + ".h2.db";
+
+        String username = "username";
+        String password = "password";
+        
+        try
+        {
+            ConnectionManager.initConnection(db_location, username, password);
+        }
+        catch (SQLException ex)
+        {
+            System.out.println("A SQL error occurred while attempting to initialize the database connection.");
+            System.out.println(ex);
+            return;
+        }
+        
+        /* test getQuantitySold */
+        System.out.println("TESTING Queries.getQuantitySold");
+        Date start = new Date(1970 - 1900, Month.JANUARY.value(), 23);
+        Date end = new Date(1970 - 1900, Month.AUGUST.value(), 18);
+        String[] items = new String[]{
+                "Salad", "Dr. Pepper", "New York-Style", "Fennel-Taleggio", "Ginger Ale",
+                "Eggplant", "Zucchini", "Chips", "Margherita", "Fries", "Herb", "Puttanesca",
+                "Mixed-Vegetable", "Pepsi", "Egg Roll"
+        };
+        long[] quantities = new long[]{
+                3L, 11L, 2L, 4L, 4L, 11L, 7L, 5L, 8L, 8L, 4L, 9L, 2L, 9L, 0L
+        };
+        int i = 0;
+        for (; i < items.length; ++i)
+        {
+            if (Queries.getQuantitySold(items[i], start, end) != quantities[i])
+            {
+                System.out.println("FAIL (" + i + ")");
+                break;
+            }
+        }
+        if (i == items.length) System.out.println("PASS");
+        
+        try
+        {
+            ConnectionManager.closeConnection();
+        }
+        catch (SQLException ex)
+        {
+            // it's probably fine
+        }
     }
 }
