@@ -455,8 +455,8 @@ public class Queries
     }
 
     /**
-     * Gets statistics for the number of orders placed on a daily basis for the
-     * given time period.
+     * Gets statistics for the number of orders placed in a day on days that
+     * orders were actually placed during the given time period.
      * @param start the beginning of the time period (inclusive)
      * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
@@ -495,19 +495,19 @@ public class Queries
         Map<String,Float> stats = new HashMap<String,Float>();
         if (!rs.next()) return stats;
         
-        float avgDailyOrders = 0;
+        float avgDailyOrders = 0.0f;
         int minDailyOrders = Integer.MAX_VALUE;
         int maxDailyOrders = Integer.MIN_VALUE;
-        float medDailyOrders;
+        float medDailyOrders = 0.0f;
         int sumDailyOrders = 0;
         int orders = 0;
         int nDays = 1;
         List<Integer> dailyOrders = new ArrayList<Integer>();
         
-        int currDay = rs.getInt(3);
+        int currDay = rs.getInt(4);
         do
         {
-            int day = rs.getInt(3);
+            int day = rs.getInt(4);
             if (day != currDay)
             {
                 sumDailyOrders += orders;
@@ -517,10 +517,14 @@ public class Queries
                 dailyOrders.add(orders);
                 orders = 0;
                 currDay = day;
-                continue;
             }
             ++orders;
         } while (rs.next());
+        
+        sumDailyOrders += orders;
+        if (orders < minDailyOrders) minDailyOrders = orders;
+        if (orders > maxDailyOrders) maxDailyOrders = orders;
+        dailyOrders.add(orders);
         
         Collections.sort(dailyOrders);
         if (dailyOrders.size() % 2 == 0)
@@ -740,6 +744,56 @@ public class Queries
         end = new Date(1971 - 1900, Month.JULY.value(), 25);
         stats = Queries.getOrderCostStats(start, end);
         if (stats.keySet().size() != 0) System.out.println("FAIL (3)");
+        else System.out.println("PASS");
+        
+        /* test getDailyOrderStats */
+        System.out.println("TESTING Queries.getDailyOrderStats");
+        start = new Date(1976 - 1900, Month.JANUARY.value(), 19);
+        end = new Date(1979 - 1900, Month.MARCH.value(), 17);
+        keys = new String[]{
+                "AVG_DAILY_ORDERS", "MIN_DAILY_ORDERS", "MED_DAILY_ORDERS",        
+                "MAX_DAILY_ORDERS", "TOTAL_DAILY_ORDERS"
+        };
+        float[] fValues = new float[]{
+                1.0526316f, 1.0f, 1.0f, 2.0f, 20.0f
+        };
+        Map<String,Float> sfStats = Queries.getDailyOrderStats(start, end);
+        i = 0;
+        for (; i < keys.length; ++i)
+        {
+            if (sfStats.get(keys[i]) != fValues[i])
+            {
+                System.out.println("FAIL (1,i=" + i + ")");
+                System.out.println("Stat. Key: " + keys[i]);
+                System.out.println("Expected Value: " + fValues[i]);
+                System.out.println("Got: " + sfStats.get(keys[i]));
+                break;
+            }
+        }
+        
+        end = new Date(1979 - 1900, Month.MARCH.value(), 16);
+        fValues = new float[]{
+                1.0555556f, 1.0f, 1.0f, 2.0f, 19.0f
+        };
+        
+        sfStats = Queries.getDailyOrderStats(start, end);
+        i = 0;
+        for (; i < keys.length; ++i)
+        {
+            if (sfStats.get(keys[i]) != fValues[i])
+            {
+                System.out.println("FAIL (2,i=" + i + ")");
+                System.out.println("Stat. Key: " + keys[i]);
+                System.out.println("Expected Value: " + fValues[i]);
+                System.out.println("Got: " + sfStats.get(keys[i]));
+                break;
+            }
+        }
+        
+        start = new Date(1976 - 1900, Month.MAY.value(), 3);
+        end = new Date(1979 - 1900, Month.MARCH.value(), 10);
+        sfStats = Queries.getDailyOrderStats(start, end);
+        if (sfStats.keySet().size() != 0) System.out.println("FAIL (3)");
         else System.out.println("PASS");
         
         try
