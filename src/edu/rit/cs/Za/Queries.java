@@ -30,8 +30,10 @@ import java.math.RoundingMode;
 public class Queries
 {
     /**
-     * Gets the quantity of an item sold in a given time period. Does not
-     * distinguish between different sizes of the same item.
+     * Gets the quantity of an item sold in a given time period (from midnight
+     * on the start date up to and including midnight on the second date, but
+     * not a moment later). Does not distinguish between different sizes of the
+     * same item.
      * @param itemName  the name of the item (without the size)
      * @param start     the beginning of the time period (inclusive)
      * @param end       the end of the time period (exclusive)
@@ -108,10 +110,17 @@ public class Queries
         
         if (!rs.next()) return stats;
         
-        BigDecimal avgOrderCost = rs.getBigDecimal(1).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal minOrderCost = rs.getBigDecimal(2).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal maxOrderCost = rs.getBigDecimal(3).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalOrderCost = rs.getBigDecimal(4).setScale(2,  RoundingMode.HALF_UP);
+        BigDecimal avgOrderCost = rs.getBigDecimal(1);
+        if (!rs.wasNull()) avgOrderCost = avgOrderCost.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal minOrderCost = rs.getBigDecimal(2);
+        if (!rs.wasNull()) minOrderCost = minOrderCost.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal maxOrderCost = rs.getBigDecimal(3);
+        if (!rs.wasNull()) maxOrderCost = maxOrderCost.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalOrderCost = rs.getBigDecimal(4);
+        if (!rs.wasNull()) totalOrderCost = totalOrderCost.setScale(2, RoundingMode.HALF_UP);
+        
+        if (avgOrderCost == null && minOrderCost == null && maxOrderCost == null && totalOrderCost == null)
+            return stats;
         
         builder.setLength(0);
         builder.append("SELECT subtotal ");
@@ -726,8 +735,12 @@ public class Queries
                 break;
             }
         }
-        if (i == keys.length) System.out.println("PASS");
         
+        start = new Date(1971 - 1900, Month.APRIL.value(), 20);
+        end = new Date(1971 - 1900, Month.JULY.value(), 25);
+        stats = Queries.getOrderCostStats(start, end);
+        if (stats.keySet().size() != 0) System.out.println("FAIL (3)");
+        else System.out.println("PASS");
         
         try
         {
