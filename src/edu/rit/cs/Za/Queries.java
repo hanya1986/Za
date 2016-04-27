@@ -158,8 +158,8 @@ public class Queries
     }
 
     /**
-     * Gets statistics for revenue generated on a daily basis for the given time
-     * period.
+     * Gets statistics for revenue on days that revenue was generated during the
+     * given time period.
      * @param start the beginning of the time period (inclusive)
      * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
@@ -548,8 +548,8 @@ public class Queries
     }
 
     /**
-     * Gets statistics for the number of orders placed on a monthly basis for
-     * the given time period.
+     * Gets statistics for the number of orders placed in a month in months that
+     * orders were actually placed during the given time period.
      * @param startMonth    month of beginning of time period (inclusive)
      * @param startYear     year of beginning of time period (inclusive)
      * @param endMonth      month of end of time period (inclusive)
@@ -629,10 +629,14 @@ public class Queries
                 monthlyOrders.add(orders);
                 orders = 0;
                 currMonth = month;
-                continue;
             }
             ++orders;
         } while (rs.next());
+        
+        sumMonthlyOrders += orders;
+        if (orders < minMonthlyOrders) minMonthlyOrders = orders;
+        if (orders > maxMonthlyOrders) maxMonthlyOrders = orders;
+        monthlyOrders.add(orders);
         
         Collections.sort(monthlyOrders);
         if (monthlyOrders.size() % 2 == 0)
@@ -795,6 +799,31 @@ public class Queries
         sfStats = Queries.getDailyOrderStats(start, end);
         if (sfStats.keySet().size() != 0) System.out.println("FAIL (3)");
         else System.out.println("PASS");
+        
+        /* test getMonthlyOrderStats */
+        keys = new String[]{
+                "AVG_MONTHLY_ORDERS",
+                "MIN_MONTHLY_ORDERS",
+                "MED_MONTHLY_ORDERS", 
+                "MAX_MONTHLY_ORDERS",
+                "TOTAL_MONTHLY_ORDERS"
+        };
+        fValues = new float[]{
+                1.6818181f, 1.0f, 1.0f, 5.0f, 37.0f 
+        };
+        sfStats = Queries.getMonthlyOrderStats(Month.MARCH, 1979, Month.APRIL, 1995);
+        i = 0;
+        for (; i < keys.length; ++i)
+        {
+            if (sfStats.get(keys[i]) != fValues[i])
+            {
+                System.out.println("FAIL (1,i=" + i + ")");
+                System.out.println("Stat. Key: " + keys[i]);
+                System.out.println("Expected Value: " + fValues[i]);
+                System.out.println("Got: " + sfStats.get(keys[i]));
+                break;
+            }
+        }
         
         try
         {
