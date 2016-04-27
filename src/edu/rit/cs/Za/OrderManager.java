@@ -65,9 +65,9 @@ public class OrderManager
         
         BigDecimal tax = subtotal.multiply(TAX_RATE);
         BigDecimal total = subtotal.add(tax);
-        subtotal.setScale(2, RoundingMode.HALF_UP);
-        tax.setScale(2, RoundingMode.HALF_UP);
-        total.setScale(2, RoundingMode.HALF_UP);
+        subtotal = subtotal.setScale(2, RoundingMode.HALF_UP);
+        tax = tax.setScale(2, RoundingMode.HALF_UP);
+        total = total.setScale(2, RoundingMode.HALF_UP);
         
         builder = new StringBuilder();
         builder.append("UPDATE ZaOrder ");

@@ -108,10 +108,10 @@ public class Queries
         
         if (!rs.next()) return stats;
         
-        stats.put("AVG_ORDER_COST", rs.getBigDecimal(1));
-        stats.put("MIN_ORDER_COST", rs.getBigDecimal(2));
-        stats.put("MAX_ORDER_COST", rs.getBigDecimal(3));
-        stats.put("TOTAL_ORDER_COST", rs.getBigDecimal(4));
+        BigDecimal avgOrderCost = rs.getBigDecimal(1).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal minOrderCost = rs.getBigDecimal(2).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal maxOrderCost = rs.getBigDecimal(3).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalOrderCost = rs.getBigDecimal(4).setScale(2,  RoundingMode.HALF_UP);
         
         builder.setLength(0);
         builder.append("SELECT subtotal ");
@@ -138,8 +138,12 @@ public class Queries
         }
         else median = totals.get(totals.size() / 2);
         
-        median.setScale(2, RoundingMode.HALF_UP);
+        median = median.setScale(2, RoundingMode.HALF_UP);
         stats.put("MED_ORDER_COST", median);
+        stats.put("AVG_ORDER_COST", avgOrderCost);
+        stats.put("MIN_ORDER_COST", minOrderCost);
+        stats.put("MAX_ORDER_COST", maxOrderCost);
+        stats.put("TOTAL_ORDER_COST", totalOrderCost);
         
         return stats;
     }
@@ -225,11 +229,11 @@ public class Queries
         
         BigDecimal avgDailyRev = sumDailyRev.divide(new BigDecimal(nDays));
         
-        medDailyRev.setScale(2, RoundingMode.HALF_UP);
-        minDailyRev.setScale(2, RoundingMode.HALF_UP);
-        maxDailyRev.setScale(2, RoundingMode.HALF_UP);
-        avgDailyRev.setScale(2, RoundingMode.HALF_UP);
-        sumDailyRev.setScale(2, RoundingMode.HALF_UP);
+        medDailyRev = medDailyRev.setScale(2, RoundingMode.HALF_UP);
+        minDailyRev = minDailyRev.setScale(2, RoundingMode.HALF_UP);
+        maxDailyRev = maxDailyRev.setScale(2, RoundingMode.HALF_UP);
+        avgDailyRev = avgDailyRev.setScale(2, RoundingMode.HALF_UP);
+        sumDailyRev = sumDailyRev.setScale(2, RoundingMode.HALF_UP);
         
         stats.put("AVG_DAILY_REV", avgDailyRev);
         stats.put("MIN_DAILY_REV", minDailyRev);
@@ -426,11 +430,11 @@ public class Queries
         
         BigDecimal avgMonthlyRev = sumMonthlyRevs.divide(new BigDecimal(nMonths));
         
-        medMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        minMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        maxMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        avgMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        sumMonthlyRevs.setScale(2, RoundingMode.HALF_UP);
+        medMonthlyRev = medMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        minMonthlyRev = minMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        maxMonthlyRev = maxMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        avgMonthlyRev = avgMonthlyRev.setScale(2, RoundingMode.HALF_UP);
+        sumMonthlyRevs = sumMonthlyRevs.setScale(2, RoundingMode.HALF_UP);
         
         stats.put("AVG_MONTHLY_REV", avgMonthlyRev);
         stats.put("MIN_MONTHLY_REV", minMonthlyRev);
@@ -680,6 +684,50 @@ public class Queries
             }
         }
         if (i == items.length) System.out.println("PASS");
+        
+        /* test getorderCostStats */
+        System.out.println("TESTING Queries.getOrderCostStats");
+        start = new Date(1971 - 1900, Month.MARCH.value(), 29);
+        end = new Date(1971 - 1900, Month.NOVEMBER.value(), 22);
+        String[] keys = new String[]{
+                "AVG_ORDER_COST", "MIN_ORDER_COST", "MAX_ORDER_COST", "MED_ORDER_COST",
+                "TOTAL_ORDER_COST"
+        };
+        BigDecimal[] values = new BigDecimal[]{
+                new BigDecimal("18.07"), new BigDecimal("1.18"), new BigDecimal("60.55"),
+                new BigDecimal("12.78"), new BigDecimal("180.69") 
+        };
+        Map<String,BigDecimal> stats = Queries.getOrderCostStats(start, end);
+        i = 0;
+        for (; i < keys.length; ++i)
+        {
+            if (!stats.get(keys[i]).equals(values[i]))
+            {
+                System.out.println("FAIL (1,i=" + i + ")");
+                System.out.println("Stat. Key: " + keys[i]);
+                System.out.println("Expected Value: " + values[i]);
+                System.out.println("Got: " + stats.get(keys[i]));
+                break;
+            }
+        }
+        
+        end = new Date(1971 - 1900, Month.NOVEMBER.value(), 21);
+        values = new BigDecimal[]{
+               new BigDecimal("19.95"), new BigDecimal("1.42"), new BigDecimal("60.55"),
+               new BigDecimal("16.76"), new BigDecimal("179.51")
+        };
+        stats = Queries.getOrderCostStats(start, end);
+        i = 0;
+        for (; i < keys.length; ++i)
+        {
+            if (!stats.get(keys[i]).equals(values[i]))
+            {
+                System.out.println("FAIL (2,i=" + i + ")");
+                break;
+            }
+        }
+        if (i == keys.length) System.out.println("PASS");
+        
         
         try
         {
