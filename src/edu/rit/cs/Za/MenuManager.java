@@ -159,7 +159,7 @@ public class MenuManager
      * @return  a map whose keys are the desired attributes and whose values are
      *          the values of those attributes
      */
-    public Map<String,Object> getItemInfo(String itemName, List<String> attributes)
+    public static Map<String,Object> getItemInfo(String itemName, List<String> attributes)
         throws SQLException
     {
         Map<String,Object> menuItem = new HashMap<String,Object>();
@@ -221,7 +221,7 @@ public class MenuManager
      * @param itemName  the name of the menu item
      * @param values    collection of attributes mapped to their new values
      */
-    public void modifyItem(String itemName, Map<String,Object> values)
+    public static void modifyItem(String itemName, Map<String,Object> values)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
