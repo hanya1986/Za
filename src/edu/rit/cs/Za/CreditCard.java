@@ -23,4 +23,15 @@ public class CreditCard
     
     /* the year of the credit card expiration date */
     public int expirationYear;
+    
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CreditCard)) return false;
+        CreditCard cc = (CreditCard)o;
+        return  cardNumber.equals(cc.cardNumber) &&
+                securityCode.equals(cc.securityCode) &&
+                expirationMonth == cc.expirationMonth &&
+                expirationYear == cc.expirationYear;
+                
+    }
 }

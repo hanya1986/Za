@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
@@ -113,7 +114,7 @@ public class ProfileManager
      * @return  PersonType.NOT_A_PERSON if the ID number is invalid, otherwise
      *          either PersonType.CUSTOMER or PersonType.EMPLOYEE as appropriate
      */
-    public PersonType getPersonType(long personid)
+    public static PersonType getPersonType(long personid)
         throws SQLException
     {
         Connection conn = ConnectionManager.getConnection();
@@ -682,10 +683,11 @@ public class ProfileManager
         ps = conn.prepareStatement(builder.toString());
         ps.setString(1, cardNumber);
         ResultSet rs = ps.executeQuery();
-        if (rs.next()) return;
+        rs.next();
+        if (rs.getBoolean(1)) return;
         
         builder.setLength(0);
-        builder.append("DELETE FROM CreditCard ");
+        builder.append("DELETE FROM Credit_Card ");
         builder.append("WHERE number=?;");
         ps = conn.prepareStatement(builder.toString());
         ps.setString(1, cardNumber);
@@ -704,8 +706,8 @@ public class ProfileManager
         List<CreditCard> cards = new LinkedList<CreditCard>();
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT number,sec_code,exp_month,exp_year");
-        builder.append("FROM Credit_Card INNER JOIN CustomerCard");
+        builder.append("SELECT number,sec_code,exp_month,exp_year ");
+        builder.append("FROM Credit_Card INNER JOIN CustomerCard ");
         builder.append("ON Credit_Card.number=CustomerCard.card_number ");
         builder.append("WHERE personid=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -825,7 +827,7 @@ public class ProfileManager
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
         builder.append("DELETE FROM PersonEmailAddress ");
-        builder.append("WHERE personid=? AND emailAddress=?;");
+        builder.append("WHERE personid=? AND email_addr=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, personid);
         ps.setString(2, emailAddress);
