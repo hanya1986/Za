@@ -702,45 +702,4 @@ public class Queries
         
         return stats;
     }
-
-    public static void main(String[] args)
-        throws SQLException
-    {
-        String db_location = "./ZADB/za";
-        String username = "username";
-        String password = "password";
-        
-        try
-        {
-            ConnectionManager.initConnection(db_location, username, password);
-        }
-        catch (SQLException ex)
-        {
-            System.out.println("A SQL error occurred while attempting to initialize the database connection.");
-            System.out.println(ex);
-            return;
-        }
-        
-        Date start = new Date(1970 - 1900, Month.JANUARY.value(), 23);
-        Date end = new Date(2285 - 1900, Month.FEBRUARY.value(), 23);
-        Month startMonth = Month.JANUARY;
-        int startYear = 1970;
-        Month endMonth = Month.FEBRUARY;
-        int endYear = 2285;
-        
-        System.out.print("Testing...");
-        Queries.getDailyOrderStats(start, end);
-        Queries.getDailyRevenueStats(start, end);
-        Queries.getMonthlyOrderStats(startMonth, startYear, endMonth, endYear);
-        Queries.getMonthlyRevenueStats(startMonth, startYear, endMonth, endYear);
-        Queries.getOrderCostStats(start, end);
-        Queries.getQuantitySold("Margherita", start, end);
-        System.out.println("done.");
-        
-        try
-        {
-            ConnectionManager.closeConnection();
-        }
-        catch (SQLException ex) {}
-    }
 }
