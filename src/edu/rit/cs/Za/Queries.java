@@ -72,7 +72,9 @@ public class Queries
     }
     
     /**
-     * Gets order cost statistics for the given time period.
+     * Gets order cost statistics for the given time period (from midnight on
+     * the start date up to and including midnight on the second date, but not
+     * a moment later).
      * @param start the beginning of the time period (inclusive)
      * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
@@ -143,7 +145,7 @@ public class Queries
         {
             BigDecimal a = totals.get(totals.size() / 2 - 1);
             BigDecimal b = totals.get(totals.size() / 2);
-            median = a.add(b).divide(new BigDecimal(2));
+            median = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
         }
         else median = totals.get(totals.size() / 2);
         
@@ -184,74 +186,85 @@ public class Queries
         
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT time_order_placed,subtotal ");
+        builder.append("SELECT AVG(rev) AS avg_daily_rev, ");
+        builder.append("MIN(rev) AS min_daily_rev, ");
+        builder.append("MAX(rev) AS max_daily_rev, ");
+        builder.append("SUM(rev) AS total_daily_rev ");
+        builder.append("FROM ");
+        builder.append("(SELECT SUM(subtotal) AS rev, ");
+        builder.append(" YEAR(time_order_placed) AS order_year, ");
+        builder.append( "MONTH(time_order_placed) AS order_month, ");
+        builder.append(" DAY(time_order_placed) AS order_day ");
+        builder.append(" FROM ZaOrder ");
+        builder.append(" WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append(" AND active=FALSE ");
+        builder.append(" AND subtotal IS NOT NULL ");
+        builder.append(" GROUP BY order_year, order_month, order_day);");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        
+        BigDecimal avgDailyOrders = rs.getBigDecimal(1);
+        if (!rs.wasNull()) avgDailyOrders = avgDailyOrders.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal minDailyOrders = rs.getBigDecimal(2);
+        if (!rs.wasNull()) minDailyOrders = minDailyOrders.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal maxDailyOrders = rs.getBigDecimal(3);
+        if (!rs.wasNull()) maxDailyOrders = maxDailyOrders.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalDailyOrders = rs.getBigDecimal(4);
+        if (!rs.wasNull()) totalDailyOrders = totalDailyOrders.setScale(2, RoundingMode.HALF_UP);
+        
+        if (avgDailyOrders == null &&
+            minDailyOrders == null &&
+            maxDailyOrders == null &&
+            totalDailyOrders == null)
+            return new HashMap<String,BigDecimal>();
+        
+        builder.setLength(0);
+        builder.append("SELECT SUM(subtotal) AS rev, ");
+        builder.append("YEAR(time_order_placed) AS order_year, ");
+        builder.append("MONTH(time_order_placed) AS order_month, ");
+        builder.append("DAY(time_order_placed) AS order_day ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
         builder.append("AND active=FALSE ");
         builder.append("AND subtotal IS NOT NULL ");
-        builder.append("ORDER BY time_order_placed;");
-        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        builder.append("GROUP BY order_year, order_month, order_day ");
+        builder.append("ORDER BY rev ASC;");
+        
+        ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
         ps.setDate(2, end);
-        ResultSet rs = ps.executeQuery();
-        BigDecimal sumDailyRev = new BigDecimal("0.00");
-        int nDays = 1;
-        BigDecimal minDailyRev = new BigDecimal(Long.MAX_VALUE);
-        BigDecimal maxDailyRev = new BigDecimal(Long.MIN_VALUE);
-        BigDecimal medDailyRev;
-        List<BigDecimal> dailyRevs = new ArrayList<BigDecimal>();
-        BigDecimal rev = new BigDecimal("0.00");
+        rs = ps.executeQuery();
+        
+        List<BigDecimal> revenues = new ArrayList<BigDecimal>();
+        while (rs.next())
+            revenues.add(rs.getBigDecimal(1));
+        
+        BigDecimal medDailyOrders;
+        if (revenues.size() % 2 == 0)
+        {
+            BigDecimal a = revenues.get(revenues.size() / 2 - 1);
+            BigDecimal b = revenues.get(revenues.size() / 2);
+            medDailyOrders = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+        }
+        else medDailyOrders = revenues.get(revenues.size() / 2);
+        
+        medDailyOrders = medDailyOrders.setScale(2, RoundingMode.HALF_UP);
         
         Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
-        
-        if (!rs.next()) return stats;
-        
-        Timestamp ts = rs.getTimestamp(1);
-        Date currDate = new Date(ts.getYear(), ts.getMonth(), ts.getDay());
-        do
-        {
-            Timestamp tmOrderPlaced = rs.getTimestamp(1);
-            Date dt = new Date(tmOrderPlaced.getYear(), tmOrderPlaced.getMonth(), tmOrderPlaced.getDay());
-            if (dt.compareTo(currDate) > 0)
-            {
-                sumDailyRev = sumDailyRev.add(rev);
-                ++nDays;
-                
-                if (rev.compareTo(minDailyRev) < 0) minDailyRev = new BigDecimal(rev.toString());
-                if (rev.compareTo(maxDailyRev) > 0) maxDailyRev = new BigDecimal(rev.toString());
-                dailyRevs.add(rev);
-                rev = new BigDecimal("0.00");
-                currDate = dt;
-                continue;
-            }
-            rev = rev.add(rs.getBigDecimal(2));
-        } while (rs.next());
-        
-        Collections.sort(dailyRevs);
-        if (dailyRevs.size() % 2 == 0)
-        {
-            BigDecimal a = dailyRevs.get(dailyRevs.size() / 2 - 1);
-            BigDecimal b = dailyRevs.get(dailyRevs.size() / 2);
-            medDailyRev = a.add(b).divide(new BigDecimal(2));
-        }
-        else medDailyRev = dailyRevs.get(dailyRevs.size() / 2);
-        
-        BigDecimal avgDailyRev = sumDailyRev.divide(new BigDecimal(nDays));
-        
-        medDailyRev = medDailyRev.setScale(2, RoundingMode.HALF_UP);
-        minDailyRev = minDailyRev.setScale(2, RoundingMode.HALF_UP);
-        maxDailyRev = maxDailyRev.setScale(2, RoundingMode.HALF_UP);
-        avgDailyRev = avgDailyRev.setScale(2, RoundingMode.HALF_UP);
-        sumDailyRev = sumDailyRev.setScale(2, RoundingMode.HALF_UP);
-        
-        stats.put("AVG_DAILY_REV", avgDailyRev);
-        stats.put("MIN_DAILY_REV", minDailyRev);
-        stats.put("MED_DAILY_REV", medDailyRev);
-        stats.put("MAX_DAILY_REV", maxDailyRev);
-        stats.put("TOTAL_DAILY_REV", sumDailyRev);
+        stats.put("AVG_DAILY_REV", avgDailyOrders);
+        stats.put("MIN_DAILY_REV", minDailyOrders);
+        stats.put("MED_DAILY_REV", medDailyOrders);
+        stats.put("MAX_DAILY_REV", maxDailyOrders);
+        stats.put("TOTAL_DAILY_REV", totalDailyOrders);
         
         return stats;
     }
+    
 
     //// TODO: 4/4/2016 Test the below queries, not sure if correct yet --Nick
     public static Map<String, Integer> getTopNItems(int N) throws SQLException {
@@ -339,9 +352,10 @@ public class Queries
         return fastestDeliverers;
     }
 
+    
     /**
-     * Gets statistics for revenue generated on a monthly basis for the given
-     * time period.
+     * Gets statistics for revenue during months that revenue was generated
+     * during the given time period.
      * @param startMonth    month of beginning of time period (inclusive)
      * @param startYear     year of beginning of time period (inclusive)
      * @param endMonth      month of end of time period (inclusive)
@@ -358,8 +372,6 @@ public class Queries
     public static Map<String,BigDecimal> getMonthlyRevenueStats(Month startMonth, int startYear, Month endMonth, int endYear)
         throws SQLException
     {
-        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
-        
         if (endYear < startYear)
         {
             int tmpYear = startYear;
@@ -385,78 +397,98 @@ public class Queries
         cal.add(Calendar.DAY_OF_MONTH, 1);
         Date end = new Date(cal.get(Calendar.YEAR) - 1900, cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
         
+        if (end.compareTo(start) < 0)
+        {
+            Date tmp = start;
+            start = end;
+            end = tmp;
+        }
+        
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT subtotal,YEAR(time_order_placed) AS order_year,MONTH(time_order_placed) AS order_month ");
+        builder.append("SELECT AVG(rev) AS avg_monthly_rev, ");
+        builder.append("MIN(rev) AS min_monthy_rev, ");
+        builder.append("MAX(rev) AS max_monthly_rev, ");
+        builder.append("SUM(rev) AS total_monthly_rev ");
+        builder.append("FROM ");
+        builder.append("(SELECT SUM(subtotal) AS rev, ");
+        builder.append(" YEAR(time_order_placed) AS order_year, ");
+        builder.append( "MONTH(time_order_placed) AS order_month ");
+        builder.append(" FROM ZaOrder ");
+        builder.append(" WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append(" AND active=FALSE ");
+        builder.append(" AND subtotal IS NOT NULL ");
+        builder.append(" GROUP BY order_year, order_month);");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        
+        BigDecimal avgMonthlyOrders = rs.getBigDecimal(1);
+        if (!rs.wasNull()) avgMonthlyOrders = avgMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal minMonthlyOrders = rs.getBigDecimal(2);
+        if (!rs.wasNull()) minMonthlyOrders = minMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal maxMonthlyOrders = rs.getBigDecimal(3);
+        if (!rs.wasNull()) maxMonthlyOrders = maxMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalMonthlyOrders = rs.getBigDecimal(4);
+        if (!rs.wasNull()) totalMonthlyOrders = totalMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
+        
+        if (avgMonthlyOrders == null &&
+            minMonthlyOrders == null &&
+            maxMonthlyOrders == null &&
+            totalMonthlyOrders == null)
+            return new HashMap<String,BigDecimal>();
+        
+        builder.setLength(0);
+        builder.append("SELECT SUM(subtotal) AS rev, ");
+        builder.append("YEAR(time_order_placed) AS order_year, ");
+        builder.append("MONTH(time_order_placed) AS order_month ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
         builder.append("AND active=FALSE ");
         builder.append("AND subtotal IS NOT NULL ");
-        builder.append("ORDER BY order_year,order_month;");
-        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        builder.append("GROUP BY order_year, order_month ");
+        builder.append("ORDER BY rev ASC;");
+        
+        ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
         ps.setDate(2, end);
-        ResultSet rs = ps.executeQuery();
-        if (!rs.next()) return stats;
+        rs = ps.executeQuery();
         
-        List<BigDecimal> monthlyRevs = new ArrayList<BigDecimal>();
+        List<BigDecimal> revenues = new ArrayList<BigDecimal>();
+        while (rs.next())
+            revenues.add(rs.getBigDecimal(1));
         
-        BigDecimal minMonthlyRev = new BigDecimal(Long.MAX_VALUE);
-        BigDecimal maxMonthlyRev = new BigDecimal(Long.MIN_VALUE);
-        BigDecimal sumMonthlyRevs = new BigDecimal("0.00");
-        BigDecimal rev = new BigDecimal("0.00");
-        int nMonths = 1;
-        
-        int currMonth = rs.getInt(3);
-        do
+        BigDecimal medMonthlyOrders;
+        if (revenues.size() % 2 == 0)
         {
-            int month = rs.getInt(3);
-            if (month != currMonth)
-            {
-                sumMonthlyRevs = sumMonthlyRevs.add(rev);
-                ++nMonths;
-                
-                if (rev.compareTo(minMonthlyRev) < 0) minMonthlyRev = new BigDecimal(rev.toString());
-                if (rev.compareTo(maxMonthlyRev) > 0) maxMonthlyRev = new BigDecimal(rev.toString());
-                monthlyRevs.add(rev);
-                rev = new BigDecimal("0.00");
-                currMonth = month;
-                continue;
-            }
-            rev = rev.add(rs.getBigDecimal(1));
-        } while (rs.next());
-        
-        BigDecimal medMonthlyRev;
-        Collections.sort(monthlyRevs);
-        if (monthlyRevs.size() % 2 == 0)
-        {
-            BigDecimal a = monthlyRevs.get(monthlyRevs.size() / 2 - 1);
-            BigDecimal b = monthlyRevs.get(monthlyRevs.size() / 2);
-            medMonthlyRev = a.add(b).divide(new BigDecimal(2));
+            BigDecimal a = revenues.get(revenues.size() / 2 - 1);
+            BigDecimal b = revenues.get(revenues.size() / 2);
+            medMonthlyOrders = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
         }
-        else
-            medMonthlyRev = monthlyRevs.get(monthlyRevs.size() / 2);
+        else medMonthlyOrders = revenues.get(revenues.size() / 2);
         
-        BigDecimal avgMonthlyRev = sumMonthlyRevs.divide(new BigDecimal(nMonths));
+        medMonthlyOrders = medMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
         
-        medMonthlyRev = medMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        minMonthlyRev = minMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        maxMonthlyRev = maxMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        avgMonthlyRev = avgMonthlyRev.setScale(2, RoundingMode.HALF_UP);
-        sumMonthlyRevs = sumMonthlyRevs.setScale(2, RoundingMode.HALF_UP);
-        
-        stats.put("AVG_MONTHLY_REV", avgMonthlyRev);
-        stats.put("MIN_MONTHLY_REV", minMonthlyRev);
-        stats.put("MED_MONTHLY_REV", medMonthlyRev);
-        stats.put("MAX_MONTHLY_REV", maxMonthlyRev);
-        stats.put("TOTAL_MONTHLY_REV", sumMonthlyRevs);
+        Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
+        stats.put("AVG_DAILY_REV", avgMonthlyOrders);
+        stats.put("MIN_DAILY_REV", minMonthlyOrders);
+        stats.put("MED_DAILY_REV", medMonthlyOrders);
+        stats.put("MAX_DAILY_REV", maxMonthlyOrders);
+        stats.put("TOTAL_DAILY_REV", totalMonthlyOrders);
         
         return stats;
     }
+    
 
     /**
      * Gets statistics for the number of orders placed in a day on days that
-     * orders were actually placed during the given time period.
+     * orders were actually placed during the given time period (from midnight
+     * on the start date up to and including midnight on the second date, but
+     * not a moment later).
      * @param start the beginning of the time period (inclusive)
      * @param end   the end of the time period (exclusive)
      * @return  map from statistic keys to their values or empty map if no data
@@ -473,79 +505,86 @@ public class Queries
     {
         if (end.compareTo(start) < 0)
         {
-            Date tmpDate = start;
+            Date tmp = start;
             start = end;
-            end = tmpDate;
+            end = tmp;
         }
         
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT orderid,YEAR(time_order_placed) AS order_year,");
-        builder.append("MONTH(time_order_placed) AS order_month,");
-        builder.append("DAY_OF_MONTH(time_order_placed) AS order_day ");
-        builder.append("FROM ZaOrder ");
-        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
-        builder.append("ORDER BY order_year,order_month,order_day;");
+        builder.append("SELECT AVG(CAST(n_orders AS REAL)) AS avg_daily_orders, ");
+        builder.append("MIN(n_orders) AS min_daily_orders, ");
+        builder.append("MAX(n_orders) AS max_daily_orders, ");
+        builder.append("SUM(n_orders) AS total_daily_orders ");
+        builder.append("FROM ");
+        builder.append("(SELECT COUNT(*) AS n_orders, ");
+        builder.append(" YEAR(time_order_placed) AS order_year, ");
+        builder.append( "MONTH(time_order_placed) AS order_month, ");
+        builder.append(" DAY(time_order_placed) AS order_day ");
+        builder.append(" FROM ZaOrder ");
+        builder.append(" WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append(" AND active=FALSE ");
+        builder.append(" AND subtotal IS NOT NULL ");
+        builder.append(" GROUP BY order_year, order_month, order_day);");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
         ps.setDate(2, end);
+        
         ResultSet rs = ps.executeQuery();
+        rs.next();
+        
+        Float avgDailyOrders = rs.getFloat(1);
+        Long minDailyOrders = rs.getLong(2);
+        Long maxDailyOrders = rs.getLong(3);
+        Long totalDailyOrders = rs.getLong(4);
+        
+        if (avgDailyOrders == null &&
+            minDailyOrders == null &&
+            maxDailyOrders == null &&
+            totalDailyOrders == null)
+            return new HashMap<String,Float>();
+        
+        builder.setLength(0);
+        builder.append("SELECT COUNT(*) AS n_orders, ");
+        builder.append("YEAR(time_order_placed) AS order_year, ");
+        builder.append("MONTH(time_order_placed) AS order_month, ");
+        builder.append("DAY(time_order_placed) AS order_day ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND active=FALSE ");
+        builder.append("AND subtotal IS NOT NULL ");
+        builder.append("GROUP BY order_year, order_month, order_day ");
+        builder.append("ORDER BY n_orders ASC;");
+        
+        ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        rs = ps.executeQuery();
+        
+        List<Long> orders = new ArrayList<Long>();
+        while (rs.next())
+            orders.add(rs.getLong(1));
+        
+        float medDailyOrders;
+        if (orders.size() % 2 == 0)
+        {
+            float a = orders.get(orders.size() / 2 - 1);
+            float b = orders.get(orders.size() / 2);
+            medDailyOrders = (a + b) / 2.0f;
+        }
+        else medDailyOrders = orders.get(orders.size() / 2);
         
         Map<String,Float> stats = new HashMap<String,Float>();
-        if (!rs.next()) return stats;
-        
-        float avgDailyOrders = 0.0f;
-        int minDailyOrders = Integer.MAX_VALUE;
-        int maxDailyOrders = Integer.MIN_VALUE;
-        float medDailyOrders = 0.0f;
-        int sumDailyOrders = 0;
-        int orders = 0;
-        int nDays = 1;
-        List<Integer> dailyOrders = new ArrayList<Integer>();
-        
-        int currDay = rs.getInt(4);
-        do
-        {
-            int day = rs.getInt(4);
-            if (day != currDay)
-            {
-                sumDailyOrders += orders;
-                ++nDays;
-                if (orders < minDailyOrders) minDailyOrders = orders;
-                if (orders > maxDailyOrders) maxDailyOrders = orders;
-                dailyOrders.add(orders);
-                orders = 0;
-                currDay = day;
-            }
-            ++orders;
-        } while (rs.next());
-        
-        sumDailyOrders += orders;
-        if (orders < minDailyOrders) minDailyOrders = orders;
-        if (orders > maxDailyOrders) maxDailyOrders = orders;
-        dailyOrders.add(orders);
-        
-        Collections.sort(dailyOrders);
-        if (dailyOrders.size() % 2 == 0)
-        {
-            int a = dailyOrders.get(dailyOrders.size() / 2 - 1);
-            int b = dailyOrders.get(dailyOrders.size() / 2);
-            medDailyOrders = ((float)a + (float)b) / 2.0f;
-        }
-        else
-            medDailyOrders = (float)dailyOrders.get(dailyOrders.size() / 2);
-        
-        avgDailyOrders = (float)sumDailyOrders / (float)nDays;
-        
-        stats.put("AVG_DAILY_ORDERS", avgDailyOrders);
-        stats.put("MIN_DAILY_ORDERS", (float)minDailyOrders);
-        stats.put("MED_DAILY_ORDERS", medDailyOrders);
-        stats.put("MAX_DAILY_ORDERS", (float)maxDailyOrders);
-        stats.put("TOTAL_DAILY_ORDERS", (float)sumDailyOrders);
+        stats.put("AVG_DAILY_REV", avgDailyOrders);
+        stats.put("MIN_DAILY_REV", (float)(minDailyOrders.longValue()));
+        stats.put("MED_DAILY_REV", medDailyOrders);
+        stats.put("MAX_DAILY_REV", (float)(maxDailyOrders.longValue()));
+        stats.put("TOTAL_DAILY_REV", (float)(totalDailyOrders.longValue()));
         
         return stats;
     }
+    
 
     /**
      * Gets statistics for the number of orders placed in a month in months that
@@ -566,8 +605,6 @@ public class Queries
     public static Map<String,Float> getMonthlyOrderStats(Month startMonth, int startYear, Month endMonth, int endYear)
         throws SQLException
     {
-        Map<String,Float> stats = new HashMap<String,Float>();
-        
         if (endYear < startYear)
         {
             int tmpYear = startYear;
@@ -595,66 +632,73 @@ public class Queries
         
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT orderid,YEAR(time_order_placed) AS order_year,");
-        builder.append("MONTH(time_order_placed) AS order_month ");
-        builder.append("FROM ZaOrder ");
-        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
-        builder.append("ORDER BY order_year,order_month;");
+        builder.append("SELECT AVG(CAST(n_orders AS REAL)) AS avg_monthly_orders, ");
+        builder.append("MIN(n_orders) AS min_monthly_orders, ");
+        builder.append("MAX(n_orders) AS max_monthly_orders, ");
+        builder.append("SUM(n_orders) AS total_monthly_orders ");
+        builder.append("FROM ");
+        builder.append("(SELECT COUNT(*) AS n_orders, ");
+        builder.append(" YEAR(time_order_placed) AS order_year, ");
+        builder.append(" MONTH(time_order_placed) AS order_month ");
+        builder.append(" FROM ZaOrder ");
+        builder.append(" WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append(" AND active=FALSE ");
+        builder.append(" AND subtotal IS NOT NULL ");
+        builder.append(" GROUP BY order_year, order_month);");
+        
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setDate(1, start);
         ps.setDate(2, end);
+        
         ResultSet rs = ps.executeQuery();
-        if (!rs.next()) return stats;
+        rs.next();
         
-        List<Integer> monthlyOrders = new ArrayList<Integer>();
-        float avgMonthlyOrders;
+        Float avgMonthlyOrders = rs.getFloat(1);
+        Long minMonthlyOrders = rs.getLong(2);
+        Long maxMonthlyOrders = rs.getLong(3);
+        Long totalMonthlyOrders = rs.getLong(4);
+        
+        if (avgMonthlyOrders == null &&
+            minMonthlyOrders == null &&
+            maxMonthlyOrders == null &&
+            totalMonthlyOrders == null)
+            return new HashMap<String,Float>();
+        
+        builder.setLength(0);
+        builder.append("SELECT COUNT(*) AS n_orders, ");
+        builder.append("YEAR(time_order_placed) AS order_year, ");
+        builder.append("MONTH(time_order_placed) AS order_month ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE time_order_placed BETWEEN ? AND ? ");
+        builder.append("AND active=FALSE ");
+        builder.append("AND subtotal IS NOT NULL ");
+        builder.append("GROUP BY order_year, order_month ");
+        builder.append("ORDER BY n_orders ASC;");
+        
+        ps = conn.prepareStatement(builder.toString());
+        ps.setDate(1, start);
+        ps.setDate(2, end);
+        rs = ps.executeQuery();
+        
+        List<Long> orders = new ArrayList<Long>();
+        while (rs.next())
+            orders.add(rs.getLong(1));
+        
         float medMonthlyOrders;
-        int minMonthlyOrders = Integer.MAX_VALUE;
-        int maxMonthlyOrders = Integer.MIN_VALUE;
-        int sumMonthlyOrders = 0;
-        int orders = 0;
-        int nMonths = 1;
-        
-        int currMonth = rs.getInt(3);
-        do
+        if (orders.size() % 2 == 0)
         {
-            int month = rs.getInt(3);
-            if (month != currMonth)
-            {
-                sumMonthlyOrders += orders;
-                ++nMonths;
-                
-                if (orders < minMonthlyOrders) minMonthlyOrders = orders;
-                if (orders > maxMonthlyOrders) maxMonthlyOrders = orders;
-                monthlyOrders.add(orders);
-                orders = 0;
-                currMonth = month;
-            }
-            ++orders;
-        } while (rs.next());
-        
-        sumMonthlyOrders += orders;
-        if (orders < minMonthlyOrders) minMonthlyOrders = orders;
-        if (orders > maxMonthlyOrders) maxMonthlyOrders = orders;
-        monthlyOrders.add(orders);
-        
-        Collections.sort(monthlyOrders);
-        if (monthlyOrders.size() % 2 == 0)
-        {
-            int a = monthlyOrders.get(monthlyOrders.size() / 2 - 1);
-            int b = monthlyOrders.get(monthlyOrders.size() / 2);
-            medMonthlyOrders = (float)(a + b) / 2.0f;
+            float a = orders.get(orders.size() / 2 - 1);
+            float b = orders.get(orders.size() / 2);
+            medMonthlyOrders = (a + b) / 2.0f;
         }
-        else
-            medMonthlyOrders = (float)monthlyOrders.get(monthlyOrders.size() / 2);
+        else medMonthlyOrders = orders.get(orders.size() / 2);
         
-        avgMonthlyOrders = (float)sumMonthlyOrders / (float)nMonths;
-        
-        stats.put("AVG_MONTHLY_ORDERS", avgMonthlyOrders);
-        stats.put("MIN_MONTHLY_ORDERS", (float)minMonthlyOrders);
-        stats.put("MED_MONTHLY_ORDERS", medMonthlyOrders);
-        stats.put("MAX_MONTHLY_ORDERS", (float)maxMonthlyOrders);
-        stats.put("TOTAL_MONTHLY_ORDERS", (float)sumMonthlyOrders);
+        Map<String,Float> stats = new HashMap<String,Float>();
+        stats.put("AVG_DAILY_REV", avgMonthlyOrders);
+        stats.put("MIN_DAILY_REV", (float)(minMonthlyOrders.longValue()));
+        stats.put("MED_DAILY_REV", medMonthlyOrders);
+        stats.put("MAX_DAILY_REV", (float)(maxMonthlyOrders.longValue()));
+        stats.put("TOTAL_DAILY_REV", (float)(totalMonthlyOrders.longValue()));
         
         return stats;
     }
@@ -663,8 +707,6 @@ public class Queries
         throws SQLException
     {
         String db_location = "./ZADB/za";
-        String db_path = db_location + ".h2.db";
-
         String username = "username";
         String password = "password";
         
@@ -679,159 +721,26 @@ public class Queries
             return;
         }
         
-        /* test getQuantitySold */
-        System.out.println("TESTING Queries.getQuantitySold");
         Date start = new Date(1970 - 1900, Month.JANUARY.value(), 23);
-        Date end = new Date(1970 - 1900, Month.AUGUST.value(), 18);
-        String[] items = new String[]{
-                "Salad", "Dr. Pepper", "New York-Style", "Fennel-Taleggio", "Ginger Ale",
-                "Eggplant", "Zucchini", "Chips", "Margherita", "Fries", "Herb", "Puttanesca",
-                "Mixed-Vegetable", "Pepsi", "Egg Roll"
-        };
-        long[] quantities = new long[]{
-                3L, 11L, 2L, 4L, 4L, 11L, 7L, 5L, 8L, 8L, 4L, 9L, 2L, 9L, 0L
-        };
-        int i = 0;
-        for (; i < items.length; ++i)
-        {
-            if (Queries.getQuantitySold(items[i], start, end) != quantities[i])
-            {
-                System.out.println("FAIL (" + i + ")");
-                break;
-            }
-        }
-        if (i == items.length) System.out.println("PASS");
+        Date end = new Date(2285 - 1900, Month.FEBRUARY.value(), 23);
+        Month startMonth = Month.JANUARY;
+        int startYear = 1970;
+        Month endMonth = Month.FEBRUARY;
+        int endYear = 2285;
         
-        /* test getorderCostStats */
-        System.out.println("TESTING Queries.getOrderCostStats");
-        start = new Date(1971 - 1900, Month.MARCH.value(), 29);
-        end = new Date(1971 - 1900, Month.NOVEMBER.value(), 22);
-        String[] keys = new String[]{
-                "AVG_ORDER_COST", "MIN_ORDER_COST", "MAX_ORDER_COST", "MED_ORDER_COST",
-                "TOTAL_ORDER_COST"
-        };
-        BigDecimal[] values = new BigDecimal[]{
-                new BigDecimal("18.07"), new BigDecimal("1.18"), new BigDecimal("60.55"),
-                new BigDecimal("12.78"), new BigDecimal("180.69") 
-        };
-        Map<String,BigDecimal> stats = Queries.getOrderCostStats(start, end);
-        i = 0;
-        for (; i < keys.length; ++i)
-        {
-            if (!stats.get(keys[i]).equals(values[i]))
-            {
-                System.out.println("FAIL (1,i=" + i + ")");
-                System.out.println("Stat. Key: " + keys[i]);
-                System.out.println("Expected Value: " + values[i]);
-                System.out.println("Got: " + stats.get(keys[i]));
-                break;
-            }
-        }
-        
-        end = new Date(1971 - 1900, Month.NOVEMBER.value(), 21);
-        values = new BigDecimal[]{
-               new BigDecimal("19.95"), new BigDecimal("1.42"), new BigDecimal("60.55"),
-               new BigDecimal("16.76"), new BigDecimal("179.51")
-        };
-        stats = Queries.getOrderCostStats(start, end);
-        i = 0;
-        for (; i < keys.length; ++i)
-        {
-            if (!stats.get(keys[i]).equals(values[i]))
-            {
-                System.out.println("FAIL (2,i=" + i + ")");
-                break;
-            }
-        }
-        
-        start = new Date(1971 - 1900, Month.APRIL.value(), 20);
-        end = new Date(1971 - 1900, Month.JULY.value(), 25);
-        stats = Queries.getOrderCostStats(start, end);
-        if (stats.keySet().size() != 0) System.out.println("FAIL (3)");
-        else System.out.println("PASS");
-        
-        /* test getDailyOrderStats */
-        System.out.println("TESTING Queries.getDailyOrderStats");
-        start = new Date(1976 - 1900, Month.JANUARY.value(), 19);
-        end = new Date(1979 - 1900, Month.MARCH.value(), 17);
-        keys = new String[]{
-                "AVG_DAILY_ORDERS", "MIN_DAILY_ORDERS", "MED_DAILY_ORDERS",        
-                "MAX_DAILY_ORDERS", "TOTAL_DAILY_ORDERS"
-        };
-        float[] fValues = new float[]{
-                1.0526316f, 1.0f, 1.0f, 2.0f, 20.0f
-        };
-        Map<String,Float> sfStats = Queries.getDailyOrderStats(start, end);
-        i = 0;
-        for (; i < keys.length; ++i)
-        {
-            if (sfStats.get(keys[i]) != fValues[i])
-            {
-                System.out.println("FAIL (1,i=" + i + ")");
-                System.out.println("Stat. Key: " + keys[i]);
-                System.out.println("Expected Value: " + fValues[i]);
-                System.out.println("Got: " + sfStats.get(keys[i]));
-                break;
-            }
-        }
-        
-        end = new Date(1979 - 1900, Month.MARCH.value(), 16);
-        fValues = new float[]{
-                1.0555556f, 1.0f, 1.0f, 2.0f, 19.0f
-        };
-        
-        sfStats = Queries.getDailyOrderStats(start, end);
-        i = 0;
-        for (; i < keys.length; ++i)
-        {
-            if (sfStats.get(keys[i]) != fValues[i])
-            {
-                System.out.println("FAIL (2,i=" + i + ")");
-                System.out.println("Stat. Key: " + keys[i]);
-                System.out.println("Expected Value: " + fValues[i]);
-                System.out.println("Got: " + sfStats.get(keys[i]));
-                break;
-            }
-        }
-        
-        start = new Date(1976 - 1900, Month.MAY.value(), 3);
-        end = new Date(1979 - 1900, Month.MARCH.value(), 10);
-        sfStats = Queries.getDailyOrderStats(start, end);
-        if (sfStats.keySet().size() != 0) System.out.println("FAIL (3)");
-        else System.out.println("PASS");
-        
-        /* test getMonthlyOrderStats */
-        keys = new String[]{
-                "AVG_MONTHLY_ORDERS",
-                "MIN_MONTHLY_ORDERS",
-                "MED_MONTHLY_ORDERS", 
-                "MAX_MONTHLY_ORDERS",
-                "TOTAL_MONTHLY_ORDERS"
-        };
-        fValues = new float[]{
-                1.6818181f, 1.0f, 1.0f, 5.0f, 37.0f 
-        };
-        sfStats = Queries.getMonthlyOrderStats(Month.MARCH, 1979, Month.APRIL, 1995);
-        i = 0;
-        for (; i < keys.length; ++i)
-        {
-            if (sfStats.get(keys[i]) != fValues[i])
-            {
-                System.out.println("FAIL (1,i=" + i + ")");
-                System.out.println("Stat. Key: " + keys[i]);
-                System.out.println("Expected Value: " + fValues[i]);
-                System.out.println("Got: " + sfStats.get(keys[i]));
-                break;
-            }
-        }
+        System.out.print("Testing...");
+        Queries.getDailyOrderStats(start, end);
+        Queries.getDailyRevenueStats(start, end);
+        Queries.getMonthlyOrderStats(startMonth, startYear, endMonth, endYear);
+        Queries.getMonthlyRevenueStats(startMonth, startYear, endMonth, endYear);
+        Queries.getOrderCostStats(start, end);
+        Queries.getQuantitySold("Margherita", start, end);
+        System.out.println("done.");
         
         try
         {
             ConnectionManager.closeConnection();
         }
-        catch (SQLException ex)
-        {
-            // it's probably fine
-        }
+        catch (SQLException ex) {}
     }
 }

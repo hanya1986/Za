@@ -832,9 +832,6 @@ public class TablePopulator
         {
             ConnectionManager.closeConnection();
         }
-        catch (SQLException ex)
-        {
-            // whatever
-        }
+        catch (SQLException ex) {}
     }
 }
