@@ -5,41 +5,29 @@ package edu.rit.cs.Za.ui;
  * Contributor(s):  Yihao Cheng (yc7816@rit.edu)
  */
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JTextField;
-import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import javax.swing.BoxLayout;
-import java.awt.FlowLayout;
-import javax.swing.JSplitPane;
-import java.awt.Component;
+import javax.swing.JPasswordField;
+
 import java.awt.Dimension;
 
-import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-import edu.rit.cs.Za.SignupView;
+import edu.rit.cs.Za.ProfileManager;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 
 import javax.swing.JLabel;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
@@ -53,29 +41,16 @@ public class LoginView implements ActionListener{
 	private JPanel panel_4;
 	private JButton loginButton;
 	private JButton signupButton;
+	private JButton forgotPass;
+	private JTextField usernameText;
+	private JPasswordField passwordText;
 	
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					LoginView window = new LoginView();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
 	/**
 	 * Create the application.
 	 */
 	public LoginView() {
 		initialize();
+		this.frame.setVisible(true);
 	}
 
 	/**
@@ -86,7 +61,7 @@ public class LoginView implements ActionListener{
 		frame.setBounds(100, 100, 450, 300);
 		frame.setMinimumSize(new Dimension(700, 500));
 		frame.setMaximumSize(new Dimension(700,500));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 2, 0, 0));
 		
 		panel = new JPanel();
@@ -121,10 +96,12 @@ public class LoginView implements ActionListener{
 		JLabel usernameLabel = new JLabel("Username:");
 		JLabel passwordLabel = new JLabel("Password:");
 		loginButton = new JButton("Login");
+		loginButton.addActionListener(this);
 		signupButton = new JButton("Sign up");
 		signupButton.addActionListener(this);
-		JTextField usernameText = new JTextField();
-		JTextField passwordText = new JTextField();
+		usernameText = new JTextField();
+		passwordText = new JPasswordField();
+		passwordText.setEchoChar('*');
 		Dimension prefSize = new Dimension(140,20);
 		usernameText.setPreferredSize(prefSize);
 		passwordText.setPreferredSize(prefSize);
@@ -143,7 +120,7 @@ public class LoginView implements ActionListener{
 		panel_2.add(loginButton, cnst);
 		cnst.gridx = 2;
 		panel_2.add(signupButton, cnst);
-		JButton forgotPass = new JButton("forgot password?");
+		forgotPass = new JButton("forgot password?");
 		forgotPass.setFocusPainted(true);
 		forgotPass.setFocusable(true);
 		forgotPass.setForeground(Color.BLUE);
@@ -155,10 +132,41 @@ public class LoginView implements ActionListener{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if(e.getActionCommand().equals(loginButton.getActionCommand())){
+			long userid;
+			try {
+				userid = ProfileManager.validateCredentials(usernameText.getText(),String.valueOf(passwordText.getPassword()));
+				if(!(userid < 0)){ //need to change to not null
+					//passing user data into CustomerView
+					this.frame.dispose();
+					String[] menuData;
+					CustomerView view = new CustomerView(userid);
+				}
+			} catch (NoSuchAlgorithmException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 		String cmd = e.getActionCommand();
-		if(cmd.equals("Sign up")){
+		if(e.getActionCommand().equals(signupButton.getActionCommand())){
 			SignupView signup = new SignupView();
-			signup.run();
+		}
+		if(e.getActionCommand().equals(forgotPass.getActionCommand())){
+			try {
+				if(usernameText.getText() != ""){
+					long id = ProfileManager.getPersonID(usernameText.getText());
+					ProfileManager.changePassword(id, "password");
+				}
+			} catch (NoSuchAlgorithmException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 	}
 

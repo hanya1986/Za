@@ -35,10 +35,17 @@ public class PaymentView {
 	private GridBagConstraints gbc;
 	private boolean includeAddr;
 	
+	/**
+	 * PaymentView: Constructor
+	 * @param includeAddr
+	 */
 	public PaymentView(boolean includeAddr){
 		this.includeAddr = includeAddr;
 	}
 	
+	/**
+	 * runGUI: Show the UI
+	 */
 	public void runGUI(){
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -52,6 +59,9 @@ public class PaymentView {
 		});
 	}
 	
+	/**
+	 * initialize: initializing the frame
+	 */
 	private void initialize(){
 		frame = new JFrame();
 		paymentPanel = new JPanel(new BorderLayout());

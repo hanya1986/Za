@@ -22,6 +22,10 @@ import javax.swing.JTable;
 public class PastOrderView {
 	private JFrame frame;
 	private JTable pastOrderTable;
+	
+	/**
+	 * runGUI: Show the UI
+	 */
 	public void runGUI(){
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -35,6 +39,9 @@ public class PastOrderView {
 		});
 	}
 	
+	/**
+	 * initialize: initializing the frame
+	 */
 	private void initialize(){
 		frame = new JFrame();
 		frame.getContentPane().setLayout(new BorderLayout());
@@ -61,6 +68,9 @@ public class PastOrderView {
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
+	/**
+	 * populatePastOrderTable: populating the past order info table.
+	 */
 	private JTable populatePastOrderTable(){
 		String[] columns = { "Name", "Type", "Price", "Estimate Time", "Quantity" };
 		Object[][] data = {};

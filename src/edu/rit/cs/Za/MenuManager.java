@@ -191,6 +191,7 @@ public class MenuManager
         builder.append(" FROM Menu_Item ");
         builder.append("WHERE name=?;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setString(1, itemName);
         ResultSet rs = ps.executeQuery();
         if (!rs.next()) return menuItem;
         colIt = columns.iterator();

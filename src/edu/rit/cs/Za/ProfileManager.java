@@ -202,7 +202,7 @@ public class ProfileManager
                 ps.setString(paramIdx++,  (String)values.get("last_name"));
                 break;
             case "date_of_birth":
-                ps.setDate(paramIdx++, (Date)values.get("date_of_birth"));
+            	ps.setDate(paramIdx++, new Date(((java.util.Date)values.get("date_of_birth")).getTime()));
                 break;
             case "username":
                 ps.setString(paramIdx++, (String)values.get("username"));
@@ -214,7 +214,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("city"));
                 break;
             case "state":
-                ps.setString(paramIdx++, ((State)values.get("state")).toString());
+            	ps.setString(paramIdx++, values.get("state").toString());
                 break;
             case "zip":
                 ps.setString(paramIdx++, (String)values.get("zip"));
@@ -445,7 +445,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("last_name"));
                 break;
             case "date_of_birth":
-                ps.setDate(paramIdx++, (Date)values.get("date_of_birth"));
+            	ps.setDate(paramIdx++, new Date(((java.util.Date)values.get("date_of_birth")).getTime()));
                 break;
             case "username":
                 ps.setString(paramIdx++, (String)values.get("username"));
@@ -457,7 +457,7 @@ public class ProfileManager
                 ps.setString(paramIdx++, (String)values.get("city"));
                 break;
             case "state":
-                ps.setString(paramIdx++, ((State)values.get("state")).toString());
+            	ps.setString(paramIdx++, values.get("state").toString());
                 break;
             case "zip":
                 ps.setString(paramIdx++, (String)values.get("zip"));

@@ -23,6 +23,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,7 +35,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class EmployeeView {
 	
-	private String[] profileFields= new String[]{
+	private String[] profileFields = new String[]{
 			"FirstName",
 			"MiddleName",
 			"LastName",
@@ -43,7 +44,6 @@ public class EmployeeView {
 			"City",
 			"State",
 			"Zip",
-			"Email",
 			"SSN",
 			"Hourly Rate",
 			"Hours/Week",
@@ -51,7 +51,7 @@ public class EmployeeView {
 			"Date Terminated",
 			"Job Title"
 		};
-	private String[] CustomerProfileFields= new String[]{
+	private String[] CustomerProfileFields = new String[]{
 			"First Name:",
 			"Middle Name:",
 			"Last Name:",
@@ -62,8 +62,25 @@ public class EmployeeView {
 			"City:",
 			"State:",
 			"Zipcode:",
-			"Email:"
 	};
+
+	private String[] itemFields = new String[]{
+			"Name:",
+			"Type:",
+			"Price:",
+			"estimate time(Min):",
+			"Availabe:",
+			"Small price:",
+			"Medium price:",
+			"Large price:"
+	};
+	
+	private enum typeFrame{
+		addEmployee,
+		modifyEmployee,
+		addItem,
+		modifyitem
+	}
 	
 	private JButton signUpButton;
 	private JButton cancelButton;
@@ -78,7 +95,16 @@ public class EmployeeView {
 	JButton addPhoneNumberButton;
 	JButton removePhoneNumberButton;
 	JLabel phoneNumberLabel;
+	
+	JPanel emailPanel;
+	JComboBox<String> emailComboBox;
+	JTextField emailTextField;
+	JButton addEmailButton;
+	JButton removeEmailButton;
+	JLabel emailLabel;
+	
 	private JFrame frame;
+	private JMenuBar menuBar;
 	private JPanel bottomPanel;
 	private JTable menuTable;
 	private JTable carTable;
@@ -86,12 +112,34 @@ public class EmployeeView {
 	private JPanel orderButtonPanel;
 	private JPanel profilePanel;
 	private JPanel ordersPanel;
+	private JPanel logsPanel;
+	private JPanel statPanel;
 	private JSpinner DOBSpinner;
 	private JScrollPane profileScollPane;
+	private JTable logsTable;
+	private JTable statTable;
+	private JSpinner fromSpinner;
+	private JSpinner toSpinner;
+	private JTextField searchTextField;
+	private JPanel manageEmpPanel;
+	private JTable manageEmpTable;
+	private JPanel manageMenuPanel;
+	private JTable manageMenuTable;
+	private JPanel addEmpPanel;
+	private JPanel modifyEmpPanel;
+	private JPanel addItemPanel;
+	private JPanel modifyItemPanel;
 	
+	/**
+	 * run: Show the frame
+	 */
 	public void run(){
 		this.frame.setVisible(true);
 	}
+	
+	/**
+	 * EmployeeView: Constructor.
+	 */
 	public EmployeeView(){
 		initialize();
 		initializeOrdersView();
@@ -113,6 +161,9 @@ public class EmployeeView {
 		});
 	}
 	
+	/**
+	 * initialize: initializing the frame and the tool bar.
+	 */
 	private void initialize(){
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
@@ -124,7 +175,7 @@ public class EmployeeView {
 		orderButtonPanel.setLayout(new GridLayout(1,1,0,0));
 		frame.getContentPane().add(orderButtonPanel, BorderLayout.NORTH);
 		
-		JMenuBar menuBar = new JMenuBar();
+		menuBar = new JMenuBar();
 		orderButtonPanel.add(menuBar);
 		
 		JButton ordersButton = new JButton("Orders");
@@ -160,6 +211,8 @@ public class EmployeeView {
 		});
 		menuBar.add(createCustomerButton);
 		
+		initializeManagerView();
+		
 		JButton profileButton = new JButton("My Profile");
 		profileButton.addActionListener(new ActionListener(){
 			@Override
@@ -176,12 +229,16 @@ public class EmployeeView {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				frame.dispose();
-				LoginView.main(null);
+				LoginView login = new LoginView();
 			}
 		});
 		menuBar.add(logoutButton);
+		
 	}
 	
+	/**
+	 * initPhoneNumberPanel: initializing the feature for adding multiple phone number.
+	 */
 	private void initPhoneNumberPanel()
 	{
 	    phoneNumberPanel = new JPanel(new GridBagLayout());
@@ -280,8 +337,112 @@ public class EmployeeView {
         phoneNumberPanel.add(removePhoneNumberButton, gbc);
 	}
 	
+	/**
+	 * initEmailPanel: initializing the feature for adding multiple email.
+	 */
+	private void initEmailPanel(){
+		emailPanel = new JPanel(new GridBagLayout());
+	    
+		emailComboBox = new JComboBox<String>();
+		emailComboBox.setEnabled(false);
+        
+		emailTextField = new JTextField();
+        
+		addEmailButton = new JButton("Add");
+		addEmailButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent evt)
+            {
+                String phoneNumber = emailTextField.getText();
+                emailTextField.setText("");
+                
+                for (int i = 0; i < emailComboBox.getItemCount(); ++i)
+                {
+                    String s = emailComboBox.getItemAt(i);
+                    if (s.equals(phoneNumber)) return;
+                }
+                
+                emailComboBox.addItem(phoneNumber);
+                if (!emailComboBox.isEnabled())
+                	emailComboBox.setEnabled(true);
+                if (!removeEmailButton.isEnabled())
+                	removeEmailButton.setEnabled(true);
+            }
+        });
+        
+		removeEmailButton = new JButton("Remove");
+		removeEmailButton.setEnabled(false);
+		removeEmailButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent evt)
+            {
+                if (emailComboBox.getItemCount() < 1) return;
+                emailComboBox.removeItemAt(emailComboBox.getSelectedIndex());
+                if (emailComboBox.getItemCount() < 1)
+                {
+                	emailComboBox.setEnabled(false);
+                	removeEmailButton.setEnabled(false);
+                }
+            }
+        });
+        
+		emailLabel = new JLabel("Email Address:");
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        emailPanel.add(emailLabel, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        emailPanel.add(emailTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        emailPanel.add(addEmailButton, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        emailPanel.add(emailComboBox, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        emailPanel.add(removeEmailButton, gbc);
+	}
+	
+	/**
+	 * initializeCreateCustomerView: initialize the create customer UI.
+	 */
 	public void initializeCreateCustomerView(){
 		initPhoneNumberPanel();
+		initEmailPanel();
 		mainPanel = new JPanel(new GridBagLayout());
 		//mainPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		cutomerProfilePanel = new JPanel(new GridBagLayout());
@@ -352,6 +513,16 @@ public class EmployeeView {
         gbc.insets = new Insets(4, 4, 4, 4);
 		mainPanel.add(phoneNumberPanel, gbc);
 		
+		gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+		mainPanel.add(emailPanel, gbc);
+		
 		signUpButton = new JButton("Submit");
 		cancelButton = new JButton("Cancel");
 		JPanel buttonPanel = new JPanel();
@@ -359,7 +530,7 @@ public class EmployeeView {
 		buttonPanel.add(cancelButton);
 		
 		gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridx = 0; gbc.gridy = 3;
         gbc.gridwidth = 1; gbc.gridheight = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.PAGE_START;
@@ -371,6 +542,9 @@ public class EmployeeView {
 		frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 	}
 	
+	/**
+	 * initializeProfileView: initialize the employee profile UI.
+	 */
 	public void initializeProfileView(){
 		profilePanel = new JPanel(new GridBagLayout());
 		JPanel profilePhonePanel = new JPanel(new GridBagLayout());
@@ -416,6 +590,7 @@ public class EmployeeView {
 			gbc.gridx--;
 		}
 		initPhoneNumberPanel();
+		initEmailPanel();
 		gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 1;
         gbc.gridwidth = 1; gbc.gridheight = 1;
@@ -425,6 +600,17 @@ public class EmployeeView {
         gbc.ipadx = 2; gbc.ipady = 2;
         gbc.insets = new Insets(4, 4, 4, 4);
         profilePhonePanel.add(phoneNumberPanel, gbc);
+        
+		gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        profilePhonePanel.add(emailPanel, gbc);
+        
 		bottomPanel = new JPanel();
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -437,6 +623,9 @@ public class EmployeeView {
 		frame.getContentPane().add(profileScollPane, BorderLayout.CENTER);
 	}
 	
+	/**
+	 * initializeCreateOrderView: initialize the create order UI.
+	 */
 	public void initializeCreateOrderView(){
 		
 		createOrderPanel = new JPanel();
@@ -489,7 +678,8 @@ public class EmployeeView {
 		gbc.gridy++;
 		gbc.weightx = 1;
 		gbc.weighty = 1;
-		carTable = populateCarTable();
+		String[] columns = { "Order ID", "Customer ID", "Time Placed", "Time Order out", "Subtotal", "Tax", "Total" };
+		carTable = populateTable(columns);
 		sp = new JScrollPane(carTable);
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		createOrderPanel.add(sp, gbc);
@@ -531,6 +721,9 @@ public class EmployeeView {
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
+	/**
+	 * initializeOrdersView: initialize the Order UI for employee
+	 */
 	public void initializeOrdersView(){
 		
 		ordersPanel = new JPanel();
@@ -550,7 +743,8 @@ public class EmployeeView {
 		gbc.gridy = 1;
 		gbc.weightx = 1;
 		gbc.weighty = 1;
-		carTable = pupulateOrdersTable();
+		String[] columns = { "Name", "Type", "Price", "Estimate Time", "Quantity" };
+		carTable = populateTable(columns);
 		JScrollPane sp = new JScrollPane(carTable);
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		ordersPanel.add(sp, gbc);
@@ -590,7 +784,361 @@ public class EmployeeView {
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
-	private void loadProfileView(){
+	/**
+	 * initializeManagerView: initialize the manager UI
+	 */
+	public void initializeManagerView(){
+		JButton logButton = new JButton("Logs");
+		logButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadLogsView();
+				frame.revalidate();
+			}
+			
+		});
+		menuBar.add(logButton);
+		
+		JButton statButton = new JButton("statistics");
+		statButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadStatView();
+				frame.revalidate();
+			}
+			
+		});
+		menuBar.add(statButton);
+		
+		JButton manageEmpButton = new JButton("Manage employees");
+		manageEmpButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadManageEmpView();
+				frame.revalidate();
+			}
+			
+		});
+		menuBar.add(manageEmpButton);
+		
+		JButton manageMenuButton = new JButton("Manage menu");
+		manageMenuButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				loadManageMenuView();
+				frame.revalidate();
+			}
+			
+		});
+		menuBar.add(manageMenuButton);
+	}
+	
+	/**
+	 * initializeLogsView: initialize the Logs UI
+	 */
+	public void initializeLogsView(){
+		logsPanel = new JPanel(new BorderLayout());
+		String[] columns = { "Log", "Type", "Time"};
+		logsTable = new JTable();
+		logsTable.setModel(populateStatLogsTable(columns));
+		JScrollPane sp = new JScrollPane(logsTable);
+		logsPanel.add(sp, BorderLayout.CENTER);
+		frame.getContentPane().add(logsPanel, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * initializeStatView: initialize the statistics UI
+	 */
+	public void initializeStatView(){
+		statPanel = new JPanel(new BorderLayout());
+		String[] columns = { "Log", "Type", "Time"};
+		statTable = new JTable(populateStatLogsTable(columns));
+		JScrollPane sp = new JScrollPane(statTable);
+		statPanel.add(sp, BorderLayout.CENTER);
+		
+		//JPanel topPanel = new JPanel();
+		JPanel topPanel = new JPanel();
+		JComboBox<String> selectionComboBox = new JComboBox<String>();
+		selectionComboBox.setEnabled(true);
+		selectionComboBox.addItem("Store");
+		selectionComboBox.addItem("Employee");
+		selectionComboBox.addItem("Product");
+		topPanel.add(selectionComboBox);
+		
+		JLabel fromLabel = new JLabel("From:");
+		topPanel.add(fromLabel);
+		Calendar calendar = Calendar.getInstance();
+		Date currentDate = calendar.getTime();
+		calendar.add(Calendar.YEAR, -100);
+		Date firstDate = calendar.getTime();
+		calendar.add(Calendar.YEAR, 200);
+		Date lastDate = calendar.getTime();
+		SpinnerDateModel currentModel = new SpinnerDateModel(currentDate, firstDate, lastDate, Calendar.YEAR);
+		fromSpinner = new JSpinner(currentModel);
+		fromSpinner.setEditor(new JSpinner.DateEditor(fromSpinner, "MM/dd/yyyy"));
+		topPanel.add(fromSpinner);
+		
+		JLabel toLabel = new JLabel("To:");
+		topPanel.add(toLabel);
+		
+		toSpinner = new JSpinner(currentModel);
+		toSpinner.setEditor(new JSpinner.DateEditor(toSpinner, "MM/dd/yyyy"));
+		topPanel.add(toSpinner);
+		
+		JLabel Search = new JLabel("      Search:");
+		topPanel.add(Search);
+		searchTextField = new JTextField();
+		searchTextField.setPreferredSize(new Dimension(140,20));
+		topPanel.add(searchTextField);
+		
+		statPanel.add(topPanel, BorderLayout.NORTH);
+		frame.getContentPane().add(statPanel, BorderLayout.CENTER);
+		
+	}
+	
+	/**
+	 * initializeManageEmpView: initialize the managing employee UI
+	 */
+	public void initializeManageEmpView(){
+		manageEmpPanel = new JPanel(new BorderLayout());
+		String[] columns = { "Employee ID", "Employee Name", "States"};
+		manageEmpTable = new JTable();
+		manageEmpTable.setModel(populateStatLogsTable(columns));
+		JScrollPane sp = new JScrollPane(manageEmpTable);
+		manageEmpPanel.add(sp, BorderLayout.CENTER);
+		JPanel buttonPanel = new JPanel();
+		JButton addEmpButton = new JButton("Add employee");
+		addEmpButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				initializeAddModifyView(typeFrame.addEmployee);
+			}
+			
+		});
+		buttonPanel.add(addEmpButton);
+		JButton removeButton = new JButton("Remove employee");
+		removeButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Object[] options = {"No, keep it", "Yes, remove it"};
+				int n = JOptionPane.showOptionDialog(frame,
+						"Would you like to remove the employee?",
+						"Confirm",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,        //do not use a custom Icon
+						options,     //the titles of buttons
+						options[0]); //default button title
+			}
+			
+		});
+		buttonPanel.add(removeButton);
+		JButton modifyButton = new JButton("Modify employee");
+		modifyButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				initializeAddModifyView(typeFrame.modifyEmployee);
+			}
+			
+		});
+		buttonPanel.add(modifyButton);
+		manageEmpPanel.add(buttonPanel, BorderLayout.SOUTH);
+		frame.getContentPane().add(manageEmpPanel, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * initializeMenuView: initialize the managing menu UI
+	 */
+	public void initializeMenuView(){
+		manageMenuPanel = new JPanel(new BorderLayout());
+		String[] columns = { "Item ID", "Item Name", "Item Price"};
+		manageMenuTable = new JTable();
+		manageMenuTable.setModel(populateStatLogsTable(columns));
+		JScrollPane sp = new JScrollPane(manageMenuTable);
+		manageMenuPanel.add(sp, BorderLayout.CENTER);
+		JPanel buttonPanel = new JPanel();
+		JButton addItemButton = new JButton("Add item");
+		addItemButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				initializeAddModifyView(typeFrame.addItem);
+			}
+			
+		});
+		buttonPanel.add(addItemButton);
+		JButton removeButton = new JButton("Remove item");
+		removeButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Object[] options = {"No, keep it", "Yes, remove it"};
+				int n = JOptionPane.showOptionDialog(frame,
+						"Would you like to remove the item?",
+						"Confirm",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,        //do not use a custom Icon
+						options,     //the titles of buttons
+						options[0]); //default button title
+			}
+			
+		});
+		buttonPanel.add(removeButton);
+		JButton modifyButton = new JButton("Modify item");
+		modifyButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				initializeAddModifyView(typeFrame.modifyitem);
+			}
+			
+		});
+		buttonPanel.add(modifyButton);
+		manageMenuPanel.add(buttonPanel, BorderLayout.SOUTH);
+		frame.getContentPane().add(manageMenuPanel, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * initializeAddModifyView: initialize the add or modify UI
+	 */
+	public void initializeAddModifyView(typeFrame viewType){
+		JFrame localFrame = new JFrame();
+		localFrame.setBounds(100, 100, 450, 300);
+		localFrame.setSize(new Dimension(1100,600));
+		localFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		localFrame.getContentPane().setLayout(new BorderLayout());
+		
+		if(viewType == typeFrame.addEmployee){
+			initializeEmpMenuProfileView(localFrame, addEmpPanel, viewType, profileFields);
+		}
+		if(viewType == typeFrame.modifyEmployee){
+			initializeEmpMenuProfileView(localFrame, modifyEmpPanel, viewType, profileFields);
+		}
+		if(viewType == typeFrame.addItem){
+			initializeEmpMenuProfileView(localFrame, addItemPanel, viewType, itemFields);
+		}
+		if(viewType == typeFrame.modifyitem){
+			initializeEmpMenuProfileView(localFrame, modifyItemPanel, viewType, itemFields);
+		}
+		localFrame.setVisible(true);
+	}
+	
+	/**
+	 * initializeEmpMenuProfileView: initialize the menu and employee profile UI
+	 */
+	private void initializeEmpMenuProfileView(JFrame localFrame, JPanel currentPanel, typeFrame viewType, String[] columns){
+		currentPanel = new JPanel(new GridBagLayout());
+		JPanel profilePhonePanel = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		JPasswordField passwordField;
+		JTextField usernameTextField;
+		JSpinner localDOB; 
+		gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.anchor = GridBagConstraints.PAGE_END;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.ipadx = 2; gbc.ipady = 2;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        profilePhonePanel.add(currentPanel, gbc);
+        JScrollPane localScollPane = new JScrollPane(profilePhonePanel);
+		JLabel[] arrayLabel = new JLabel[columns.length];
+		JTextField[] empArrayTextField = new JTextField[columns.length - 1];
+		JTextField[] menuArrayTextField = new JTextField[columns.length];
+		SpinnerDateModel model;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		int j = 0;
+		if(viewType == typeFrame.addEmployee || viewType == typeFrame.modifyEmployee){
+			for(int i = 0; i < arrayLabel.length; i++){
+				arrayLabel[i] = new JLabel(columns[i]);
+				currentPanel.add(arrayLabel[i],gbc);
+				gbc.gridx++;
+				if(i == 3){
+					Calendar calendar = Calendar.getInstance();
+					Date currentDate = calendar.getTime();
+					calendar.add(Calendar.YEAR, -100);
+					Date firstDate = calendar.getTime();
+					calendar.add(Calendar.YEAR, 200);
+					Date lastDate = calendar.getTime();
+					model = new SpinnerDateModel(currentDate, firstDate, lastDate, Calendar.YEAR);
+					localDOB = new JSpinner(model);
+					localDOB.setEditor(new JSpinner.DateEditor(localDOB, "MM/dd/yyyy"));
+					currentPanel.add(localDOB,gbc);
+				}else{
+					empArrayTextField[j] = new JTextField();
+					currentPanel.add(empArrayTextField[j],gbc);
+					j++;
+				}
+			
+				gbc.gridy++;
+				gbc.gridx--;
+			}
+			if(viewType == typeFrame.addEmployee){
+				JLabel pwLabel = new JLabel("Password:");
+				currentPanel.add(pwLabel, gbc);
+				gbc.gridx++;
+				passwordField = new JPasswordField();
+				currentPanel.add(passwordField, gbc);
+				gbc.gridy++;
+				gbc.gridx--;
+				JLabel usernameLabel = new JLabel("Username:");
+				currentPanel.add(usernameLabel, gbc);
+				gbc.gridx++;
+				usernameTextField = new JTextField();
+				currentPanel.add(usernameTextField,gbc);
+			}
+			gbc.gridy++;
+			gbc.gridx--;
+			initPhoneNumberPanel();
+			gbc = new GridBagConstraints();
+	        gbc.gridx = 0; gbc.gridy = 1;
+	        gbc.gridwidth = 1; gbc.gridheight = 1;
+	        gbc.fill = GridBagConstraints.HORIZONTAL;
+	        gbc.anchor = GridBagConstraints.CENTER;
+	        gbc.weightx = 1.0; gbc.weighty = 1.0;
+	        gbc.ipadx = 2; gbc.ipady = 2;
+	        gbc.insets = new Insets(4, 4, 4, 4);
+	        profilePhonePanel.add(phoneNumberPanel, gbc);
+		}else{
+			for(int i = 0; i < arrayLabel.length; i++){
+				arrayLabel[i] = new JLabel(columns[i]);
+				currentPanel.add(arrayLabel[i], gbc);
+				gbc.gridx++;
+				menuArrayTextField[j] = new JTextField();
+				menuArrayTextField[j].setPreferredSize(new Dimension(150,20));
+				currentPanel.add(menuArrayTextField[j], gbc);
+				gbc.gridy++;
+				gbc.gridx--;
+			}
+		}
+		JPanel localBottomPanel = new JPanel();
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		String[] buttonName = {"Add employee", "Modify employee", "Add item", "Modify item"};
+		JButton bottonButton = new JButton(buttonName[viewType.ordinal()]);
+		gbc.gridx++;
+		localBottomPanel.add(bottonButton, gbc);
+		localFrame.getContentPane().add(localBottomPanel, BorderLayout.SOUTH);
+		localFrame.getContentPane().add(localScollPane, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * loadProfileView: reload employee profile UI
+	 */
+ 	private void loadProfileView(){
 		if(createOrderPanel != null){
 			frame.getContentPane().remove(createOrderPanel);
 		}
@@ -600,10 +1148,27 @@ public class EmployeeView {
 		if(mainPanel != null){
 			frame.getContentPane().remove(mainPanel);
 		}
-		frame.getContentPane().remove(bottomPanel);
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(statPanel != null){
+			frame.getContentPane().remove(statPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
 		initializeProfileView();
 	}
 	
+ 	/**
+	 * loadCreateCustomerView: reload create customer UI
+	 */
 	private void loadCreateCustomerView(){
 		if(profilePanel != null){
 			frame.getContentPane().remove(profilePanel);
@@ -615,10 +1180,27 @@ public class EmployeeView {
 		if(createOrderPanel != null){
 			frame.getContentPane().remove(createOrderPanel);
 		}
-		frame.getContentPane().remove(bottomPanel);
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(statPanel != null){
+			frame.getContentPane().remove(statPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
 		initializeCreateCustomerView();
 	}
 	
+	/**
+	 * loadCreateOrderView: reload the create order UI
+	 */
 	private void loadCreateOrderView(){
 		if(profilePanel != null){
 			frame.getContentPane().remove(profilePanel);
@@ -630,10 +1212,27 @@ public class EmployeeView {
 		if(mainPanel != null){
 			frame.getContentPane().remove(mainPanel);
 		}
-		frame.getContentPane().remove(bottomPanel);
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(statPanel != null){
+			frame.getContentPane().remove(statPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
 		initializeCreateOrderView();
 	}
 	
+	/**
+	 * loadOrdersView: reload the orders UI for employee
+	 */
 	private void loadOrdersView(){
 		if(profilePanel != null){
 			frame.getContentPane().remove(profilePanel);
@@ -645,10 +1244,152 @@ public class EmployeeView {
 		if(mainPanel != null){
 			frame.getContentPane().remove(mainPanel);
 		}
-		frame.getContentPane().remove(bottomPanel);
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(statPanel != null){
+			frame.getContentPane().remove(statPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
 		initializeOrdersView();
 	}
 
+	/**
+	 * loadLogsView: reload the logs UI.
+	 */
+	private void loadLogsView(){
+		if(profilePanel != null){
+			frame.getContentPane().remove(profilePanel);
+			frame.getContentPane().remove(profileScollPane);
+		}
+		if(createOrderPanel != null){
+			frame.getContentPane().remove(createOrderPanel);
+		}
+		if(mainPanel != null){
+			frame.getContentPane().remove(mainPanel);
+		}
+		if(ordersPanel != null){
+			frame.getContentPane().remove(ordersPanel);
+		}
+		if(statPanel != null){
+			frame.getContentPane().remove(statPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
+		initializeLogsView();
+	}
+	
+	/**
+	 * loadStatView: reload the statistics UI.
+	 */
+	private void loadStatView(){
+		if(profilePanel != null){
+			frame.getContentPane().remove(profilePanel);
+			frame.getContentPane().remove(profileScollPane);
+		}
+		if(createOrderPanel != null){
+			frame.getContentPane().remove(createOrderPanel);
+		}
+		if(mainPanel != null){
+			frame.getContentPane().remove(mainPanel);
+		}
+		if(ordersPanel != null){
+			frame.getContentPane().remove(ordersPanel);
+		}
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(statPanel != null){
+			frame.getContentPane().remove(statPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
+		initializeStatView();
+	}
+	
+	/**
+	 * loadManageEmpView: reload the managing employee UI.
+	 */
+	private void loadManageEmpView(){
+		if(profilePanel != null){
+			frame.getContentPane().remove(profilePanel);
+			frame.getContentPane().remove(profileScollPane);
+		}
+		if(createOrderPanel != null){
+			frame.getContentPane().remove(createOrderPanel);
+		}
+		if(mainPanel != null){
+			frame.getContentPane().remove(mainPanel);
+		}
+		if(ordersPanel != null){
+			frame.getContentPane().remove(ordersPanel);
+		}
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(manageMenuPanel != null){
+			frame.getContentPane().remove(manageMenuPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
+		initializeManageEmpView();
+	}
+	
+	/**
+	 * loadManageMenuView: reload the managing menu UI.
+	 */
+	private void loadManageMenuView(){
+		if(profilePanel != null){
+			frame.getContentPane().remove(profilePanel);
+			frame.getContentPane().remove(profileScollPane);
+		}
+		if(createOrderPanel != null){
+			frame.getContentPane().remove(createOrderPanel);
+		}
+		if(mainPanel != null){
+			frame.getContentPane().remove(mainPanel);
+		}
+		if(ordersPanel != null){
+			frame.getContentPane().remove(ordersPanel);
+		}
+		if(logsPanel != null){
+			frame.getContentPane().remove(logsPanel);
+		}
+		if(manageEmpPanel != null){
+			frame.getContentPane().remove(manageEmpPanel);
+		}
+		if(bottomPanel != null){
+			frame.getContentPane().remove(bottomPanel);
+		}
+		initializeMenuView();
+	}
+	
+	/**
+	 * populateMenuTable: populate the initial menu items.
+	 */
 	private MyModel populateMenuTable(){
 		String[] columns = { "Name", "Type", "Price", "Estimate Time"};
 		Object[][] data = { {"Peperoni", "Pizza", new Integer(25), new Integer(30)},
@@ -657,18 +1398,25 @@ public class EmployeeView {
 		return new MyModel(data, columns);
 	}
 	
-	private JTable populateCarTable(){
-		String[] columns = { "Name", "Type", "Price", "Estimate Time", "Quantity" };
+	/**
+	 * populateTable: populate the initial ordered items.
+	 */
+	private JTable populateTable(String[] columns){
 		Object[][] data = {};
 		return new JTable(data, columns);
 	}
 	
-	private JTable pupulateOrdersTable(){
-		String[] columns = { "Order ID", "Customer ID", "Time Placed", "Time Order out", "Subtotal", "Tax", "Total" };
+	/**
+	 * populateStatLogsTable: populate the info for statistics and logs table.
+	 */
+	private MyModel populateStatLogsTable(String[] columns){
 		Object[][] data = {};
-		return new JTable(data, columns);
+		return new MyModel(data, columns);
 	}
 	
+	/**
+	 * MyModel: Model for Tables so that the elements cannot be modified.
+	 */
 	public class MyModel extends DefaultTableModel{
 
 		/**
