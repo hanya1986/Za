@@ -284,19 +284,22 @@ public class Queries
 
     }
 
-    public static Map<Integer, Integer> getFrequentCustomers(int N) throws SQLException {
+    public static Map<Long, Long> getFrequentCustomers(int N) throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         //Result map, custId key, total number of orders value
-        Map<Integer, Integer> customers = new HashMap<Integer, Integer>();
-        String build = "";
-        build += "SELECT DISTINCT custid, count(custid) LIMIT ?";
-        build += "FROM ZaOrder";
-        build += "ORDER BY count(custid)";
-        PreparedStatement ps = conn.prepareStatement(build);
+        Map<Long, Long> customers = new HashMap<Long, Long>();
+        String query =  "SELECT DISTINCT custid, count(custid) " +
+                        "FROM " +
+                        "(SELECT custid, time_order_placed " +
+                        " FROM ZaOrder " +
+                        " ORDER BY time_order_placed DESC) " +
+                        "GROUP BY custid;";
+        
+        PreparedStatement ps = conn.prepareStatement(query);
         ps.setInt(1, N);
         ResultSet results = ps.executeQuery();
         while (results.next()){
-            customers.put(results.getInt(1), results.getInt(2));
+            customers.put(results.getLong(1), results.getLong(2));
         }
         return customers;
     }

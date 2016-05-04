@@ -1217,7 +1217,7 @@ public class EmployeeView {
 	
 	private JPanel bestCustomerPanel;
 	private JTextField nCustomersTextField;
-	private JList<Integer> nCustomersList;
+	private JList<Long> nCustomersList;
 	private JButton nCustomersRefreshButton;
 	
 	private void initBestCustomersPanel()
@@ -1226,7 +1226,7 @@ public class EmployeeView {
         
         bestCustomerPanel = new JPanel(new GridBagLayout());
         nCustomersTextField = new JTextField();
-        nCustomersList = new JList<Integer>();
+        nCustomersList = new JList<Long>();
         nCustomersRefreshButton = new JButton("Refresh");
         nCustomersRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
@@ -1243,7 +1243,7 @@ public class EmployeeView {
                             "Best Customers",
                             JOptionPane.ERROR_MESSAGE);
                     nCustomersTextField.setText("");
-                    nCustomersList.setModel(new DefaultListModel<Integer>());
+                    nCustomersList.setModel(new DefaultListModel<Long>());
                     return;
                 }
                 
@@ -1254,11 +1254,11 @@ public class EmployeeView {
                             "Best Customers",
                             JOptionPane.ERROR_MESSAGE);
                     nCustomersTextField.setText("");
-                    nCustomersList.setModel(new DefaultListModel<Integer>());
+                    nCustomersList.setModel(new DefaultListModel<Long>());
                     return;
                 }
                 
-                Map<Integer,Integer> bestCustomers;
+                Map<Long,Long> bestCustomers;
                 try
                 {
                     bestCustomers = Queries.getFrequentCustomers(n);
@@ -1270,12 +1270,12 @@ public class EmployeeView {
                             "Best Customers",
                             JOptionPane.ERROR_MESSAGE);
                     nCustomersTextField.setText("");
-                    nCustomersList.setModel(new DefaultListModel<Integer>());
+                    nCustomersList.setModel(new DefaultListModel<Long>());
                     return;
                 }
                 
-                DefaultListModel<Integer> nCustomersModel = new DefaultListModel<Integer>();
-                for (Integer custID : bestCustomers.keySet())
+                DefaultListModel<Long> nCustomersModel = new DefaultListModel<Long>();
+                for (Long custID : bestCustomers.keySet())
                     nCustomersModel.addElement(custID);
                 nCustomersList.setModel(nCustomersModel);
             }
