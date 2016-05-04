@@ -289,11 +289,9 @@ public class Queries
         //Result map, custId key, total number of orders value
         Map<Long, Long> customers = new HashMap<Long, Long>();
         String query =  "SELECT DISTINCT custid, count(custid) " +
-                        "FROM " +
-                        "(SELECT custid, time_order_placed " +
-                        " FROM ZaOrder " +
-                        " ORDER BY time_order_placed DESC) " +
-                        "GROUP BY custid;";
+                        "FROM ZaOrder " +
+                        "GROUP BY custid " +
+                        "LIMIT ?;";
         
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setInt(1, N);
