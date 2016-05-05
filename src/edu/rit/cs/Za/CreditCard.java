@@ -34,4 +34,8 @@ public class CreditCard
                 expirationYear == cc.expirationYear;
                 
     }
+    
+    public String toString(){
+    	return cardNumber;
+    }
 }

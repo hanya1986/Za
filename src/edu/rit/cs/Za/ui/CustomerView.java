@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -31,6 +32,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
@@ -93,6 +95,8 @@ public class CustomerView {
 	private JSpinner DOBSpinner;
 	private JPanel mainPanel;
 	private JButton signUpButton;
+	private JRadioButton deliverRB;
+	private JRadioButton pickupRB;
 	private JTextField[] arrayTextField;
 	private JComboBox<String> itemSizeComboBox;
 	
@@ -140,7 +144,7 @@ public class CustomerView {
 			custProfile = ProfileManager.getCustomerInfo(this.userID, custAttrList);
 			phoneNumbers = ProfileManager.getPhoneNumbers(this.userID);
 			emailAddress = ProfileManager.getEmailAddresses(this.userID);
-			//creditCards = ProfileManager.getCreditCards(this.userID);
+			creditCards = ProfileManager.getCreditCards(this.userID);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -177,7 +181,7 @@ public class CustomerView {
             	arrayTextField[4].setText(custProfile.get(attr).toString());
                 break;
             case "state":
-            	arrayTextField[5].setText(State.parseState(custProfile.get(attr).toString()).name());
+            	arrayTextField[5].setText(custProfile.get(attr).toString());
                 break;
             case "zip":
             	arrayTextField[6].setText(custProfile.get(attr).toString());
@@ -187,8 +191,14 @@ public class CustomerView {
 		for(String phoneNum : phoneNumbers){
 			phoneNumberComboBox.addItem(phoneNum);
 		}
+		if(phoneNumbers.size() != 0){
+			removePhoneNumberButton.setEnabled(true);
+		}
 		for(String emailAddr : emailAddress){
 			emailComboBox.addItem(emailAddr);
+		}
+		if(emailAddress.size() != 0){
+			removeEmailButton.setEnabled(true);
 		}
 	}
 	
@@ -668,7 +678,9 @@ public class CustomerView {
 					}
 					data[data.length - 1] = 1;
 					DefaultTableModel carModel = (DefaultTableModel) carTable.getModel();
-					carModel.addRow(data);
+					if(!isInTable(carModel, data)){
+						carModel.addRow(data);
+					}
 				}
 			}
 			
@@ -695,11 +707,11 @@ public class CustomerView {
 		AddRemovePanel.add(add,gbc);
 		gbc.gridy = 1;
 		AddRemovePanel.add(remove, gbc);
-		JRadioButton deliverRB = new JRadioButton("Delivery");
+		deliverRB = new JRadioButton("Delivery");
 		deliverRB.setSelected(true);
 		gbc.gridy++;
 		AddRemovePanel.add(deliverRB, gbc);
-		JRadioButton pickupRB = new JRadioButton("Pick up");
+		pickupRB = new JRadioButton("Pick up");
 		gbc.gridy++;
 		AddRemovePanel.add(pickupRB, gbc);
 		
@@ -779,8 +791,18 @@ public class CustomerView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PastOrderView pastWindow = new PastOrderView();
-				pastWindow.runGUI();
+				PastOrderPanel pastWindow = new PastOrderPanel(userID);
+				int result = JOptionPane.showConfirmDialog(null, pastWindow, "Past Orders",
+						JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+				if(result == JOptionPane.OK_OPTION){
+					ArrayList<Object[]> items = pastWindow.getSelectedOrder();
+					DefaultTableModel carModel = (DefaultTableModel) carTable.getModel();
+					for(Object[] item : items){
+						if(!isInTable(carModel,item)){
+							carModel.addRow(item);
+						}
+					}
+				}
 			}
 			
 		});
@@ -791,7 +813,18 @@ public class CustomerView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PaymentView pv = new PaymentView(false);
+				DefaultTableModel model = (DefaultTableModel) carTable.getModel();
+				Map<String,Integer> orderItems = new HashMap<String, Integer>();
+				for(int i = 0; i < model.getRowCount(); i++){
+					String item = model.getValueAt(i, 2).toString().concat(" " + model.getValueAt(i, 0).toString());
+					int	quantity = Integer.parseInt(model.getValueAt(i, 5).toString());
+					orderItems.put(item, quantity);
+				}
+				OrderType ordertype = OrderType.parseOrderType("CARRY-OUT");
+				if(deliverRB.isSelected()){
+					ordertype = OrderType.parseOrderType("DELIVERY");
+				}
+				PaymentView pv = new PaymentView(userID, false, orderItems, ordertype);
 				pv.runGUI();
 			}
 			
@@ -799,6 +832,17 @@ public class CustomerView {
 		gbc.gridx++;
 		bottomPanel.add(placeButton, BorderLayout.LINE_START);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+	}
+	
+	private boolean isInTable(DefaultTableModel model ,Object[] item){
+		for(int i = 0; i < model.getRowCount(); i++){
+			String name = model.getValueAt(i, 0).toString();
+			String size = model.getValueAt(i, 2).toString();
+			if(item[0].toString().equals(name) && item[2].toString().equals(size)){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/*

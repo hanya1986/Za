@@ -6,6 +6,7 @@
 
 package edu.rit.cs.Za;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -16,8 +17,10 @@ import java.util.HashMap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -366,15 +369,16 @@ public class OrderManager
         Connection conn = ConnectionManager.getConnection();
         
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT (itemid,size,quantity) ");
+        builder.append("SELECT itemid, quantity, size ");
         builder.append("FROM ZaOrderItem ");
         builder.append("WHERE orderid=?;");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, orderid);
         ResultSet rs = ps.executeQuery();
-        while (rs.next())
-            items.put(String.format("%s %s", rs.getString(2), rs.getString(1)), rs.getInt(3));
+        while(rs.next()){
+            items.put(String.format("%s %s", rs.getString("size"), rs.getString("itemid")), rs.getInt("quantity"));
+        }
         return items;
     }
     
@@ -426,7 +430,7 @@ public class OrderManager
             builder.append(col);
             if (colIt.hasNext()) builder.append(',');
         }
-        builder.append(" FROM Customer ");
+        builder.append(" FROM ZaOrder ");
         builder.append("WHERE orderid=?;");
         
         PreparedStatement ps = conn.prepareStatement(builder.toString());
@@ -483,6 +487,57 @@ public class OrderManager
                 values.put(col, PaymentMethod.parsePaymentMethod(rs.getString(col)));
                 break;
             }
+        }
+        return values;
+    }
+    
+    public static ArrayList<Object[]> getCustomerOrders(long custid) throws SQLException{
+    	Connection conn = ConnectionManager.getConnection();
+    	ArrayList<Object[]> values = new ArrayList<Object[]>();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT *");
+        builder.append(" FROM ZaOrder ");
+        builder.append("WHERE custid=?;");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, custid);
+        
+        ResultSet rs = ps.executeQuery();
+        //if (!rs.next()) return values;
+        List<String> columns = new LinkedList<String>();
+        columns.add("orderid");
+        columns.add("order_type");
+        columns.add("time_order_placed");
+        columns.add("total");
+        columns.add("pay_method");
+        while(rs.next()){
+        	Iterator<String> colIt = columns.iterator();
+        	Object[] data = new Object[columns.size()];
+        	while (colIt.hasNext())
+        	{
+        		String col = colIt.next();
+        		switch (col)
+        		{
+        		case "orderid":
+        			data[0] = rs.getLong(col);
+        			break;
+        		case "order_type":
+        			data[1] = OrderType.parseOrderType(rs.getString(col));
+        			break;
+        		case "time_order_placed":
+        			data[3] = DateFormat.getInstance().format(rs.getTimestamp(col));
+        			break;
+        		case "total":
+        			data[2] = rs.getBigDecimal(col);
+        			break;
+        		case "pay_method":
+        			data[4] = PaymentMethod.parsePaymentMethod(rs.getString(col));
+        			break;
+        		}
+        	}
+        	if(data.length != 0){
+        		values.add(data);
+        	}
         }
         return values;
     }

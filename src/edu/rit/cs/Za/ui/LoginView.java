@@ -14,6 +14,7 @@ import java.awt.Dimension;
 
 import javax.swing.border.EmptyBorder;
 
+import edu.rit.cs.Za.PersonType;
 import edu.rit.cs.Za.ProfileManager;
 
 import java.awt.event.ActionEvent;
@@ -137,10 +138,19 @@ public class LoginView implements ActionListener{
 			try {
 				userid = ProfileManager.validateCredentials(usernameText.getText(),String.valueOf(passwordText.getPassword()));
 				if(!(userid < 0)){ //need to change to not null
+					PersonType type = ProfileManager.getPersonType(userid);
 					//passing user data into CustomerView
 					this.frame.dispose();
-					String[] menuData;
-					CustomerView view = new CustomerView(userid);
+					switch(type.name()){
+						case "NOT_A_PERSON":
+							return;
+						case "CUSTOMER":
+							CustomerView cus = new CustomerView(userid);
+							break;
+						case "EMPLOYEE":
+							EmployeeView emp = new EmployeeView(userid);
+							break;
+					}
 				}
 			} catch (NoSuchAlgorithmException e1) {
 				// TODO Auto-generated catch block

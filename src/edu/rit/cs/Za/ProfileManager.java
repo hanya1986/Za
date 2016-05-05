@@ -917,7 +917,7 @@ public class ProfileManager
                 values.put(col, rs.getString(col));
                 break;
             case "state":
-                values.put(col, State.parseState(rs.getString(col)));
+                values.put(col, rs.getString(col));
                 break;
             case "zip":
                 values.put(col, rs.getString(col));

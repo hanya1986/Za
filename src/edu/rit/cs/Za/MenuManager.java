@@ -177,6 +177,9 @@ public class MenuManager
             case "price":
             case "est_prep_time":
             case "available":
+            case "small_price":
+            case "medium_price":
+            case "large_price":
                 columns.add(col);
                 break;
             }
@@ -212,6 +215,15 @@ public class MenuManager
             case "available":
                 menuItem.put(col, rs.getBoolean(col));
                 break;
+        	case "small_price":
+        		menuItem.put(col, rs.getBigDecimal(col));
+        		break;
+        	case "medium_price":
+        		menuItem.put(col, rs.getBigDecimal(col));
+        		break;
+        	case "large_price":
+        		menuItem.put(col, rs.getBigDecimal(col));
+        		break;
             }
         }
         return menuItem;
@@ -240,6 +252,9 @@ public class MenuManager
             case "price":
             case "est_prep_time":
             case "available":
+            case "small_price":
+            case "medium_price":
+            case "large_price":
                 columns.add(col);
                 break;
             }
@@ -273,6 +288,15 @@ public class MenuManager
             case "available":
                 ps.setBoolean(paramIdx++, (boolean)values.get("available"));
                 break;
+        	case "small_price":
+        		ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("small_price"));
+        		break;
+        	case "medium_price":
+        		ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("medium_price"));
+        		break;
+        	case "large_price":
+        		ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("large_price"));
+        		break;
             }
         }
         ps.executeUpdate();

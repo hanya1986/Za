@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -32,6 +34,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.table.DefaultTableModel;
+
+import edu.rit.cs.Za.OrderType;
 
 public class EmployeeView {
 	
@@ -130,6 +134,8 @@ public class EmployeeView {
 	private JPanel addItemPanel;
 	private JPanel modifyItemPanel;
 	
+	private long userID;
+	
 	/**
 	 * run: Show the frame
 	 */
@@ -140,7 +146,8 @@ public class EmployeeView {
 	/**
 	 * EmployeeView: Constructor.
 	 */
-	public EmployeeView(){
+	public EmployeeView(long userID){
+		this.userID = userID;
 		initialize();
 		initializeOrdersView();
 	}
@@ -152,7 +159,7 @@ public class EmployeeView {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					EmployeeView window = new EmployeeView();
+					EmployeeView window = new EmployeeView(0);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -699,8 +706,8 @@ public class EmployeeView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PastOrderView pastWindow = new PastOrderView();
-				pastWindow.runGUI();
+				PastOrderPanel pastWindow = new PastOrderPanel(userID);
+				//pastWindow.runGUI();
 			}
 			
 		});
@@ -711,7 +718,8 @@ public class EmployeeView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PaymentView pv = new PaymentView(true);
+				Map<String,Integer> orderItems = new HashMap<String, Integer>();
+				PaymentView pv = new PaymentView(userID,true, orderItems, OrderType.CARRY_OUT);
 				pv.runGUI();
 			}
 			
@@ -764,8 +772,8 @@ public class EmployeeView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PastOrderView pastWindow = new PastOrderView();
-				pastWindow.runGUI();
+				PastOrderPanel pastWindow = new PastOrderPanel(userID);
+				//pastWindow.runGUI();
 			}
 			
 		});
