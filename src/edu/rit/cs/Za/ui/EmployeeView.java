@@ -15,6 +15,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -45,8 +46,13 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableModel;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
+import edu.rit.cs.Za.ConnectionManager;
 import edu.rit.cs.Za.Queries;
+import edu.rit.cs.Za.TablePopulator;
+import edu.rit.cs.Za.ZaDatabase;
+import edu.rit.cs.Za.Queries.DelivererTime;
 
 public class EmployeeView {
 	
@@ -168,6 +174,25 @@ public class EmployeeView {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+	    
+	    try {
+            String db_location = "./ZADB/za";
+            String db_path = db_location + ".h2.db";
+            File f = new File(db_path);
+            if (f.exists()) {
+                System.out.println("REMOVING OLD DATABASE\n");
+                f.delete();
+            }
+
+            String username = "username";
+            String password = "password";
+            ConnectionManager.initConnection(db_location, username, password);
+            ZaDatabase.createDatabase();
+            TablePopulator populate = new TablePopulator();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	    
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -184,9 +209,10 @@ public class EmployeeView {
 	 * initialize: initializing the frame and the tool bar.
 	 */
 	private void initialize(){
+	    
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
-		frame.setSize(new Dimension(1100,600));
+		frame.setSize(new Dimension(1280,768));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout());
 		
@@ -253,6 +279,7 @@ public class EmployeeView {
 		});
 		menuBar.add(logoutButton);
 		
+		frame.setResizable(false);
 	}
 	
 	/**
@@ -967,7 +994,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
         statPanel.add(quantitySoldPanel, gbc);
 	}
 	
@@ -1087,7 +1114,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
         statPanel.add(deliveryTimePanel, gbc);
     }
 	
@@ -1206,12 +1233,12 @@ public class EmployeeView {
         
         gbc = new GridBagConstraints();
         gbc.gridx = 1; gbc.gridy = 1;
-        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 2;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
         statPanel.add(topItemsPanel, gbc);
 	}
 	
@@ -1330,15 +1357,896 @@ public class EmployeeView {
         
         gbc = new GridBagConstraints();
         gbc.gridx = 2; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(bestCustomerPanel, gbc);
+    }
+	
+	private JPanel recentCustomerPanel;
+	private JTextField nRecentTextField;
+	private JList<Long> nRecentList;
+	private JButton nRecentRefreshButton;
+	
+	private void initRecentCustomersPanel()
+	{
+        GridBagConstraints gbc;
+        
+        recentCustomerPanel = new JPanel(new GridBagLayout());
+        nRecentTextField = new JTextField();
+        nRecentList = new JList<Long>();
+        nRecentRefreshButton = new JButton("Refresh");
+        nCustomersRefreshButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e)
+            {
+                int n;
+                try
+                {
+                    n = Integer.parseInt(nRecentTextField.getText());
+                }
+                catch (NumberFormatException ex)
+                {
+                    JOptionPane.showMessageDialog(null,
+                            "Number of customers must be an integer greater than or equal to 1.",
+                            "Recent Customers",
+                            JOptionPane.ERROR_MESSAGE);
+                    nRecentTextField.setText("");
+                    nRecentList.setModel(new DefaultListModel<Long>());
+                    return;
+                }
+                
+                if (n < 1)
+                {
+                    JOptionPane.showMessageDialog(null,
+                            "Number of customers must be an integer greater than or equal to 1.",
+                            "Recent Customers",
+                            JOptionPane.ERROR_MESSAGE);
+                    nRecentTextField.setText("");
+                    nRecentList.setModel(new DefaultListModel<Long>());
+                    return;
+                }
+                
+                Map<Long,Timestamp> recentCustomers;
+                try
+                {
+                    recentCustomers = Queries.getLastNCust(n);
+                }
+                catch (SQLException ex)
+                {
+                    JOptionPane.showMessageDialog(null,
+                            "A database error occurred:\n" + ex.getMessage(),
+                            "Recent Customers",
+                            JOptionPane.ERROR_MESSAGE);
+                    nRecentTextField.setText("");
+                    nRecentList.setModel(new DefaultListModel<Long>());
+                    return;
+                }
+                
+                DefaultListModel<Long> nRecentModel = new DefaultListModel<Long>();
+                for (Long custID : recentCustomers.keySet())
+                    nRecentModel.addElement(custID);
+                nRecentList.setModel(nRecentModel);
+            }
+        });
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
+        recentCustomerPanel.add(new JLabel("Number of Customers:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        recentCustomerPanel.add(nRecentTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        recentCustomerPanel.add(nRecentRefreshButton, gbc);
+        
+        JScrollPane nRecentScrollPane = new JScrollPane(nRecentList,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 3; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 0.5;
+        recentCustomerPanel.add(nRecentScrollPane, gbc);
+        
+        recentCustomerPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Recent Customers"));
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(recentCustomerPanel, gbc);
+	}
+	
+	private JPanel fastestDriversPanel;
+	private JList<Long> fastestDriversList;
+	
+	private void initFastestDriversPanel()
+	{
+        fastestDriversPanel = new JPanel(new BorderLayout());
+        fastestDriversList = new JList<Long>();
+        List<DelivererTime> drivers;
+        try
+        {
+            drivers = Queries.getFastestDeliverers();
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n" + ex.getMessage(),
+                    "Fastest Drivers",
+                    JOptionPane.ERROR_MESSAGE);
+            fastestDriversList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        DefaultListModel<Long> fastestDriversModel = new DefaultListModel<Long>();
+        for (DelivererTime driver : drivers)
+            fastestDriversModel.addElement(driver.empid);
+        fastestDriversList.setModel(fastestDriversModel);
+        
+        JScrollPane fastestDriversScrollPane = new JScrollPane(fastestDriversList,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        fastestDriversPanel.add(fastestDriversScrollPane, BorderLayout.CENTER);
+        
+        fastestDriversPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Fastest Drivers"));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 4; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(fastestDriversPanel, gbc);
+	}
+
+	private JPanel orderCostPanel;
+	private JTextField avgOrderCostTextField;
+	private JTextField minOrderCostTextField;
+	private JTextField maxOrderCostTextField;
+	private JTextField medOrderCostTextField;
+	private JTextField totalOrderCostTextField;
+	
+	private void initOrderCostPanel()
+	{
+	    GridBagConstraints gbc;
+	    orderCostPanel = new JPanel(new GridBagLayout());
+	    
+	    avgOrderCostTextField = new JTextField();
+	    avgOrderCostTextField.setEditable(false);
+	    
+	    minOrderCostTextField = new JTextField();
+	    minOrderCostTextField.setEditable(false);
+	    
+	    maxOrderCostTextField = new JTextField();
+	    maxOrderCostTextField.setEditable(false);
+	    
+	    medOrderCostTextField = new JTextField();
+	    medOrderCostTextField.setEditable(false);
+	    
+	    totalOrderCostTextField = new JTextField();
+	    totalOrderCostTextField.setEditable(false);
+	    
+	    gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(new JLabel("Average:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(avgOrderCostTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(new JLabel("Minimum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(minOrderCostTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(new JLabel("Maximum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(maxOrderCostTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(new JLabel("Median:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(medOrderCostTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(new JLabel("Total:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        orderCostPanel.add(totalOrderCostTextField, gbc);
+        
+        orderCostPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Order Cost"));
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
         gbc.gridwidth = 1; gbc.gridheight = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(orderCostPanel, gbc);
+	}
+	
+	private JPanel dailyOrdersPanel;
+    private JTextField avgDailyOrdersTextField;
+    private JTextField minDailyOrdersTextField;
+    private JTextField maxDailyOrdersTextField;
+    private JTextField medDailyOrdersTextField;
+    private JTextField totalDailyOrdersTextField;
+    
+    private void initDailyOrdersPanel()
+    {
+        GridBagConstraints gbc;
+        dailyOrdersPanel = new JPanel(new GridBagLayout());
+        
+        avgDailyOrdersTextField = new JTextField();
+        avgDailyOrdersTextField.setEditable(false);
+        
+        minDailyOrdersTextField = new JTextField();
+        minDailyOrdersTextField.setEditable(false);
+        
+        maxDailyOrdersTextField = new JTextField();
+        maxDailyOrdersTextField.setEditable(false);
+        
+        medDailyOrdersTextField = new JTextField();
+        medDailyOrdersTextField.setEditable(false);
+        
+        totalDailyOrdersTextField = new JTextField();
+        totalDailyOrdersTextField.setEditable(false);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.weightx = 1.0; gbc.weighty = 1.0;
-        statPanel.add(bestCustomerPanel, gbc);
+        dailyOrdersPanel.add(new JLabel("Average:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(avgDailyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(new JLabel("Minimum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(minDailyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(new JLabel("Maximum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(maxDailyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(new JLabel("Median:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(medDailyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(new JLabel("Total:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyOrdersPanel.add(totalDailyOrdersTextField, gbc);
+        
+        dailyOrdersPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Daily Orders"));
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(dailyOrdersPanel, gbc);
     }
 	
+    private JPanel monthlyOrdersPanel;
+    private JTextField avgMonthlyOrdersTextField;
+    private JTextField minMonthlyOrdersTextField;
+    private JTextField maxMonthlyOrdersTextField;
+    private JTextField medMonthlyOrdersTextField;
+    private JTextField totalMonthlyOrdersTextField;
+    
+    private void initMonthlyOrdersPanel()
+    {
+        GridBagConstraints gbc;
+        monthlyOrdersPanel = new JPanel(new GridBagLayout());
+        
+        avgMonthlyOrdersTextField = new JTextField();
+        avgMonthlyOrdersTextField.setEditable(false);
+        
+        minMonthlyOrdersTextField = new JTextField();
+        minMonthlyOrdersTextField.setEditable(false);
+        
+        maxMonthlyOrdersTextField = new JTextField();
+        maxMonthlyOrdersTextField.setEditable(false);
+        
+        medMonthlyOrdersTextField = new JTextField();
+        medMonthlyOrdersTextField.setEditable(false);
+        
+        totalMonthlyOrdersTextField = new JTextField();
+        totalMonthlyOrdersTextField.setEditable(false);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(new JLabel("Average:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(avgMonthlyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(new JLabel("Minimum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(minMonthlyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(new JLabel("Maximum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(maxMonthlyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(new JLabel("Median:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(medMonthlyOrdersTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(new JLabel("Total:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyOrdersPanel.add(totalMonthlyOrdersTextField, gbc);
+        
+        monthlyOrdersPanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Monthly Orders"));
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(monthlyOrdersPanel, gbc);
+    }
+    
+    private JPanel dailyRevenuePanel;
+    private JTextField avgDailyRevenueTextField;
+    private JTextField minDailyRevenueTextField;
+    private JTextField maxDailyRevenueTextField;
+    private JTextField medDailyRevenueTextField;
+    private JTextField totalDailyRevenueTextField;
+    
+    private void initDailyRevenuePanel()
+    {
+        GridBagConstraints gbc;
+        dailyRevenuePanel = new JPanel(new GridBagLayout());
+        
+        avgDailyRevenueTextField = new JTextField();
+        avgDailyRevenueTextField.setEditable(false);
+        
+        minDailyRevenueTextField = new JTextField();
+        minDailyRevenueTextField.setEditable(false);
+        
+        maxDailyRevenueTextField = new JTextField();
+        maxDailyRevenueTextField.setEditable(false);
+        
+        medDailyRevenueTextField = new JTextField();
+        medDailyRevenueTextField.setEditable(false);
+        
+        totalDailyRevenueTextField = new JTextField();
+        totalDailyRevenueTextField.setEditable(false);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(new JLabel("Average:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(avgDailyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(new JLabel("Minimum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(minDailyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(new JLabel("Maximum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(maxDailyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(new JLabel("Median:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(medDailyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(new JLabel("Total:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        dailyRevenuePanel.add(totalDailyRevenueTextField, gbc);
+        
+        dailyRevenuePanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Daily Revenue"));
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(dailyRevenuePanel, gbc);
+    }
+    
+    private JPanel monthlyRevenuePanel;
+    private JTextField avgMonthlyRevenueTextField;
+    private JTextField minMonthlyRevenueTextField;
+    private JTextField maxMonthlyRevenueTextField;
+    private JTextField medMonthlyRevenueTextField;
+    private JTextField totalMonthlyRevenueTextField;
+    
+    private void initMonthlyRevenuePanel()
+    {
+        GridBagConstraints gbc;
+        monthlyRevenuePanel = new JPanel(new GridBagLayout());
+        
+        avgMonthlyRevenueTextField = new JTextField();
+        avgMonthlyRevenueTextField.setEditable(false);
+        
+        minMonthlyRevenueTextField = new JTextField();
+        minMonthlyRevenueTextField.setEditable(false);
+        
+        maxMonthlyRevenueTextField = new JTextField();
+        maxMonthlyRevenueTextField.setEditable(false);
+        
+        medMonthlyRevenueTextField = new JTextField();
+        medMonthlyRevenueTextField.setEditable(false);
+        
+        totalMonthlyRevenueTextField = new JTextField();
+        totalMonthlyRevenueTextField.setEditable(false);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(new JLabel("Average:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(avgMonthlyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(new JLabel("Minimum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(minMonthlyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(new JLabel("Maximum:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(maxMonthlyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(new JLabel("Median:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(medMonthlyRevenueTextField, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(new JLabel("Total:"), gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1; gbc.gridy = 4;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        monthlyRevenuePanel.add(totalMonthlyRevenueTextField, gbc);
+        
+        monthlyRevenuePanel.setBorder(
+                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
+                        "Monthly Revenue"));
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4; gbc.gridy = 3;
+        gbc.gridwidth = 1; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        statPanel.add(monthlyRevenuePanel, gbc);
+    }
+    
 	/**
 	 * initializeStatView: initialize the statistics UI
 	 */
@@ -1394,7 +2302,7 @@ public class EmployeeView {
 		gbc.fill = GridBagConstraints.NONE;
 		gbc.ipadx = 4; gbc.ipady = 4;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.PAGE_END;
+		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.weightx = 1.0; gbc.weighty = 1.0;
 		statPanel.add(topPanel, gbc);
 		
@@ -1402,6 +2310,13 @@ public class EmployeeView {
 		initDeliveryTimePanel();
 		initTopItemsPanel();
 		initBestCustomersPanel();
+		initRecentCustomersPanel();
+		initFastestDriversPanel();
+		initOrderCostPanel();
+		initDailyOrdersPanel();
+		initMonthlyOrdersPanel();
+		initDailyRevenuePanel();
+		initMonthlyRevenuePanel();
 		
 		frame.getContentPane().add(statPanel, BorderLayout.CENTER);
 	}
