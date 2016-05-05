@@ -18,6 +18,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -36,6 +41,15 @@ import javax.swing.SpinnerDateModel;
 import javax.swing.table.DefaultTableModel;
 
 import edu.rit.cs.Za.OrderType;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
+import edu.rit.cs.Za.ConnectionManager;
+import edu.rit.cs.Za.Queries;
+import edu.rit.cs.Za.TablePopulator;
+import edu.rit.cs.Za.ZaDatabase;
+import edu.rit.cs.Za.Queries.DelivererTime;
 
 public class EmployeeView {
 	
@@ -135,6 +149,10 @@ public class EmployeeView {
 	private JPanel modifyItemPanel;
 	
 	private long userID;
+	
+	private JTextField qsItemNameTextField;
+	private JTextField qsQuantityTextField;
+	private JButton qsRefreshButton;
 	
 	/**
 	 * run: Show the frame

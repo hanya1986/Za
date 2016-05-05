@@ -284,26 +284,27 @@ public class Queries
 
     }
 
-    public static Map<Integer, Integer> getFrequentCustomers(int N) throws SQLException {
+    public static Map<Long, Long> getFrequentCustomers(int N) throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         //Result map, custId key, total number of orders value
-        Map<Integer, Integer> customers = new HashMap<Integer, Integer>();
-        String build = "";
-        build += "SELECT DISTINCT custid, count(custid) LIMIT ?";
-        build += "FROM ZaOrder";
-        build += "ORDER BY count(custid)";
-        PreparedStatement ps = conn.prepareStatement(build);
+        Map<Long, Long> customers = new HashMap<Long, Long>();
+        String query =  "SELECT DISTINCT custid, count(custid) " +
+                        "FROM ZaOrder " +
+                        "GROUP BY custid " +
+                        "LIMIT ?;";
+        
+        PreparedStatement ps = conn.prepareStatement(query);
         ps.setInt(1, N);
         ResultSet results = ps.executeQuery();
         while (results.next()){
-            customers.put(results.getInt(1), results.getInt(2));
+            customers.put(results.getLong(1), results.getLong(2));
         }
         return customers;
     }
 
-    public static Map<Integer, Timestamp> getLastNCust(int N) throws SQLException{
+    public static Map<Long, Timestamp> getLastNCust(int N) throws SQLException{
         Connection conn = ConnectionManager.getConnection();
-        Map<Integer, Timestamp> customers = new HashMap<Integer, Timestamp>();
+        Map<Long, Timestamp> customers = new HashMap<Long, Timestamp>();
         String build = "";
         build += "SELECT DISTINCT custid, time_order_placed LIMIT ?";
         build += "FROM ZaOrder";
@@ -312,7 +313,7 @@ public class Queries
         ps.setInt(1, N);
         ResultSet results = ps.executeQuery();
         while (results.next()){
-            customers.put(results.getInt(1), results.getTimestamp(2));
+            customers.put(results.getLong(1), results.getTimestamp(2));
         }
         return customers;
     }
