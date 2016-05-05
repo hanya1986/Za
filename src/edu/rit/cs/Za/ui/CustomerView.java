@@ -42,6 +42,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -193,12 +195,15 @@ public class CustomerView {
 		}
 		if(phoneNumbers.size() != 0){
 			removePhoneNumberButton.setEnabled(true);
+			phoneNumberComboBox.setEnabled(true);
+			
 		}
 		for(String emailAddr : emailAddress){
 			emailComboBox.addItem(emailAddr);
 		}
 		if(emailAddress.size() != 0){
 			removeEmailButton.setEnabled(true);
+			emailComboBox.setEnabled(true);
 		}
 	}
 	

@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,6 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import edu.rit.cs.Za.CreditCard;
+import edu.rit.cs.Za.Month;
 import edu.rit.cs.Za.OrderManager;
 import edu.rit.cs.Za.OrderType;
 import edu.rit.cs.Za.PaymentMethod;
@@ -55,6 +57,8 @@ public class PaymentView {
 	private JTextField expireDateField;
 	private JTextField userField;
 	private JTextField securityField;
+	private JCheckBox saveCB;
+	private JButton removeCR;
 	
 	private boolean includeAddr;
 	private long userID;
@@ -76,6 +80,7 @@ public class PaymentView {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		initialize();
 		populateCrCard();
 	}
 	
@@ -94,7 +99,6 @@ public class PaymentView {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					initialize();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -165,8 +169,11 @@ public class PaymentView {
 				JComboBox<CreditCard> cb = (JComboBox<CreditCard>) e.getSource();
 				if(cb.getSelectedItem() instanceof CreditCard){
 					CreditCard item =  (CreditCard) cb.getSelectedItem();
+					removeCR.setEnabled(true);
 					expireDateField.setText(Integer.toString(item.expirationMonth.value() + 1) + "/" + item.expirationYear);
 					securityField.setText(item.securityCode);
+				}else{
+					removeCR.setEnabled(false);
 				}
 			}
 		});
@@ -177,8 +184,29 @@ public class PaymentView {
 		securityField = new JTextField();
 		securityField.setPreferredSize(new Dimension(50,20));
 		creditPanel.add(cardNumBox, gbc);
+		removeCR = new JButton("Remove");
+		removeCR.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(cardNumBox.getSelectedItem() instanceof CreditCard){
+					CreditCard card = (CreditCard) cardNumBox.getSelectedItem();
+					try {
+						ProfileManager.removeCreditCard(userID, card.cardNumber);
+						removeCR.setEnabled(false);
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+		});
+		removeCR.setEnabled(false);
+		gbc.gridx++;
+		creditPanel.add(removeCR);
 		gbc.gridy++;
-		gbc.gridx--;
+		gbc.gridx = 0;
 		JLabel expLabel = new JLabel("Expire Date(month/year):");
 		creditPanel.add(expLabel, gbc);
 		gbc.gridx++;
@@ -189,6 +217,10 @@ public class PaymentView {
 		creditPanel.add(secLabel, gbc);
 		gbc.gridx++;
 		creditPanel.add(securityField, gbc);
+		saveCB = new JCheckBox("Save Payment info");
+		gbc.gridy++;
+		gbc.gridx = 0;
+		creditPanel.add(saveCB, gbc);
 		if(includeAddr){
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -222,8 +254,12 @@ public class PaymentView {
 					if(cardNumBox.getSelectedItem() != null &&
 						expireDateField.getText() != null && 
 						expireDateField.getText().matches("^((0[1-9])|(1[0-2]))\\/(\\d{2})$") &&
-						securityField.getText() != null){
+						securityField.getText() != null &&
+						orderItems.size() != 0){
 						try {
+							if((Integer.parseInt(expireDateField.getText().substring(0, 2))) > 12){
+								return;
+							}
 							orderDetail.put("active", true);
 							orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CARD"));
 							long orderID = OrderManager.createOrder(userID, orderType , orderItems);
@@ -236,6 +272,9 @@ public class PaymentView {
 						return;
 					}
 				}else{
+					if(orderItems.size() == 0){
+						return;
+					}
 					orderDetail.put("active", true);
 					orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CASH"));
 					long orderID;
@@ -247,7 +286,21 @@ public class PaymentView {
 						e1.printStackTrace();
 					}
 				}
-				JOptionPane.showMessageDialog(frame, "Order successfully placed!");
+				if(saveCB.isSelected()){
+					try {
+						ProfileManager.addCreditCard(userID,cardNumBox.getSelectedItem().toString(), securityField.getText(), 
+								Month.parseMonth(Integer.parseInt(expireDateField.getText().substring(0, 2)) - 1), 
+								Integer.parseInt(expireDateField.getText().substring(3)));
+					} catch (NumberFormatException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				JOptionPane.showMessageDialog(null, "Order successfully placed!");
+				frame.dispose();
 			}
 			
 		});

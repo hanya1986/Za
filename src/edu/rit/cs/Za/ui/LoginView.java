@@ -21,6 +21,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Map;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
@@ -148,7 +150,9 @@ public class LoginView implements ActionListener{
 							CustomerView cus = new CustomerView(userid);
 							break;
 						case "EMPLOYEE":
-							EmployeeView emp = new EmployeeView(userid);
+							String[] title = {"job_title"};
+							Map<String, Object> empData = ProfileManager.getEmployeeInfo(userid, Arrays.asList(title));
+							EmployeeView emp = new EmployeeView(userid, empData.get("job_title").toString().contains("Manager"));
 							break;
 					}
 				}
