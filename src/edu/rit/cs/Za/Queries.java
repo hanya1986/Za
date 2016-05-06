@@ -140,14 +140,17 @@ public class Queries
         while (rs.next())
             totals.add(rs.getBigDecimal(1));
         
-        BigDecimal median;
-        if (totals.size() % 2 == 0)
+        BigDecimal median = new BigDecimal("0.00");
+        if (totals.size() > 0)
         {
-            BigDecimal a = totals.get(totals.size() / 2 - 1);
-            BigDecimal b = totals.get(totals.size() / 2);
-            median = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+            if (totals.size() % 2 == 0)
+            {
+                BigDecimal a = totals.get(totals.size() / 2 - 1);
+                BigDecimal b = totals.get(totals.size() / 2);
+                median = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+            }
+            else median = totals.get(totals.size() / 2);
         }
-        else median = totals.get(totals.size() / 2);
         
         median = median.setScale(2, RoundingMode.HALF_UP);
         stats.put("MED_ORDER_COST", median);
@@ -244,14 +247,17 @@ public class Queries
         while (rs.next())
             revenues.add(rs.getBigDecimal(1));
         
-        BigDecimal medDailyOrders;
-        if (revenues.size() % 2 == 0)
+        BigDecimal medDailyOrders = new BigDecimal("0.00");
+        if (revenues.size() > 0)
         {
-            BigDecimal a = revenues.get(revenues.size() / 2 - 1);
-            BigDecimal b = revenues.get(revenues.size() / 2);
-            medDailyOrders = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+            if (revenues.size() % 2 == 0)
+            {
+                BigDecimal a = revenues.get(revenues.size() / 2 - 1);
+                BigDecimal b = revenues.get(revenues.size() / 2);
+                medDailyOrders = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+            }
+            else medDailyOrders = revenues.get(revenues.size() / 2);
         }
-        else medDailyOrders = revenues.get(revenues.size() / 2);
         
         medDailyOrders = medDailyOrders.setScale(2, RoundingMode.HALF_UP);
         
@@ -463,14 +469,17 @@ public class Queries
         while (rs.next())
             revenues.add(rs.getBigDecimal(1));
         
-        BigDecimal medMonthlyOrders;
-        if (revenues.size() % 2 == 0)
+        BigDecimal medMonthlyOrders = new BigDecimal("0.00");
+        if (revenues.size() > 0)
         {
-            BigDecimal a = revenues.get(revenues.size() / 2 - 1);
-            BigDecimal b = revenues.get(revenues.size() / 2);
-            medMonthlyOrders = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+            if (revenues.size() % 2 == 0)
+            {
+                BigDecimal a = revenues.get(revenues.size() / 2 - 1);
+                BigDecimal b = revenues.get(revenues.size() / 2);
+                medMonthlyOrders = a.add(b).divide(new BigDecimal(2), RoundingMode.HALF_UP);
+            }
+            else medMonthlyOrders = revenues.get(revenues.size() / 2);
         }
-        else medMonthlyOrders = revenues.get(revenues.size() / 2);
         
         medMonthlyOrders = medMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
         
@@ -535,16 +544,11 @@ public class Queries
         ResultSet rs = ps.executeQuery();
         rs.next();
         
+        
         Float avgDailyOrders = rs.getFloat(1);
         Long minDailyOrders = rs.getLong(2);
         Long maxDailyOrders = rs.getLong(3);
         Long totalDailyOrders = rs.getLong(4);
-        
-        if (avgDailyOrders == null &&
-            minDailyOrders == null &&
-            maxDailyOrders == null &&
-            totalDailyOrders == null)
-            return new HashMap<String,Float>();
         
         builder.setLength(0);
         builder.append("SELECT COUNT(*) AS n_orders, ");
@@ -567,14 +571,19 @@ public class Queries
         while (rs.next())
             orders.add(rs.getLong(1));
         
-        float medDailyOrders;
-        if (orders.size() % 2 == 0)
+        float medDailyOrders = 0.0f;
+        if (orders.size() > 0)
         {
-            float a = orders.get(orders.size() / 2 - 1);
-            float b = orders.get(orders.size() / 2);
-            medDailyOrders = (a + b) / 2.0f;
+            if (orders.size() % 2 == 0)
+            {
+                float a = orders.get(orders.size() / 2 - 1);
+                float b = orders.get(orders.size() / 2);
+                medDailyOrders = (a + b) / 2.0f;
+            }
+            else medDailyOrders = orders.get(orders.size() / 2);
         }
-        else medDailyOrders = orders.get(orders.size() / 2);
+        else
+            return new HashMap<String,Float>();
         
         Map<String,Float> stats = new HashMap<String,Float>();
         stats.put("AVG_DAILY_REV", avgDailyOrders);
@@ -659,12 +668,6 @@ public class Queries
         Long maxMonthlyOrders = rs.getLong(3);
         Long totalMonthlyOrders = rs.getLong(4);
         
-        if (avgMonthlyOrders == null &&
-            minMonthlyOrders == null &&
-            maxMonthlyOrders == null &&
-            totalMonthlyOrders == null)
-            return new HashMap<String,Float>();
-        
         builder.setLength(0);
         builder.append("SELECT COUNT(*) AS n_orders, ");
         builder.append("YEAR(time_order_placed) AS order_year, ");
@@ -685,14 +688,19 @@ public class Queries
         while (rs.next())
             orders.add(rs.getLong(1));
         
-        float medMonthlyOrders;
-        if (orders.size() % 2 == 0)
+        float medMonthlyOrders = 0.0f;
+        if (orders.size() > 0)
         {
-            float a = orders.get(orders.size() / 2 - 1);
-            float b = orders.get(orders.size() / 2);
-            medMonthlyOrders = (a + b) / 2.0f;
+            if (orders.size() % 2 == 0)
+            {
+                float a = orders.get(orders.size() / 2 - 1);
+                float b = orders.get(orders.size() / 2);
+                medMonthlyOrders = (a + b) / 2.0f;
+            }
+            else medMonthlyOrders = orders.get(orders.size() / 2);
         }
-        else medMonthlyOrders = orders.get(orders.size() / 2);
+        else 
+            return new HashMap<String,Float>();
         
         Map<String,Float> stats = new HashMap<String,Float>();
         stats.put("AVG_DAILY_REV", avgMonthlyOrders);
