@@ -2415,21 +2415,8 @@ public class EmployeeView {
 	public void initializeStatView()
 	{
         GridBagConstraints gbc;
-        //statPanel = new JPanel(new BorderLayout());
         statPanel = new JPanel(new GridBagLayout());
-        //String[] columns = { "Log", "Type", "Time"};
-        //statTable = new JTable(populateStatLogsTable(columns));
-        //JScrollPane sp = new JScrollPane(statTable);
-        //statPanel.add(sp, BorderLayout.CENTER);
-        
-        //JPanel topPanel = new JPanel();
         JPanel topPanel = new JPanel();
-        //JComboBox<String> selectionComboBox = new JComboBox<String>();
-        //selectionComboBox.setEnabled(true);
-        //selectionComboBox.addItem("Store");
-        //selectionComboBox.addItem("Employee");
-        //selectionComboBox.addItem("Product");
-        //topPanel.add(selectionComboBox);
         
         JLabel fromLabel = new JLabel("From:");
         topPanel.add(fromLabel);
@@ -2446,18 +2433,17 @@ public class EmployeeView {
         
         JLabel toLabel = new JLabel("To:");
         topPanel.add(toLabel);
-        
-        toSpinner = new JSpinner(currentModel);
+        calendar = Calendar.getInstance();
+        currentDate = calendar.getTime();
+        calendar.add(Calendar.YEAR, -100);
+        firstDate = calendar.getTime();
+        calendar.add(Calendar.YEAR, 200);
+        lastDate = calendar.getTime();
+        SpinnerDateModel toCurrentModel = new SpinnerDateModel(currentDate, firstDate, lastDate, Calendar.YEAR);
+        toSpinner = new JSpinner(toCurrentModel);
         toSpinner.setEditor(new JSpinner.DateEditor(toSpinner, "MM/dd/yyyy"));
         topPanel.add(toSpinner);
         
-        //JLabel Search = new JLabel("      Search:");
-        //topPanel.add(Search);
-        //searchTextField = new JTextField();
-        //searchTextField.setPreferredSize(new Dimension(140,20));
-        //topPanel.add(searchTextField);
-        
-        //statPanel.add(topPanel, BorderLayout.NORTH);
         gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.gridwidth = 5; gbc.gridheight = 1;
