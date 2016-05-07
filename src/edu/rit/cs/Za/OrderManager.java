@@ -434,13 +434,15 @@ public class OrderManager
             return;
         
         builder.setLength(0);
-        builder.append("SELECT subtotal ");
+        builder.append("SELECT subtotal, custid ");
         builder.append("FROM ZaOrder ");
         builder.append("WHERE orderid=?;");
         ps = conn.prepareStatement(builder.toString());
         ps.setLong(1, orderid);
         ResultSet rs = ps.executeQuery();
         if (!rs.next()) return;
+        
+        long cust_id = rs.getLong(2);
         
         int rewardPoints;
         BigDecimal subtotal = rs.getBigDecimal(1);
@@ -454,10 +456,10 @@ public class OrderManager
         builder.setLength(0);
         builder.append("UPDATE Customer ");
         builder.append("SET reward_pts = reward_pts + ? ");
-        builder.append("WHERE orderid=?;");
+        builder.append("WHERE cust_id=?;");
         ps = conn.prepareStatement(builder.toString());
         ps.setInt(1, rewardPoints);
-        ps.setLong(2, orderid);
+        ps.setLong(2, cust_id);
         ps.executeUpdate();
         return;
     }

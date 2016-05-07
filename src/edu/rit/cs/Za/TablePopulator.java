@@ -34,9 +34,9 @@ public class TablePopulator
      */
     public TablePopulator() throws SQLException, IOException
     {
-        wipeTables();
+        //wipeTables();
         populateTables();
-        testTablesPopulated();
+        //testTablesPopulated();
     }
     
     /**
