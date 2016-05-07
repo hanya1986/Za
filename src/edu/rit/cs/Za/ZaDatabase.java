@@ -220,7 +220,7 @@ public class ZaDatabase
         builder.append("  quantity INT DEFAULT 1,");
         builder.append("  size VARCHAR(8),");
         builder.append("  available BOOLEAN DEFAULT TRUE,");
-        builder.append("  PRIMARY KEY (orderid,itemid),");
+        builder.append("  PRIMARY KEY (orderid,itemid,size),");
         builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
         builder.append("  FOREIGN KEY (itemid) REFERENCES Menu_Item (name),");
         builder.append("  CHECK (quantity>0),");

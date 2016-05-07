@@ -96,6 +96,9 @@ public class ModifyOrderPanel extends JPanel{
 					data[0] = model.getValueAt(selectedRow, 0);
 					data[1] = model.getValueAt(selectedRow, 2);
 					data[data.length - 1] = 1;
+					if(data[1] == null){
+						data[1] = "SMALL";
+					}
 					DefaultTableModel carModel = (DefaultTableModel) pastOrderTable.getModel();
 					if(!isInTable(carModel, data)){
 						carModel.addRow(data);
