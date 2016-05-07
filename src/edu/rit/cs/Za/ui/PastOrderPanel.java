@@ -35,11 +35,18 @@ public class PastOrderPanel extends JPanel{
 	 */
 	private static final long serialVersionUID = 1L;
 	private String[] itemAttr = {"type", "est_prep_time", "small_price", "medium_price", "large_price"};
+	private String[] orderAttr = {"orderid","custid","order_type","time_order_placed","total", "pay_method"};
 	private JTable pastOrderTable;
 	private long custId;
 	
 	public PastOrderPanel(long custId){
 		this.custId = custId;
+		pastOrderTable = populatePastOrderTable();
+		initialize();
+	}
+	
+	public PastOrderPanel(){
+		pastOrderTable = populateEmpOrdersTable();
 		initialize();
 	}
 	
@@ -54,7 +61,6 @@ public class PastOrderPanel extends JPanel{
 	private void initialize(){
 		this.setLayout(new BorderLayout());
 		this.setBounds(100, 100, 450, 300);
-		pastOrderTable = populatePastOrderTable();
 		JScrollPane sp = new JScrollPane(pastOrderTable);
 		this.add(sp, BorderLayout.CENTER);
 	}
@@ -68,6 +74,26 @@ public class PastOrderPanel extends JPanel{
 		ArrayList<Object[]> items = new ArrayList<Object[]>();
 		try {
 			items = OrderManager.getCustomerOrders(custId);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Object[][] data = new Object[items.size()][5];
+		for(int i = 0; i < items.size(); i++){
+			data[i] = items.get(i);
+		}
+		return new JTable(data, columns);
+	}
+	
+	/**
+	 * populateEmpOrdersTable: populating all past orders info table.
+	 * @throws SQLException 
+	 */
+	private JTable populateEmpOrdersTable(){
+		String[] columns = { "Order ID", "Customer ID", "Order Type", "Order Placed", "Total", "Payment Method" };
+		ArrayList<Object[]> items = new ArrayList<Object[]>();
+		try {
+			items = OrderManager.getAllOrders(orderAttr);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

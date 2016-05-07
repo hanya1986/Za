@@ -14,9 +14,14 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,11 +32,15 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -39,17 +48,23 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import edu.rit.cs.Za.OrderType;
+import edu.rit.cs.Za.ProfileManager;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import edu.rit.cs.Za.ConnectionManager;
+import edu.rit.cs.Za.MenuManager;
+import edu.rit.cs.Za.OrderManager;
 import edu.rit.cs.Za.Queries;
 import edu.rit.cs.Za.TablePopulator;
 import edu.rit.cs.Za.ZaDatabase;
 import edu.rit.cs.Za.Queries.DelivererTime;
+import edu.rit.cs.Za.ui.CustomerView.MyModel;
 
 public class EmployeeView {
 	
@@ -81,7 +96,6 @@ public class EmployeeView {
 			"State:",
 			"Zipcode:",
 	};
-
 	private String[] itemFields = new String[]{
 			"Name:",
 			"Type:",
@@ -92,6 +106,41 @@ public class EmployeeView {
 			"Medium price:",
 			"Large price:"
 	};
+	
+	private String[] custAttr = new String[]{
+			"first_name",
+			"middle_name",
+			"last_name",
+			"date_of_birth",
+			"street",
+			"city",
+			"state",
+			"zip",
+		};
+	private String[] itemsAttr = new String[]{
+			"type",
+			"price",
+			"est_prep_time",
+			"small_price",
+			"medium_price",
+			"large_price",
+		};
+	private String[] empAttr = new String[]{
+			"first_name",
+			"middle_name",
+			"last_name",
+			"date_of_birth",
+			"street",
+			"city",
+			"state",
+			"zip",
+			"ssn",
+			"hourly_rate",
+			"hours_per_week",
+			"date_hired",
+			"date_terminated",
+			"job_title",
+		};
 	
 	private enum typeFrame{
 		addEmployee,
@@ -147,12 +196,29 @@ public class EmployeeView {
 	private JPanel modifyEmpPanel;
 	private JPanel addItemPanel;
 	private JPanel modifyItemPanel;
+	private JTextField[] arrayTextField;
+	private JRadioButton deliverRB;
+	private JRadioButton pickupRB;
+	private JComboBox<String> itemSizeComboBox;
 	
 	private long userID;
+	private boolean isManager;
 	
 	private JTextField qsItemNameTextField;
 	private JTextField qsQuantityTextField;
 	private JButton qsRefreshButton;
+	
+	private Map<String,Object> empProfile;
+	private List<String> phoneNumbers;
+	private List<String> newPhones;
+	private List<String> removePhones;
+	private List<String> emailAddress;
+	private List<String> newEmails;
+	private List<String> removeEmails;
+	private Map<String,Map<String,Object>> menu = new HashMap<String,Map<String,Object>>();
+	private List<String> empAttrList = new ArrayList<String>(Arrays.asList(empAttr));
+	private List<String> custAttrList = new ArrayList<String>(Arrays.asList(custAttr));
+	private List<String> itemAttrList = new ArrayList<String>(Arrays.asList(itemsAttr));
 	
 	/**
 	 * run: Show the frame
@@ -164,8 +230,24 @@ public class EmployeeView {
 	/**
 	 * EmployeeView: Constructor.
 	 */
-	public EmployeeView(long userID){
+	public EmployeeView(long userID, boolean isManager){
 		this.userID = userID;
+		this.isManager = isManager;
+		try {
+			List<String> items = MenuManager.getAvailableItems();
+			Iterator<String> itemIt = items.iterator();
+			while(itemIt.hasNext()){
+				String iName = itemIt.next();
+				Map<String,Object> itemDetail = MenuManager.getItemInfo(iName, itemAttrList);
+				menu.put(iName, itemDetail);
+			}
+			empProfile = ProfileManager.getEmployeeInfo(this.userID, empAttrList);
+			phoneNumbers = ProfileManager.getPhoneNumbers(this.userID);
+			emailAddress = ProfileManager.getEmailAddresses(this.userID);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		initialize();
 		initializeOrdersView();
 	}
@@ -177,13 +259,161 @@ public class EmployeeView {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					EmployeeView window = new EmployeeView(0);
+					String db_location = "./ZADB/za";
+			        String db_path = db_location + ".h2.db";
+			        File f = new File(db_path);
+			        if (f.exists()) {
+			            System.out.println("REMOVING OLD DATABASE\n");
+			            //f.delete();
+			        }
+			        String username = "username";
+			        String password = "password";
+			        ConnectionManager.initConnection(db_location, username, password);
+			        //ZaDatabase.createDatabase();
+					//TablePopulator populate = new TablePopulator();
+					EmployeeView window = new EmployeeView(1, true);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+	}
+	
+	/**
+	 * populateProfileData: populating the customer data from database
+	 */
+	private void populateProfileData(){
+		for(String attr : empAttr){
+			switch (attr)
+            {
+            case "first_name":
+            	arrayTextField[0].setText(empProfile.get(attr).toString());
+                break;
+            case "middle_name":
+            	arrayTextField[1].setText(empProfile.get(attr).toString());
+                break;
+            case "last_name":
+            	arrayTextField[2].setText(empProfile.get(attr).toString());
+                break;
+            case "date_of_birth":
+            	DOBSpinner.setValue(empProfile.get(attr));
+                break;
+            case "street":
+            	arrayTextField[3].setText(empProfile.get(attr).toString());
+                break;
+            case "city":
+            	arrayTextField[4].setText(empProfile.get(attr).toString());
+                break;
+            case "state":
+            	arrayTextField[5].setText(empProfile.get(attr).toString());
+                break;
+            case "zip":
+            	arrayTextField[6].setText(empProfile.get(attr).toString());
+                break;
+            case "ssn":
+            	arrayTextField[7].setText(empProfile.get(attr).toString());
+                break;
+            case "hourly_rate":
+            	arrayTextField[8].setText(empProfile.get(attr).toString());
+                break;
+            case "hours_per_week":
+            	arrayTextField[9].setText(empProfile.get(attr).toString());
+                break;
+            case "date_hired":
+            	arrayTextField[10].setText(empProfile.get(attr).toString());
+                break;
+            case "date_terminated":
+            	arrayTextField[11].setText(empProfile.get(attr).toString());
+                break;
+            case "job_title":
+            	arrayTextField[12].setText(empProfile.get(attr).toString());
+                break;
+            }
+		}
+		for(String phoneNum : phoneNumbers){
+			phoneNumberComboBox.addItem(phoneNum);
+		}
+		if(phoneNumbers.size() != 0){
+			removePhoneNumberButton.setEnabled(true);
+			phoneNumberComboBox.setEnabled(true);
+			
+		}
+		for(String emailAddr : emailAddress){
+			emailComboBox.addItem(emailAddr);
+		}
+		if(emailAddress.size() != 0){
+			removeEmailButton.setEnabled(true);
+			emailComboBox.setEnabled(true);
+		}
+	}
+	
+	/**
+	 * updateProfile: function that updates the profile for the customer
+	 */
+	private void updateProfile(){
+		for(String attr : profileFields){
+			switch (attr)
+            {
+            case "first_name":
+            	empProfile.put(attr, arrayTextField[0].getText());
+                break;
+            case "middle_name":
+            	empProfile.put(attr, arrayTextField[1].getText());
+                break;
+            case "last_name":
+            	empProfile.put(attr, arrayTextField[2].getText());
+                break;
+            case "date_of_birth":
+            	empProfile.put(attr, DOBSpinner.getValue());
+                break;
+            case "street":
+            	empProfile.put(attr, arrayTextField[3].getText());
+                break;
+            case "city":
+            	empProfile.put(attr, arrayTextField[4].getText());
+                break;
+            case "state":
+            	empProfile.put(attr, arrayTextField[5].getText());
+                break;
+            case "zip":
+            	empProfile.put(attr, arrayTextField[6].getText());
+                break;
+            }
+		}
+		try {
+			ProfileManager.modifyCustomer(userID, empProfile);
+			for(int i = 0; i < removePhones.size(); i++){
+				phoneNumbers.remove(removePhones.get(i));
+				ProfileManager.removePhoneNumber(userID, removePhones.get(i));
+			}
+			for(int i = 0; i < newPhones.size(); i++){
+				phoneNumbers.add(newPhones.get(i));
+				ProfileManager.addPhoneNumber(userID, newPhones.get(i));
+			}
+			for(int i = 0; i < removeEmails.size(); i++){
+				emailAddress.remove(removeEmails.get(i));
+				ProfileManager.removeEmailAddress(userID, removeEmails.get(i));
+			}
+			for(int i = 0; i < newEmails.size(); i++){
+				emailAddress.add(newEmails.get(i));
+				ProfileManager.addEmailAddress(userID, newEmails.get(i));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private boolean isInTable(DefaultTableModel model ,Object[] item){
+		for(int i = 0; i < model.getRowCount(); i++){
+			String name = model.getValueAt(i, 0).toString();
+			String size = model.getValueAt(i, 2).toString();
+			if(item[0].toString().equals(name) && item[2].toString().equals(size)){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -236,7 +466,9 @@ public class EmployeeView {
 		});
 		menuBar.add(createCustomerButton);
 		
-		initializeManagerView();
+		if(isManager){
+			initializeManagerView();
+		}
 		
 		JButton profileButton = new JButton("My Profile");
 		profileButton.addActionListener(new ActionListener(){
@@ -584,7 +816,7 @@ public class EmployeeView {
         profilePhonePanel.add(profilePanel, gbc);
         profileScollPane = new JScrollPane(profilePhonePanel);
 		JLabel[] arrayLabel = new JLabel[profileFields.length];
-		JTextField[] arrayTextField = new JTextField[profileFields.length - 1];
+		arrayTextField = new JTextField[profileFields.length - 1];
 		SpinnerDateModel model;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -656,8 +888,60 @@ public class EmployeeView {
 		createOrderPanel = new JPanel();
 		frame.getContentPane().add(createOrderPanel, BorderLayout.CENTER);
 		JButton add = new JButton("Add");
+		add.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int selectedRow = menuTable.getSelectedRow();
+				if(selectedRow != -1){
+					TableModel model = menuTable.getModel();
+					Object[] data = new Object[6];
+					for(int i = 0; i < data.length - 1; i++){
+						if(i == 3){
+							if(data[i - 1] == null){
+								data[i - 1] = "SMALL";
+							}
+							switch(data[i - 1].toString()){
+							case "SMALL":
+								data[i] = model.getValueAt(selectedRow, 3);
+								break;
+							case "MEDIUM":
+								data[i] = model.getValueAt(selectedRow, 4);
+								break;
+							case "LARGE":
+								data[i] = model.getValueAt(selectedRow, 5);
+								break;
+							}
+						}else{
+							if(i == data.length - 2){
+								data[i] = model.getValueAt(selectedRow, 6);
+							}else{
+								data[i] = model.getValueAt(selectedRow, i);
+							}
+						}
+					}
+					data[data.length - 1] = 1;
+					DefaultTableModel carModel = (DefaultTableModel) carTable.getModel();
+					if(!isInTable(carModel, data)){
+						carModel.addRow(data);
+					}
+				}
+			}
+			
+		});
 		JButton remove = new JButton("Remove");
-		
+		remove.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int selectedRow = carTable.getSelectedRow();
+				if(selectedRow != -1){
+					DefaultTableModel carModel = (DefaultTableModel) carTable.getModel();
+					carModel.removeRow(selectedRow);
+				}
+			}
+			
+		});
 		createOrderPanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		JPanel AddRemovePanel = new JPanel(new GridBagLayout());
@@ -667,6 +951,17 @@ public class EmployeeView {
 		AddRemovePanel.add(add,gbc);
 		gbc.gridy = 1;
 		AddRemovePanel.add(remove, gbc);
+		deliverRB = new JRadioButton("Delivery");
+		deliverRB.setSelected(true);
+		gbc.gridy++;
+		AddRemovePanel.add(deliverRB, gbc);
+		pickupRB = new JRadioButton("Pick up");
+		gbc.gridy++;
+		AddRemovePanel.add(pickupRB, gbc);
+		
+		ButtonGroup RBGroup = new ButtonGroup();
+		RBGroup.add(deliverRB);
+		RBGroup.add(pickupRB);
 		
 		gbc = new GridBagConstraints();
 		gbc.weightx = 0.3;
@@ -683,6 +978,14 @@ public class EmployeeView {
 		MyModel table = populateMenuTable();
 		menuTable = new JTable();
 		menuTable.setModel(table);
+		TableColumn itemColumn = menuTable.getColumnModel().getColumn(2);
+		itemSizeComboBox = new JComboBox<String>();
+		itemSizeComboBox.addItem("SMALL");
+		itemSizeComboBox.addItem("MEDIUM");
+		itemSizeComboBox.addItem("LARGE");
+		itemSizeComboBox.setSelectedItem(0);
+		itemSizeComboBox.setEditable(false);
+		itemColumn.setCellEditor(new DefaultCellEditor(itemSizeComboBox));
 		JScrollPane sp = new JScrollPane(menuTable);
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		createOrderPanel.add(sp, gbc);
@@ -703,46 +1006,68 @@ public class EmployeeView {
 		gbc.gridy++;
 		gbc.weightx = 1;
 		gbc.weighty = 1;
-		String[] columns = { "Order ID", "Customer ID", "Time Placed", "Time Order out", "Subtotal", "Tax", "Total" };
-		carTable = populateTable(columns);
+		carTable = new JTable(createCarTable());
 		sp = new JScrollPane(carTable);
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		createOrderPanel.add(sp, gbc);
 		
 		bottomPanel = new JPanel(new BorderLayout());
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.VERTICAL;
 		JButton resetButton = new JButton("Reset");
-		gbc.gridx++;
+		resetButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				DefaultTableModel carModel = (DefaultTableModel) carTable.getModel();
+				carModel.setRowCount(0);
+			}
+			
+		});
 		JPanel centerBottomPanel = new JPanel();
 		centerBottomPanel.add(resetButton);
 		bottomPanel.add(centerBottomPanel, BorderLayout.CENTER);
 		JButton pastButton = new JButton("Past Orders");
+		pastButton.setEnabled(false);
 		pastButton.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				PastOrderPanel pastWindow = new PastOrderPanel(userID);
-				//pastWindow.runGUI();
+				int result = JOptionPane.showConfirmDialog(null, pastWindow, "Past Orders",
+						JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+				if(result == JOptionPane.OK_OPTION){
+					ArrayList<Object[]> items = pastWindow.getSelectedOrder();
+					DefaultTableModel carModel = (DefaultTableModel) carTable.getModel();
+					for(Object[] item : items){
+						if(!isInTable(carModel,item)){
+							carModel.addRow(item);
+						}
+					}
+				}
 			}
 			
 		});
-		gbc.gridx++;
 		bottomPanel.add(pastButton, BorderLayout.LINE_END);
 		JButton placeButton = new JButton("Place Order");
 		placeButton.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				DefaultTableModel model = (DefaultTableModel) carTable.getModel();
 				Map<String,Integer> orderItems = new HashMap<String, Integer>();
-				PaymentView pv = new PaymentView(userID,true, orderItems, OrderType.CARRY_OUT);
+				for(int i = 0; i < model.getRowCount(); i++){
+					String item = model.getValueAt(i, 2).toString().concat(" " + model.getValueAt(i, 0).toString());
+					int	quantity = Integer.parseInt(model.getValueAt(i, 5).toString());
+					orderItems.put(item, quantity);
+				}
+				OrderType ordertype = OrderType.parseOrderType("CARRY-OUT");
+				if(deliverRB.isSelected()){
+					ordertype = OrderType.parseOrderType("DELIVERY");
+				}
+				PaymentView pv = new PaymentView(userID, true, orderItems, ordertype);
 				pv.runGUI();
 			}
 			
 		});
-		gbc.gridx++;
 		bottomPanel.add(placeButton, BorderLayout.LINE_START);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
@@ -769,44 +1094,123 @@ public class EmployeeView {
 		gbc.gridy = 1;
 		gbc.weightx = 1;
 		gbc.weighty = 1;
-		String[] columns = { "Name", "Type", "Price", "Estimate Time", "Quantity" };
-		carTable = populateTable(columns);
+		String[] columns = { "Order ID", "Customer ID", "Order Type", "Order Placed", "Total", "Payment Method" };
+		MyModel model = populateTable(columns);
+		carTable = new JTable(model);
 		JScrollPane sp = new JScrollPane(carTable);
 		sp.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		ordersPanel.add(sp, gbc);
 		
-		bottomPanel = new JPanel(new BorderLayout());
+		bottomPanel = new JPanel(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
+		gbc.weightx = 1;
+		gbc.weighty = 1;
 		gbc.fill = GridBagConstraints.VERTICAL;
-		JButton deliveredButton = new JButton("Delivered");
-		gbc.gridx++;
-		JPanel centerBottomPanel = new JPanel();
-		centerBottomPanel.add(deliveredButton);
-		bottomPanel.add(centerBottomPanel, BorderLayout.CENTER);
 		JButton pastButton = new JButton("Past Orders");
 		pastButton.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PastOrderPanel pastWindow = new PastOrderPanel(userID);
-				//pastWindow.runGUI();
+				PastOrderPanel pastWindow = new PastOrderPanel();
+				int result = JOptionPane.showConfirmDialog(null, pastWindow, "Past Orders",
+						JOptionPane.CLOSED_OPTION, JOptionPane.PLAIN_MESSAGE);
 			}
 			
 		});
-		gbc.gridx++;
-		bottomPanel.add(pastButton, BorderLayout.LINE_END);
 		JButton cancelButton = new JButton("Cancel Order");
 		cancelButton.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				int row = carTable.getSelectedRow();
+				if(row != -1){
+					int result = JOptionPane.showConfirmDialog(frame, "Are you sure to cancel the order ?" + row,
+							"Confirm",JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+					if(result == JOptionPane.YES_OPTION){
+						try {
+							OrderManager.removeOrder(Long.parseLong(carTable.getValueAt(row, 0).toString()));
+							carTable.remove(row);
+						} catch (NumberFormatException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
 			}
 			
 		});
+		JButton deliveredButton = new JButton("Delivered");
+		deliveredButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int row = carTable.getSelectedRow();
+				if(row != -1){
+					Map<String,Object> values = new HashMap<String,Object>();
+					values.put("active", false);
+					values.put("empid_took_order", userID);
+					values.put("empid_prepared_order", userID);
+					values.put("empid_delivered_order", userID);
+					values.put("time_order_out", Calendar.getInstance().getTime());
+					values.put("time_order_delivered", Calendar.getInstance().getTime());
+					try {
+						OrderManager.modifyOrder(Long.parseLong(carTable.getValueAt(row, 0).toString()), values);
+						JOptionPane.showMessageDialog(frame, "Order delivered!");
+						DefaultTableModel model = (DefaultTableModel) carTable.getModel();
+						model.removeRow(row);
+					} catch (NumberFormatException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+		});
+		JButton modifyButton = new JButton("Modify Order");
+		modifyButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int row = carTable.getSelectedRow();
+				if(row != -1){
+					long orderID = Long.parseLong(carTable.getValueAt(row, 0).toString());
+					OrderType type = OrderType.parseOrderType(carTable.getValueAt(row, 2).toString());
+					ModifyOrderPanel modify = new ModifyOrderPanel(orderID);
+					int result = JOptionPane.showConfirmDialog(null, modify, "Modify Order",
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+					if(result == JOptionPane.OK_OPTION){
+						try {
+							List<String> removeItems = modify.itemsRemoved();
+							OrderManager.removeItems(orderID, removeItems);
+							OrderManager.changeQuantities(orderID, modify.itemsModified());
+							OrderManager.addItems(orderID, modify.itemsAdded());
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}	
+			}
+			
+		});
+		gbc.anchor = GridBagConstraints.LINE_START;
+		bottomPanel.add(cancelButton, gbc);
 		gbc.gridx++;
-		bottomPanel.add(cancelButton, BorderLayout.LINE_START);
+		gbc.anchor = GridBagConstraints.CENTER;
+		bottomPanel.add(modifyButton, gbc);
+		gbc.gridx++;
+		bottomPanel.add(deliveredButton, gbc);
+		gbc.gridx++;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		bottomPanel.add(pastButton, gbc);
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
@@ -1190,6 +1594,7 @@ public class EmployeeView {
 			frame.getContentPane().remove(bottomPanel);
 		}
 		initializeProfileView();
+		populateProfileData();
 	}
 	
  	/**
@@ -1417,19 +1822,104 @@ public class EmployeeView {
 	 * populateMenuTable: populate the initial menu items.
 	 */
 	private MyModel populateMenuTable(){
-		String[] columns = { "Name", "Type", "Price", "Estimate Time"};
-		Object[][] data = { {"Peperoni", "Pizza", new Integer(25), new Integer(30)},
-							{"Cola", "Drinks", new Integer(4), new Integer(0)}
-		};
-		return new MyModel(data, columns);
+		String[] columns = { "Name", "Type", "Size", "Small Price", "Medium Price", "Large Price", "Estimate Time"};
+		Object[][] data = new Object[menu.size()][columns.length];
+		Iterator<String> it = menu.keySet().iterator();
+		int i = 0;
+		while(it.hasNext()){
+			String itemKey = it.next();
+			Map<String, Object> item = menu.get(itemKey);
+			data[i][0] = itemKey;
+			Iterator<String> itemInfo = item.keySet().iterator();
+			while(itemInfo.hasNext()){
+				String col = itemInfo.next();
+				switch (col)
+	            {
+	            case "type":
+	                data[i][1] = item.get(col);
+	                break;
+	            case "small_price":
+	            	data[i][3] = item.get(col);
+	                break;
+	            case "medium_price":
+	            	data[i][4] = item.get(col);
+	                break;
+	            case "large_price":
+	            	data[i][5] = item.get(col);
+	                break;
+	            case "est_prep_time":
+	            	data[i][6] = item.get(col);
+	                break;
+	            }
+			}
+			i++;
+			
+		}
+		Arrays.sort(data, new Comparator<Object[]>(){
+
+			@Override
+			public int compare(Object[] o1, Object[] o2) {				
+				return o1[1].toString().compareTo(o2[1].toString());
+			}
+			
+		});
+		return new MyModel(data, columns, 2);
+	}
+	
+	private MyModel createCarTable(){
+		String[] columns = { "Name", "Type","Size", "Price", "Estimate Time", "Quantity" };
+		Object[][] data = {};
+		return new MyModel(data, columns, 5);
 	}
 	
 	/**
 	 * populateTable: populate the initial ordered items.
 	 */
-	private JTable populateTable(String[] columns){
-		Object[][] data = {};
-		return new JTable(data, columns);
+	private MyModel populateTable(String[] columns){
+		Object[][] data = null;
+		String[] orderAttr = { "custid", "order_type", "time_order_placed", "total", "pay_method"};
+		try {
+			List<Long> activeOrders = OrderManager.getActiveOrders();
+			data = new Object[activeOrders.size()][columns.length];
+			for(int i = 0; i < activeOrders.size(); i++){
+				Map<String,Object> orders = OrderManager.getOrderInfo(activeOrders.get(i), Arrays.asList(orderAttr));
+				data[i][0] = activeOrders.get(i);
+				Iterator<String> itemInfo = orders.keySet().iterator();
+				while(itemInfo.hasNext()){
+					String col = itemInfo.next();
+					switch (col)
+					{
+					case "custid":
+						data[i][1] = orders.get(col);
+						break;
+					case "order_type":
+						data[i][2] = orders.get(col);
+						break;
+					case "time_order_placed":
+						data[i][3] = orders.get(col);
+						break;
+					case "total":
+						data[i][4] = orders.get(col);
+						break;
+					case "pay_method":
+						data[i][5] = orders.get(col);
+						break;
+					}
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Arrays.sort(data, new Comparator<Object[]>(){
+
+			@Override
+			public int compare(Object[] o1, Object[] o2) {				
+				return o1[3].toString().compareTo(o2[3].toString());
+			}
+			
+		});
+		return new MyModel(data, columns, -1);
 	}
 	
 	/**
@@ -1437,7 +1927,7 @@ public class EmployeeView {
 	 */
 	private MyModel populateStatLogsTable(String[] columns){
 		Object[][] data = {};
-		return new MyModel(data, columns);
+		return new MyModel(data, columns, -1);
 	}
 	
 	/**
@@ -1449,14 +1939,32 @@ public class EmployeeView {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
+		private int editableCol;
 
-		MyModel(Object[][] data, Object[] columns){
+		MyModel(Object[][] data, Object[] columns, int editableColumn){
 			super(data,columns);
+			this.editableCol = editableColumn;
 		}
 		
 		@Override
+		public void setValueAt(Object aValue, int row, int column){
+			try{
+				if(column == 5){
+					int value = Integer.parseInt(aValue.toString());
+				}
+				super.setValueAt(aValue, row, column);
+			}catch(NumberFormatException ex){
+				return;
+			}
+		}
+
+		@Override
 		public boolean isCellEditable(int row, int column){
+			if(column == editableCol){
+				return true;
+			}
 			return false;
 		}
+		
 	}
 }

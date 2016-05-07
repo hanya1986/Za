@@ -7,6 +7,7 @@
 package edu.rit.cs.Za;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -135,6 +136,57 @@ public class OrderManager
     }
     
     /**
+     * Gets a list of all orders.
+     * @return a list of all orders
+     */
+    public static ArrayList<Object[]> getAllOrders(String[] attributes)
+        throws SQLException
+    {
+    	Connection conn = ConnectionManager.getConnection();
+    	ArrayList<Object[]> values = new ArrayList<Object[]>();
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT *");
+        builder.append(" FROM ZaOrder ");
+        
+        PreparedStatement ps = conn.prepareStatement(builder.toString());        
+        ResultSet rs = ps.executeQuery();
+        List<String> columns = new LinkedList<String>(Arrays.asList(attributes));
+        while(rs.next()){
+        	Iterator<String> colIt = columns.iterator();
+        	Object[] data = new Object[columns.size()];
+        	while (colIt.hasNext())
+        	{
+        		String col = colIt.next();
+        		switch (col)
+        		{
+        		case "orderid":
+        			data[0] = rs.getLong(col);
+        			break;
+        		case "custid":
+        			data[1] = rs.getLong(col);
+        			break;
+        		case "order_type":
+        			data[2] = OrderType.parseOrderType(rs.getString(col));
+        			break;
+        		case "time_order_placed":
+        			data[4] = DateFormat.getInstance().format(rs.getTimestamp(col));
+        			break;
+        		case "total":
+        			data[3] = rs.getBigDecimal(col);
+        			break;
+        		case "pay_method":
+        			data[5] = PaymentMethod.parsePaymentMethod(rs.getString(col));
+        			break;
+        		}
+        	}
+        	if(data.length != 0){
+        		values.add(data);
+        	}
+        }
+        return values;
+    }
+    
+    /**
      * Adds additional items from the menu to the specified order.
      * @param orderid   the ID of the order to amend
      * @param items     map from item sizes and names to their quantities
@@ -217,6 +269,28 @@ public class OrderManager
     }
     
     /**
+     * Removes the order.
+     * 
+     * @param orderid
+     * @throws SQLException
+     */
+    public static void removeOrder(long orderid) throws SQLException{
+    	Connection conn = ConnectionManager.getConnection();
+    	StringBuilder builder = new StringBuilder();
+    	builder.append("DELETE FROM ZaOrderItem ");
+    	builder.append("WHERE orderid=?;");
+    	PreparedStatement ps = conn.prepareStatement(builder.toString());
+    	ps.setLong(1, orderid);
+    	ps.executeUpdate();
+    	builder.setLength(0);
+    	builder.append("DELETE FROM ZaOrder");
+    	builder.append("WHERE orderid=?;");
+    	ps = conn.prepareStatement(builder.toString());
+    	ps.setLong(1, orderid);
+    	ps.executeUpdate();
+    }
+    
+    /**
      * Removes items from the specified order.
      * @param orderid   the ID of the order from which to remove items
      * @param items     list of item sizes and names to remove from the order
@@ -234,6 +308,7 @@ public class OrderManager
             builder.append(" AND (");
             while (itemIt.hasNext())
             {
+            	itemIt.next();
                 builder.append("(itemid=? AND size=?)");
                 if (itemIt.hasNext()) builder.append(" OR ");
                 else builder.append(')');
@@ -491,6 +566,13 @@ public class OrderManager
         return values;
     }
     
+    /**
+     * Get the Orders for the specific customer.
+     * 
+     * @param custid
+     * @return values
+     * @throws SQLException
+     */
     public static ArrayList<Object[]> getCustomerOrders(long custid) throws SQLException{
     	Connection conn = ConnectionManager.getConnection();
     	ArrayList<Object[]> values = new ArrayList<Object[]>();

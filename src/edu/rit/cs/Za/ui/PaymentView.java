@@ -129,10 +129,12 @@ public class PaymentView {
 		CRButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				gbc.gridx = 0;
-				gbc.gridy = 1;
-				crUserPanel.add(creditPanel, gbc);
-				frame.validate();
+				if(!includeAddr){
+					gbc.gridx = 0;
+					gbc.gridy = 1;
+					crUserPanel.add(creditPanel, gbc);
+					frame.validate();
+				}
 			}
 		});
 		radioPanel.add(CRButton);
@@ -141,7 +143,9 @@ public class PaymentView {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				crUserPanel.remove(creditPanel);
+				if(!includeAddr){
+					crUserPanel.remove(creditPanel);
+				}
 				frame.validate();
 			}
 			
@@ -240,7 +244,9 @@ public class PaymentView {
 		gbc.gridy = 0;
 		crUserPanel.add(userPanel, gbc);
 		gbc.gridy++;
-		crUserPanel.add(creditPanel, gbc);
+		if(!includeAddr){
+			crUserPanel.add(creditPanel, gbc);
+		}
 		paymentPanel.add(crUserPanel, BorderLayout.CENTER);
 		
 		JPanel bottomPanel = new JPanel();
@@ -250,50 +256,72 @@ public class PaymentView {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Map<String, Object> orderDetail = new HashMap<String, Object>();
-				if(CRButton.isSelected()){
-					if(cardNumBox.getSelectedItem() != null &&
-						expireDateField.getText() != null && 
-						expireDateField.getText().matches("^((0[1-9])|(1[0-2]))\\/(\\d{2})$") &&
-						securityField.getText() != null &&
-						orderItems.size() != 0){
-						try {
-							if((Integer.parseInt(expireDateField.getText().substring(0, 2))) > 12){
-								return;
+				if(!includeAddr){
+					if(CRButton.isSelected()){
+						if(cardNumBox.getSelectedItem() != null &&
+								expireDateField.getText() != null && 
+								expireDateField.getText().matches("^((0[1-9])|(1[0-2]))\\/(\\d{2})$") &&
+								securityField.getText() != null &&
+								orderItems.size() != 0){
+							try {
+								if((Integer.parseInt(expireDateField.getText().substring(0, 2))) > 12){
+									return;
+								}
+								orderDetail.put("active", true);
+								orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CARD"));
+								long orderID = OrderManager.createOrder(userID, orderType , orderItems);
+								OrderManager.modifyOrder(orderID, orderDetail);
+							} catch (SQLException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
 							}
-							orderDetail.put("active", true);
-							orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CARD"));
-							long orderID = OrderManager.createOrder(userID, orderType , orderItems);
+						}else{
+							return;
+						}
+					}else{
+						if(orderItems.size() == 0){
+							return;
+						}
+						orderDetail.put("active", true);
+						orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CASH"));
+						long orderID;
+						try {
+							orderID = OrderManager.createOrder(userID, orderType , orderItems);
 							OrderManager.modifyOrder(orderID, orderDetail);
 						} catch (SQLException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-					}else{
-						return;
+					}
+					if(saveCB.isSelected()){
+						try {
+							ProfileManager.addCreditCard(userID,cardNumBox.getSelectedItem().toString(), securityField.getText(), 
+									Month.parseMonth(Integer.parseInt(expireDateField.getText().substring(0, 2)) - 1), 
+									Integer.parseInt(expireDateField.getText().substring(3)));
+						} catch (NumberFormatException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				}else{
-					if(orderItems.size() == 0){
+					if(userField.getText().isEmpty()){
 						return;
 					}
-					orderDetail.put("active", true);
-					orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CASH"));
-					long orderID;
 					try {
-						orderID = OrderManager.createOrder(userID, orderType , orderItems);
-						OrderManager.modifyOrder(orderID, orderDetail);
-					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-				if(saveCB.isSelected()){
-					try {
-						ProfileManager.addCreditCard(userID,cardNumBox.getSelectedItem().toString(), securityField.getText(), 
-								Month.parseMonth(Integer.parseInt(expireDateField.getText().substring(0, 2)) - 1), 
-								Integer.parseInt(expireDateField.getText().substring(3)));
-					} catch (NumberFormatException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						long custId = ProfileManager.getPersonID(userField.getText());
+						if(custId >= 0){
+							orderDetail.put("active", true);
+							if(CRButton.isSelected()){
+								orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CARD"));
+							}else{
+								orderDetail.put("pay_method", PaymentMethod.parsePaymentMethod("CASH"));
+							}
+							long orderID = OrderManager.createOrder(custId, orderType , orderItems);
+							OrderManager.modifyOrder(orderID, orderDetail);
+						}
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

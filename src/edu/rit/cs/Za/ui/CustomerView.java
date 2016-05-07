@@ -124,7 +124,6 @@ public class CustomerView {
 	private List<String> emailAddress;
 	private List<String> newEmails;
 	private List<String> removeEmails;
-	private List<CreditCard> creditCards;
 	private Map<String,Map<String,Object>> menu = new HashMap<String,Map<String,Object>>();
 	private List<String> custAttrList = new ArrayList<String>(Arrays.asList(custAttr));
 	private List<String> itemAttrList = new ArrayList<String>(Arrays.asList(itemsAttr));
@@ -146,7 +145,6 @@ public class CustomerView {
 			custProfile = ProfileManager.getCustomerInfo(this.userID, custAttrList);
 			phoneNumbers = ProfileManager.getPhoneNumbers(this.userID);
 			emailAddress = ProfileManager.getEmailAddresses(this.userID);
-			creditCards = ProfileManager.getCreditCards(this.userID);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

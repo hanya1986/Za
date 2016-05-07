@@ -872,10 +872,32 @@ public class ProfileManager
         if (attributes.size() == 0) return values;
         
         Connection conn = ConnectionManager.getConnection();
+        Iterator<String> colIt = attributes.iterator();
+        List<String> columns = new LinkedList<String>();
+        while (colIt.hasNext())
+        {
+            String col = colIt.next();
+            switch (col)
+            {
+            case "first_name":
+            case "middle_name":
+            case "last_name":
+            case "date_of_birth":
+            case "username":
+            case "street":
+            case "city":
+            case "state":
+            case "zip":
+                columns.add(col);
+                break;
+            }
+        }
+        
+        if (columns.size() == 0) return values;
         
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT ");
-        Iterator<String> colIt = attributes.iterator();
+        colIt = columns.iterator();
         while (colIt.hasNext())
         {
             String col = colIt.next();
