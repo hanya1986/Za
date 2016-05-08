@@ -24,6 +24,16 @@ public class CreditCard
     /* the year of the credit card expiration date */
     public int expirationYear;
     
+    /**
+     * Tests for equality of two CreditCard objects. Two CreditCards are
+     * if (1) they're both instances of CreditCard and (2) the values for each
+     * of their attributes are equivalent.
+     * 
+     * @param o the other object to compare this CreditCard with
+     * 
+     * @return  true if the two objects are equivalent CreditCards, false
+     *          otherwise
+     */
     public boolean equals(Object o)
     {
         if (!(o instanceof CreditCard)) return false;
@@ -35,7 +45,14 @@ public class CreditCard
                 
     }
     
-    public String toString(){
+    /**
+     * Creates a string representation of this credit card, which is simply the
+     * 16-digit card number on the front of the card.
+     * 
+     * @return the credit card number
+     */
+    public String toString()
+    {
     	return cardNumber;
     }
 }

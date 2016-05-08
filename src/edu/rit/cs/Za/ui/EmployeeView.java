@@ -54,6 +54,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -2869,6 +2871,9 @@ public class EmployeeView {
         }
     }
     
+    private Date fromDate;
+    private Date toDate;
+    
 	/**
 	 * initializeStatView: initialize the statistics UI
 	 */
@@ -2881,27 +2886,47 @@ public class EmployeeView {
         JLabel fromLabel = new JLabel("From:");
         topPanel.add(fromLabel);
         Calendar calendar = Calendar.getInstance();
-        Date currentDate = calendar.getTime();
+        fromDate = calendar.getTime();
         calendar.add(Calendar.YEAR, -100);
         Date firstDate = calendar.getTime();
         calendar.add(Calendar.YEAR, 200);
         Date lastDate = calendar.getTime();
-        SpinnerDateModel currentModel = new SpinnerDateModel(currentDate, firstDate, lastDate, Calendar.YEAR);
-        fromSpinner = new JSpinner(currentModel);
+        SpinnerDateModel fromModel = new SpinnerDateModel(fromDate, firstDate, lastDate, Calendar.YEAR);
+        fromSpinner = new JSpinner(fromModel);
         fromSpinner.setEditor(new JSpinner.DateEditor(fromSpinner, "MM/dd/yyyy"));
+        fromSpinner.addChangeListener(new ChangeListener(){
+            public void stateChanged(ChangeEvent e)
+            {
+                Date newFrom = ((SpinnerDateModel)fromSpinner.getModel()).getDate();
+                if (newFrom.compareTo(toDate) > 0)
+                    fromSpinner.setValue(fromDate);
+                else
+                    fromDate = newFrom;
+            }
+        });
         topPanel.add(fromSpinner);
         
         JLabel toLabel = new JLabel("To:");
         topPanel.add(toLabel);
         calendar = Calendar.getInstance();
-        currentDate = calendar.getTime();
+        toDate = calendar.getTime();
         calendar.add(Calendar.YEAR, -100);
         firstDate = calendar.getTime();
         calendar.add(Calendar.YEAR, 200);
         lastDate = calendar.getTime();
-        SpinnerDateModel toCurrentModel = new SpinnerDateModel(currentDate, firstDate, lastDate, Calendar.YEAR);
-        toSpinner = new JSpinner(toCurrentModel);
+        SpinnerDateModel toModel = new SpinnerDateModel(toDate, firstDate, lastDate, Calendar.YEAR);
+        toSpinner = new JSpinner(toModel);
         toSpinner.setEditor(new JSpinner.DateEditor(toSpinner, "MM/dd/yyyy"));
+        toSpinner.addChangeListener(new ChangeListener(){
+            public void stateChanged(ChangeEvent e)
+            {
+                Date newTo = ((SpinnerDateModel)toSpinner.getModel()).getDate();
+                if (newTo.compareTo(fromDate) < 0)
+                    toSpinner.setValue(toDate);
+                else
+                    toDate = newTo;
+            }
+        });
         topPanel.add(toSpinner);
         
         gbc = new GridBagConstraints();

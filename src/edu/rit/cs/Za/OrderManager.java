@@ -340,7 +340,9 @@ public class OrderManager
     }
     
     /**
-     * Changes attributes of the order itself.
+     * Changes attributes of the order itself. If the order is being marked as
+     * delivered, then customer reward points are added to the customer's
+     * account.
      * @param orderid   the ID of the order to modify
      * @param values    map from attributes to change to their updated values
      */
@@ -428,6 +430,38 @@ public class OrderManager
                 break;
             }
         }
+        ps.executeUpdate();
+        
+        if (!values.containsKey("time_order_delivered"))
+            return;
+        
+        builder.setLength(0);
+        builder.append("SELECT subtotal, custid ");
+        builder.append("FROM ZaOrder ");
+        builder.append("WHERE orderid=?;");
+        ps = conn.prepareStatement(builder.toString());
+        ps.setLong(1, orderid);
+        ResultSet rs = ps.executeQuery();
+        if (!rs.next()) return;
+        
+        long cust_id = rs.getLong(2);
+        
+        int rewardPoints;
+        BigDecimal subtotal = rs.getBigDecimal(1);
+        if (!(subtotal.compareTo(new BigDecimal("15.00")) > 0))
+            rewardPoints = 1;
+        else if (!(subtotal.compareTo(new BigDecimal("40.00")) > 0))
+            rewardPoints = 2;
+        else
+            rewardPoints = 3;
+        
+        builder.setLength(0);
+        builder.append("UPDATE Customer ");
+        builder.append("SET reward_pts = reward_pts + ? ");
+        builder.append("WHERE cust_id=?;");
+        ps = conn.prepareStatement(builder.toString());
+        ps.setInt(1, rewardPoints);
+        ps.setLong(2, cust_id);
         ps.executeUpdate();
         return;
     }

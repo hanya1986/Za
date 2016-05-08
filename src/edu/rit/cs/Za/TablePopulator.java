@@ -23,6 +23,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * A class to recreate the 'Za test database.
+ */
 public class TablePopulator
 {
     private static FileReader dataFileReader;
@@ -34,9 +37,9 @@ public class TablePopulator
      */
     public TablePopulator() throws SQLException, IOException
     {
-        wipeTables();
+        //wipeTables();
         populateTables();
-        testTablesPopulated();
+        //testTablesPopulated();
     }
     
     /**

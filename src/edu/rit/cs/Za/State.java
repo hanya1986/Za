@@ -5,8 +5,12 @@
 
 package edu.rit.cs.Za;
 
+/**
+ * Enumeration for valid state abbreviations. Used for addresses.
+ */
 public enum State
 {
+    /* the values with their two-letter abbreviations */
     ALABAMA("AL"), ALASKA("AK"), ARIZONA("AZ"), ARKANSAS("AR"), CALIFORNIA("CA"),
     COLORADO("CO"), CONNECTICUT("CT"), DELAWARE("DE"), FLORIDA("FL"), GEORGIA("GA"),
     HAWAII("HI"), IDAHO("ID"), ILLINOIS("IL"), INDIANA("IN"), IOWA("IA"),
@@ -18,9 +22,28 @@ public enum State
     SOUTH_DAKOTA("SD"), TENNESSEE("TN"), TEXAS("TX"), UTAH("UT"), VERMONT("VT"),
     VIRGINIA("VA"), WASHINGTON("WA"), WEST_VIRGINIA("WV"), WISCONSIN("WI"), WYOMING("WY");
     
+    /* the State's two-letter abbreviation */
     private final String abbrev;
+    
+    /**
+     * Initializes a State with its two-letter abbreviation.
+     * @param abbrev    the State's two-letter abbreviation
+     */
     private State(String abbrev) { this.abbrev = abbrev; }
+    
+    /**
+     * Returns the State's two-letter abbreviation.
+     * 
+     * @return the State's abbreviation
+     */
     public String toString() { return abbrev; }
+    
+    /**
+     * Attempts to parse a State from a string expected to contain a two-letter
+     * abbreviation.
+     * @param s the String from which to parse a State value
+     * @return the State value, if any, whose abbreviation matches the String
+     */
     public static State parseState(String s)
     {
         for (State state : State.values())
