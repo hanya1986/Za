@@ -87,12 +87,12 @@ public class TablePopulator
     	String[] states = {"NY", "CA", "SC"};
     	String[] cities = {"NYC", "Twentynine Palms", "Cherry Point"};
     	String[] zips = {"11501", "12345", "54321"};
-    	String[] first_names = {"I", "Jody", "DD214"};
-    	String[] middle_names = {"<3", "Dependapotamus", "Come"};
-    	String[] last_names = {"Goats", "NJPx2", "ToMe"};
+    	String[] first_names = {"I", "NJP", "DD214"};
+    	String[] middle_names = {"<3", "NJP", "Come"};
+    	String[] last_names = {"Goats", "NJP", "ToMe"};
     	Date[] DoBs = {new Date(Long.parseLong("10081061451")), new Date(Long.parseLong("50081061453")), new Date(Long.parseLong("30081061453"))};
-    	String[] usernames = {"Allah", "Super", "GREEN"};
-    	String[] passwords =  {"Snackbar", "Boot", "W__NIE"};
+    	String[] usernames = {"Jody", "Super", "GREEN"};
+    	String[] passwords =  {"Dependapotamus", "Boot", "W__NIE"};
     	Integer[] rewardPts = {123, 321, 0};
     	Long[] empids = {(long) 2, (long) 3, (long) 4};
     	BigDecimal[] rates = {new BigDecimal(10.21), new BigDecimal(9.11), new BigDecimal(12.43)};
