@@ -1337,7 +1337,7 @@ public class EmployeeView {
 		});
 		menuBar.add(statButton);
 		
-		JButton manageEmpButton = new JButton("Manage employees");
+		JButton manageEmpButton = new JButton("Manage Employees");
 		manageEmpButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -1349,7 +1349,7 @@ public class EmployeeView {
 		});
 		menuBar.add(manageEmpButton);
 		
-		JButton manageMenuButton = new JButton("Manage menu");
+		JButton manageMenuButton = new JButton("Manage Menu");
 		manageMenuButton.addActionListener(new ActionListener(){
 
 			@Override
