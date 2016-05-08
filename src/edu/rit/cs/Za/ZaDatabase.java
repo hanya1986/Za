@@ -9,8 +9,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 
+/**
+ * Static class for creating the 'Za database.
+ */
 public class ZaDatabase
 {
+    /**
+     * Creates the Person table in the 'Za database. Every Person must also
+     * exist in either Customer or Employee.
+     */
     private static void createPersonTable()
         throws SQLException
     {
@@ -38,6 +45,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the Customer table in the 'Za database. Customer is a
+     * specialization of Person.
+     */
     private static void createCustomerTable()
         throws SQLException
     {
@@ -57,6 +68,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the Employee table in the 'Za database. Employee is a
+     * specialization of Person.
+     */
     private static void createEmployeeTable()
         throws SQLException
     {
@@ -79,6 +94,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the PersonEmailAddressTable. Email address is a multivalued
+     * attribute of Person.
+     */
     private static void createPersonEmailAddressTable()
         throws SQLException
     {
@@ -96,6 +115,11 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the Credit_Card table. Credit_Cards are weak entities, and more
+     * than one Customer can share the same card.
+     * @throws SQLException
+     */
     private static void createCreditCardTable()
         throws SQLException
     {
@@ -115,6 +139,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the CustomerCard table, which associates one or more people with
+     * a Credit_Card.
+     */
     private static void createCustomerCardTable()
         throws SQLException
     {
@@ -133,6 +161,9 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the Menu_Item table.
+     */
     private static void createMenu_ItemTable()
         throws SQLException
     {
@@ -156,6 +187,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the PersonPhoneNumberTable. Phone number is a multivalued
+     * attribute of Person.
+     */
     private static void createPersonPhoneNumberTable()
         throws SQLException
     {
@@ -173,6 +208,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the ZaOrder table. This is the largest and most important
+     * relation in the 'Za database.
+     */
     private static void createZaOrderTable()
         throws SQLException
     {
@@ -209,6 +248,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the ZaOrderItem table. An order must have at least one order item
+     * in it.
+     */
     private static void createZaOrderItemTable()
         throws SQLException
     {
@@ -232,6 +275,10 @@ public class ZaDatabase
         return;
     }
     
+    /**
+     * Creates the 'Za database from the 'Za database schema specified in this
+     * class.
+     */
     public static void createDatabase()
         throws SQLException
     {

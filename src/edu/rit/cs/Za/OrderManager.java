@@ -340,7 +340,9 @@ public class OrderManager
     }
     
     /**
-     * Changes attributes of the order itself.
+     * Changes attributes of the order itself. If the order is being marked as
+     * delivered, then customer reward points are added to the customer's
+     * account.
      * @param orderid   the ID of the order to modify
      * @param values    map from attributes to change to their updated values
      */

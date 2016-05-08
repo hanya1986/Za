@@ -270,9 +270,12 @@ public class Queries
         
         return stats;
     }
-    
 
-    //// TODO: 4/4/2016 Test the below queries, not sure if correct yet --Nick
+    /**
+     * Returns the top N items on the menu.
+     * @param N upper limit on the number of popular items to return
+     * @return a map from item name keys to the number sold
+     */
     public static Map<String, Integer> getTopNItems(int N) throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         Map<String, Integer> topNItems = new HashMap<String, Integer>();
@@ -290,6 +293,13 @@ public class Queries
 
     }
 
+    /**
+     * Returns the IDs of the most frequent customers and the number of orders
+     * they've placed.
+     * @param N upper limit on the number of frequent customers to return
+     * @return map from customer IDs to the number of orders they've placed
+     * @throws SQLException
+     */
     public static Map<Long, Long> getFrequentCustomers(int N) throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         //Result map, custId key, total number of orders value
@@ -308,6 +318,13 @@ public class Queries
         return customers;
     }
 
+    /**
+     * Gets the IDs or the most recent customers and the time at which they
+     * placed their orders.
+     * @param N upper limits on the number of recent customers to return
+     * @return  map from customer IDs to the time they placed their most recent
+     *          order
+     */
     public static Map<Long, Timestamp> getLastNCust(int N) throws SQLException{
         Connection conn = ConnectionManager.getConnection();
         Map<Long, Timestamp> customers = new HashMap<Long, Timestamp>();
@@ -324,6 +341,12 @@ public class Queries
         return customers;
     }
     
+    /**
+     * Gets the average time it takes a driver to reach a customer.
+     * @param empid the employee ID of the driver
+     * @return  the number of milliseconds it takes on average for a driver to
+     *          complete a delivery
+     */
     public static long getAverageDeliveryTime(long empid) throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         String query = "SELECT avg(DATEDIFF('MS', time_order_out, time_order_delivered)) FROM ZaOrder WHERE empid_delivered_order = ?";
@@ -337,11 +360,23 @@ public class Queries
         return avgDeliveryTimeMillis;
     }
     
-    public static class DelivererTime {
-    	public Long empid;
-    	public Long avgDeliveryTimeMillis;
+    /**
+     * Struct associating a driver with thier delivery time.
+     */
+    public static class DelivererTime
+    {
+        /* the employee ID of the driver */
+    	public long empid;
+    	
+    	/* their averavge delivery time */
+    	public long avgDeliveryTimeMillis;
     }
     
+    /**
+     * Gets the IDs of the fastest delivery drivers.
+     * @return  a list of drivers identified by their employee IDs with their
+     *          average delivery times
+     */
     public static List<DelivererTime> getFastestDeliverers() throws SQLException {
         Connection conn = ConnectionManager.getConnection();
         String query = "SELECT empid_delivered_order, avg_delivery_time "
@@ -359,7 +394,6 @@ public class Queries
         return fastestDeliverers;
     }
 
-    
     /**
      * Gets statistics for revenue during months that revenue was generated
      * during the given time period.
@@ -492,7 +526,6 @@ public class Queries
         
         return stats;
     }
-    
 
     /**
      * Gets statistics for the number of orders placed in a day on days that
@@ -594,7 +627,6 @@ public class Queries
         
         return stats;
     }
-    
 
     /**
      * Gets statistics for the number of orders placed in a month in months that
