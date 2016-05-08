@@ -2973,7 +2973,7 @@ public class EmployeeView {
 		JScrollPane sp = new JScrollPane(manageEmpTable);
 		manageEmpPanel.add(sp, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
-		JButton addEmpButton = new JButton("Add employee");
+		JButton addEmpButton = new JButton("Add Employee");
 		addEmpButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -2983,7 +2983,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(addEmpButton);
-		JButton removeButton = new JButton("Terminate employee");
+		JButton removeButton = new JButton("Terminate Employee");
 		removeButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3019,7 +3019,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(removeButton);
-		JButton modifyButton = new JButton("Modify employee");
+		JButton modifyButton = new JButton("Modify Employee");
 		modifyButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3049,7 +3049,7 @@ public class EmployeeView {
 		JScrollPane sp = new JScrollPane(manageMenuTable);
 		manageMenuPanel.add(sp, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
-		JButton addItemButton = new JButton("Add item");
+		JButton addItemButton = new JButton("Add Item");
 		addItemButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3059,7 +3059,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(addItemButton);
-		JButton removeButton = new JButton("Remove item");
+		JButton removeButton = new JButton("Remove Item");
 		removeButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3092,7 +3092,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(removeButton);
-		JButton modifyButton = new JButton("Modify item");
+		JButton modifyButton = new JButton("Modify Item");
 		modifyButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3298,27 +3298,27 @@ public class EmployeeView {
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.VERTICAL;
-		String[] buttonName = {"Add employee", "Modify employee", "Add item", "Modify item"};
+		String[] buttonName = {"Add Employee", "Modify Employee", "Add Item", "Modify Item"};
 		bottonButton = new JButton(buttonName[viewType.ordinal()]);
 		bottonButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getActionCommand().equals("Add employee")){
+				if(e.getActionCommand().equals("Add Employee")){
 					addNewEmp();
 					loadManageEmpView();
 					frame.revalidate();
 				}
-				if(e.getActionCommand().equals("Add item")){
+				if(e.getActionCommand().equals("Add Item")){
 					addNewItem();
 					loadManageMenuView();
 					frame.revalidate();
 				}
-				if(e.getActionCommand().equals("Modify item")){
+				if(e.getActionCommand().equals("Modify Item")){
 					modifyItem();
 					loadManageMenuView();
 					frame.revalidate();
 				}
-				if(e.getActionCommand().equals("Modify employee")){
+				if(e.getActionCommand().equals("Modify Employee")){
 					modifyEmp();
 					loadManageEmpView();
 					frame.revalidate();
