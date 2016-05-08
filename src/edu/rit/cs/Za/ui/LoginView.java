@@ -153,6 +153,7 @@ public class LoginView implements ActionListener{
 							String[] title = {"job_title"};
 							Map<String, Object> empData = ProfileManager.getEmployeeInfo(userid, Arrays.asList(title));
 							EmployeeView emp = new EmployeeView(userid, empData.get("job_title").toString().contains("Manager"));
+							emp.run();
 							break;
 					}
 				}
