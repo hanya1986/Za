@@ -65,7 +65,7 @@ public class ZaDatabase
         builder.append("CREATE TABLE IF NOT EXISTS Employee (");
         builder.append("  empid           BIGINT,");
         builder.append("  hourly_rate     DECIMAL(5,2) NOT NULL,");
-        builder.append("  ssn             INT NOT NULL,");
+        builder.append("  ssn             VARCHAR(25) NOT NULL,");
         builder.append("  hours_per_week  REAL NOT NULL,");
         builder.append("  date_hired      DATE NOT NULL,");
         builder.append("  date_terminated DATE,");

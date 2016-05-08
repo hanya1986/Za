@@ -8,9 +8,11 @@ package edu.rit.cs.Za;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.sql.PreparedStatement;
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -281,12 +283,12 @@ public class ProfileManager
         builder.append("INSERT INTO Employee (");
         Iterator<String> colIt = values.keySet().iterator();
         List<String> columns = new LinkedList<String>();
+        columns.add("empid");
         while (colIt.hasNext())
         {
             String col = colIt.next();
             switch (col)
             {
-            case "empid":
             case "hourly_rate":
             case "ssn":
             case "hours_per_week":
@@ -322,22 +324,26 @@ public class ProfileManager
             switch (col)
             {
             case "empid":
-                ps.setLong(paramIdx++, (long)values.get("empid"));
+                ps.setLong(paramIdx++, personid);
                 break;
             case "hourly_rate":
                 ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("hourly_rate"));
                 break;
             case "ssn":
-                ps.setInt(paramIdx++, (int)values.get("ssn"));
+                ps.setString(paramIdx++, (String)values.get("ssn"));
                 break;
             case "hours_per_week":
-                ps.setInt(paramIdx++, (int)values.get("hours_per_week"));
+                ps.setFloat(paramIdx++, (float)values.get("hours_per_week"));
                 break;
             case "date_hired":
-                ps.setDate(paramIdx++, (Date)values.get("date_hired"));
+                ps.setDate(paramIdx++, new Date(((java.util.Date)values.get("date_hired")).getTime()));
                 break;
             case "date_terminated":
-                ps.setDate(paramIdx++, (Date)values.get("date_terminated"));
+            	if(values.get("date_terminated") == null){
+            		ps.setDate(paramIdx++, null);
+            	}else{
+            		ps.setDate(paramIdx++, new Date(((java.util.Date)values.get("date_terminated")).getTime()));
+            	}
                 break;
             case "job_title":
                 ps.setString(paramIdx++, (String)values.get("job_title"));
@@ -588,16 +594,20 @@ public class ProfileManager
                 ps.setBigDecimal(paramIdx++, (BigDecimal)values.get("hourly_rate"));
                 break;
             case "ssn":
-                ps.setBoolean(paramIdx++, (boolean)values.get("ssn"));
+                ps.setString(paramIdx++, (String)values.get("ssn"));
                 break;
             case "hours_per_week":
                 ps.setFloat(paramIdx++, (float)values.get("hours_per_week"));
                 break;
             case "date_hired":
-                ps.setDate(paramIdx++, (Date)values.get("date_hired"));
+            	ps.setDate(paramIdx++, new Date(((java.util.Date)values.get("date_hired")).getTime()));
                 break;
             case "date_terminated":
-                ps.setDate(paramIdx++, (Date)values.get("date_terminated"));
+            	if(values.get("date_terminated") == null){
+            		ps.setDate(paramIdx++, null);
+            	}else{
+            		ps.setDate(paramIdx++, new Date(((java.util.Date)values.get("date_terminated")).getTime()));
+            	}
                 break;
             case "job_title":
                 ps.setString(paramIdx++, (String)values.get("job_title"));
@@ -1077,7 +1087,7 @@ public class ProfileManager
                 values.put(col, rs.getBigDecimal(col));
                 break;
             case "ssn":
-                values.put(col, rs.getInt(col));
+                values.put(col, rs.getString(col));
                 break;
             case "hours_per_week":
                 values.put(col, rs.getFloat(col));
@@ -1096,6 +1106,25 @@ public class ProfileManager
         return values;
     }
 
+    /**
+     * Getting all the employee IDs.
+     * 
+     * @return values
+     * @throws SQLException
+     */
+    public static List<Long> getAllEmployeeID() throws SQLException{
+    	List<Long> values = new ArrayList<Long>();
+    	Connection conn = ConnectionManager.getConnection();
+    	StringBuilder query = new StringBuilder();
+    	query.append("SELECT empid FROM Employee;");
+    	PreparedStatement ps = conn.prepareStatement(query.toString());
+    	ResultSet rs = ps.executeQuery();
+    	while(rs.next()){
+    		values.add(rs.getLong("empid"));
+    	}
+    	return values;
+    }
+    
     /**
      * Gets the ID number associated with the person with the specified
      * username.

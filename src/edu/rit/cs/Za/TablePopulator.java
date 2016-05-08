@@ -485,7 +485,7 @@ public class TablePopulator
                 }
                 else if (currKey.equals("date_of_birth") || currKey.equals("date_hired") || currKey.equals("date_terminated"))
                     personData.get(currKey).add(new Date(Long.parseLong(currLine)));
-                else if (currKey.equals("reward_pts") || currKey.equals("hours_per_week") || currKey.equals("ssn"))
+                else if (currKey.equals("reward_pts") || currKey.equals("hours_per_week"))
                 {
                     personData.get(currKey).add(Integer.parseInt(currLine));
                 }

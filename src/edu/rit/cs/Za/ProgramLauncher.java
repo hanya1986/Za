@@ -18,13 +18,13 @@ public class ProgramLauncher {
 			        File f = new File(db_path);
 			        if (f.exists()) {
 			            System.out.println("REMOVING OLD DATABASE\n");
-			            f.delete();
+			            //f.delete();
 			        }
 			        String username = "username";
 			        String password = "password";
 			        ConnectionManager.initConnection(db_location, username, password);
-			        ZaDatabase.createDatabase();
-					TablePopulator populate = new TablePopulator();
+			        //ZaDatabase.createDatabase();
+					//TablePopulator populate = new TablePopulator();
 					LoginView window = new LoginView();
 				} catch (Exception e) {
 					e.printStackTrace();

@@ -142,9 +142,28 @@ public class MenuManager
         List<String> items = new LinkedList<String>();
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
+        builder.append("SELECT name, type ");
+        builder.append("FROM Menu_Item ");
+        builder.append("WHERE available=TRUE ");
+        builder.append("ORDER BY type;");
+        PreparedStatement ps = conn.prepareStatement(builder.toString());
+        ResultSet rs = ps.executeQuery();
+        while (rs.next())
+            items.add(rs.getString(1));
+        return items;
+    }
+    
+    /**
+     * Getting all items.
+     * @return items
+     * @throws SQLException 
+     */
+    public static List<String> getAllItems() throws SQLException{
+    	List<String> items = new LinkedList<String>();
+        Connection conn = ConnectionManager.getConnection();
+        StringBuilder builder = new StringBuilder();
         builder.append("SELECT name ");
         builder.append("FROM Menu_Item ");
-        builder.append("WHERE available=TRUE;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
         while (rs.next())
@@ -299,6 +318,7 @@ public class MenuManager
         		break;
             }
         }
+        ps.setString(paramIdx++, itemName);
         ps.executeUpdate();
     }
 }
