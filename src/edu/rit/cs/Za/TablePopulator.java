@@ -37,9 +37,9 @@ public class TablePopulator
      */
     public TablePopulator() throws SQLException, IOException
     {
-        //wipeTables();
+        wipeTables();
         populateTables();
-        //testTablesPopulated();
+        testTablesPopulated();
     }
     
     /**
@@ -53,6 +53,7 @@ public class TablePopulator
         PreparedStatement ps = conn.prepareStatement(query);
         ps.executeUpdate();
     }
+    
     
     /**
      * Clears all rows from all tables
@@ -70,6 +71,76 @@ public class TablePopulator
         wipeTableData("Employee");
         wipeTableData("Customer");
         wipeTableData("Person");
+    }
+    
+    /**
+     * Creates one user of each type:
+     * 		Customer, Employee, and Manager
+     * @throws SQLException 
+     * @throws NoSuchAlgorithmException 
+     */
+    public static void createSampleUsers() throws NoSuchAlgorithmException, SQLException
+    {
+    	wipeTables();
+    	
+    	String[] streets = {"AdSepPls Blvd", "Yut Street", "Wook Tpk"};
+    	String[] states = {"NY", "CA", "SC"};
+    	String[] cities = {"NYC", "Twentynine Palms", "Cherry Point"};
+    	String[] zips = {"11501", "12345", "54321"};
+    	String[] first_names = {"I", "Jody", "DD214"};
+    	String[] middle_names = {"<3", "Dependapotamus", "Come"};
+    	String[] last_names = {"Goats", "NJPx2", "ToMe"};
+    	Date[] DoBs = {new Date(Long.parseLong("10081061451")), new Date(Long.parseLong("50081061453")), new Date(Long.parseLong("30081061453"))};
+    	String[] usernames = {"Allah", "Super", "GREEN"};
+    	String[] passwords =  {"Snackbar", "Boot", "W__NIE"};
+    	Integer[] rewardPts = {123, 321, 0};
+    	Long[] empids = {(long) 2, (long) 3, (long) 4};
+    	BigDecimal[] rates = {new BigDecimal(10.21), new BigDecimal(9.11), new BigDecimal(12.43)};
+    	String[] ssns = {"11111111", "22222222", "33333333"};
+    	Float[] hrsWeek = {(float) 10, (float) 5, (float) 20};
+    	Date[] hireDates = {new Date(Long.parseLong("90081061453")), new Date(Long.parseLong("90081061453")), new Date(Long.parseLong("90081061453"))};
+    	Date[] terminateDates = {new Date(Long.parseLong("99081061453")), new Date(Long.parseLong("99081061453")), new Date(Long.parseLong("99081061453"))};
+    	String[] job_titles = {"Customer", "Driver", "Manager"};
+    	    	
+    	Map<String, Object> personData = new HashMap<String, Object>();
+    	
+    	for (int numUsers = 0; numUsers < 3; numUsers++) 
+    	{
+    		personData = new HashMap<String, Object>();
+    		personData.put("street", streets[numUsers]);
+            personData.put("city", cities[numUsers]);
+            personData.put("state", states[numUsers]);
+            personData.put("zip", zips[numUsers]);
+            personData.put("first_name", first_names[numUsers]);
+            personData.put("middle_name", middle_names[numUsers]);
+            personData.put("last_name", last_names[numUsers]);
+            personData.put("date_of_birth", DoBs[numUsers]);
+            personData.put("username",  usernames[numUsers]);
+            personData.put("password", passwords[numUsers]);
+            personData.put("reward_pts", rewardPts[numUsers]);
+            personData.put("empid", empids[numUsers]);
+            personData.put("hourly_rate", rates[numUsers]);
+            personData.put("ssn", ssns[numUsers]);
+            personData.put("hours_per_week", hrsWeek[numUsers]);
+    		personData.put("date_hired", hireDates[numUsers]);
+			personData.put("date_terminated", terminateDates[numUsers]);
+			personData.put("job_title", job_titles[numUsers]);
+			if (numUsers == 0) 
+			{
+		    	ProfileManager.createCustomer(personData, (String) personData.get("password"));
+			}
+			else if (numUsers == 1) 
+			{
+				ProfileManager.createEmployee(personData, (String) personData.get("password")); 
+			}
+			else if (numUsers == 2) 
+			{
+				ProfileManager.createEmployee(personData, (String) personData.get("password")); 
+			}
+    	}
+    	testPersonPopulated();
+    	testCustomerPopulated();
+    	testEmployeePopulated();
     }
     
     /**
@@ -488,9 +559,12 @@ public class TablePopulator
                 }
                 else if (currKey.equals("date_of_birth") || currKey.equals("date_hired") || currKey.equals("date_terminated"))
                     personData.get(currKey).add(new Date(Long.parseLong(currLine)));
-                else if (currKey.equals("reward_pts") || currKey.equals("hours_per_week"))
+                else if (currKey.equals("reward_pts"))
                 {
                     personData.get(currKey).add(Integer.parseInt(currLine));
+                }
+                else if (currKey.equals("hours_per_week")) {
+                	personData.get(currKey).add(Float.parseFloat(currLine));
                 }
                 else if (currKey.equals("empid")) 
                 {
