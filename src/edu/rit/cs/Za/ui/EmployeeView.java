@@ -1325,7 +1325,7 @@ public class EmployeeView {
 	 */
 	public void initializeManagerView(){
 		
-		JButton statButton = new JButton("statistics");
+		JButton statButton = new JButton("Statistics");
 		statButton.addActionListener(new ActionListener(){
 
 			@Override
