@@ -1,6 +1,7 @@
 package edu.rit.cs.Za;
 
 import java.awt.EventQueue;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
@@ -26,9 +27,12 @@ public class ProgramLauncher
 			        String password = "password";
 			        ConnectionManager.initConnection(db_location, username, password);
 			        ZaDatabase.createDatabase();
+			        TablePopulator.createSampleUsers();
 					new LoginView();
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, "A database error occurred:\n" + ex.getMessage(), "\'Za", JOptionPane.ERROR_MESSAGE);
+				} catch (NoSuchAlgorithmException e) {
+					e.printStackTrace();
 				}
 			}
 		});
