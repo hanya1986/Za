@@ -80,9 +80,9 @@ import edu.rit.cs.Za.ui.CustomerView.MyModel;
 public class EmployeeView {
 	
 	private String[] profileFields = new String[]{
-			"FirstName",
-			"MiddleName",
-			"LastName",
+			"First Name",
+			"Middle Name",
+			"Last Name",
 			"DOB",
 			"Address",
 			"City",
@@ -109,10 +109,10 @@ public class EmployeeView {
 	private String[] itemFields = new String[]{
 			"Name:",
 			"Type:",
-			"estimate time(Min):",
-			"Small price:",
-			"Medium price:",
-			"Large price:"
+			"Estimate Time(Min):",
+			"Small Price:",
+			"Medium Price:",
+			"Large Price:"
 	};
 	
 	private String[] custAttr = new String[]{
@@ -2967,7 +2967,7 @@ public class EmployeeView {
 	 */
 	public void initializeManageEmpView(){
 		manageEmpPanel = new JPanel(new BorderLayout());
-		String[] columns = { "Employee ID", "Firstname", "Middle Name","Lastname", "Job Title", "Hourly Rate", "Date Hired","Terminated"};
+		String[] columns = { "Employee ID", "First Name", "Middle Name","Last Name", "Job Title", "Hourly Rate", "Date Hired","Terminated"};
 		manageEmpTable = new JTable();
 		manageEmpTable.setModel(populateEmpTable(columns));
 		JScrollPane sp = new JScrollPane(manageEmpTable);
@@ -2993,7 +2993,7 @@ public class EmployeeView {
 					return;
 				}
 				modifiedempID = Long.parseLong(manageEmpTable.getValueAt(row, 0).toString());
-				Object[] options = {"Yes, remove it", "No, keep it"};
+				Object[] options = {"Yes", "No"};
 				int n = JOptionPane.showOptionDialog(frame,
 						"Would you like to terminate the employee?",
 						"Confirm",
