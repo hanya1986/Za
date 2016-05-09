@@ -518,11 +518,11 @@ public class Queries
         medMonthlyOrders = medMonthlyOrders.setScale(2, RoundingMode.HALF_UP);
         
         Map<String,BigDecimal> stats = new HashMap<String,BigDecimal>();
-        stats.put("AVG_DAILY_REV", avgMonthlyOrders);
-        stats.put("MIN_DAILY_REV", minMonthlyOrders);
-        stats.put("MED_DAILY_REV", medMonthlyOrders);
-        stats.put("MAX_DAILY_REV", maxMonthlyOrders);
-        stats.put("TOTAL_DAILY_REV", totalMonthlyOrders);
+        stats.put("AVG_MONTHLY_REV", avgMonthlyOrders);
+        stats.put("MIN_MONTHLY_REV", minMonthlyOrders);
+        stats.put("MED_MONTHLY_REV", medMonthlyOrders);
+        stats.put("MAX_MONTHLY_REV", maxMonthlyOrders);
+        stats.put("TOTAL_MONTHLY_REV", totalMonthlyOrders);
         
         return stats;
     }
@@ -577,11 +577,10 @@ public class Queries
         ResultSet rs = ps.executeQuery();
         rs.next();
         
-        
-        Float avgDailyOrders = rs.getFloat(1);
-        Long minDailyOrders = rs.getLong(2);
-        Long maxDailyOrders = rs.getLong(3);
-        Long totalDailyOrders = rs.getLong(4);
+        float avgDailyOrders = rs.getFloat(1);
+        long minDailyOrders = rs.getLong(2);
+        long maxDailyOrders = rs.getLong(3);
+        long totalDailyOrders = rs.getLong(4);
         
         builder.setLength(0);
         builder.append("SELECT COUNT(*) AS n_orders, ");
@@ -619,11 +618,11 @@ public class Queries
             return new HashMap<String,Float>();
         
         Map<String,Float> stats = new HashMap<String,Float>();
-        stats.put("AVG_DAILY_REV", avgDailyOrders);
-        stats.put("MIN_DAILY_REV", (float)(minDailyOrders.longValue()));
-        stats.put("MED_DAILY_REV", medDailyOrders);
-        stats.put("MAX_DAILY_REV", (float)(maxDailyOrders.longValue()));
-        stats.put("TOTAL_DAILY_REV", (float)(totalDailyOrders.longValue()));
+        stats.put("AVG_DAILY_ORDERS", avgDailyOrders);
+        stats.put("MIN_DAILY_ORDERS", (float)(minDailyOrders));
+        stats.put("MED_DAILY_ORDERS", medDailyOrders);
+        stats.put("MAX_DAILY_ORDERS", (float)(maxDailyOrders));
+        stats.put("TOTAL_DAILY_ORDERS", (float)(totalDailyOrders));
         
         return stats;
     }
@@ -735,11 +734,11 @@ public class Queries
             return new HashMap<String,Float>();
         
         Map<String,Float> stats = new HashMap<String,Float>();
-        stats.put("AVG_DAILY_REV", avgMonthlyOrders);
-        stats.put("MIN_DAILY_REV", (float)(minMonthlyOrders.longValue()));
-        stats.put("MED_DAILY_REV", medMonthlyOrders);
-        stats.put("MAX_DAILY_REV", (float)(maxMonthlyOrders.longValue()));
-        stats.put("TOTAL_DAILY_REV", (float)(totalMonthlyOrders.longValue()));
+        stats.put("AVG_MONTHLY_ORDERS", avgMonthlyOrders);
+        stats.put("MIN_MONTHLY_ORDERS", (float)(minMonthlyOrders.longValue()));
+        stats.put("MED_MONTHLY_ORDERS", medMonthlyOrders);
+        stats.put("MAX_MONTHLY_ORDERS", (float)(maxMonthlyOrders.longValue()));
+        stats.put("TOTAL_MONTHLY_ORDERS", (float)(totalMonthlyOrders.longValue()));
         
         return stats;
     }

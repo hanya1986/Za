@@ -256,8 +256,6 @@ public class EmployeeView {
             String username = "username";
             String password = "password";
             ConnectionManager.initConnection(db_location, username, password);
-            ZaDatabase.createDatabase();
-            TablePopulator populate = new TablePopulator();
         } catch (Exception e) {
             e.printStackTrace();
         }
