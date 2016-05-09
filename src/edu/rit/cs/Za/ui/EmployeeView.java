@@ -1358,7 +1358,7 @@ public class EmployeeView {
 	
 	
 	private JPanel quantitySoldPanel;
-    private JPanel deliveryTimePanel;
+    private JPanel deliveryTimePanel; 
     
     private void initQuantitySoldPanel()
     {
@@ -1373,24 +1373,7 @@ public class EmployeeView {
         qsRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
-                String itemName = qsItemNameTextField.getText();
-                java.sql.Date start = new java.sql.Date(((Date)fromSpinner.getValue()).getTime());
-                java.sql.Date end = new java.sql.Date(((Date)toSpinner.getValue()).getTime());
-                long qSold;
-                try
-                {
-                    qSold = Queries.getQuantitySold(itemName, start, end);
-                }
-                catch (SQLException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "A database error occurred:\n"+ ex.getMessage(),
-                            "Quantity Sold",
-                            JOptionPane.ERROR_MESSAGE);
-                    qsQuantityTextField.setText("");
-                    return;
-                }
-                qsQuantityTextField.setText(Long.toString(qSold));
+                updateQuantitySold();
             }
         });
         
@@ -1474,43 +1457,7 @@ public class EmployeeView {
         dtRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
-                long empID;
-                try
-                {
-                    empID = Long.parseLong(dtEmpIdTextField.getText());
-                }
-                catch (NumberFormatException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Invalid employee ID.",
-                            "Delivery Time",
-                            JOptionPane.ERROR_MESSAGE);
-                    dtAvgTimeTextField.setText("");
-                    return;
-                    
-                }
-                
-                java.sql.Date start = new java.sql.Date(((Date)fromSpinner.getValue()).getTime());
-                java.sql.Date end = new java.sql.Date(((Date)toSpinner.getValue()).getTime());
-                long avgDeliveryTime;
-                try
-                {
-                    avgDeliveryTime = Queries.getAverageDeliveryTime(empID);
-                }
-                catch (SQLException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "A database error occurred:\n" + ex.getMessage(),
-                            "Average Delivery Time",
-                            JOptionPane.ERROR_MESSAGE);
-                    dtAvgTimeTextField.setText("");
-                    return;
-                }
-                
-                long minutes = TimeUnit.MILLISECONDS.toMinutes(avgDeliveryTime);
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(avgDeliveryTime - TimeUnit.MINUTES.toMillis(minutes));
-                
-                dtAvgTimeTextField.setText(String.format("%02d:%02d", minutes, seconds));
+                updateAverageDeliveryTime();
             }
         });
         
@@ -1595,53 +1542,7 @@ public class EmployeeView {
         nItemsRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
-                int n;
-                try
-                {
-                    n = Integer.parseInt(nItemsTextField.getText());
-                }
-                catch (NumberFormatException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Number of items must be an integer greater than or equal to 1.",
-                            "Top Items",
-                            JOptionPane.ERROR_MESSAGE);
-                    nItemsTextField.setText("");
-                    nItemsList.setModel(new DefaultListModel<String>());
-                    return;
-                }
-                
-                if (n < 1)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Number of items must be an integer greater than or equal to 1.",
-                            "Top Items",
-                            JOptionPane.ERROR_MESSAGE);
-                    nItemsTextField.setText("");
-                    nItemsList.setModel(new DefaultListModel<String>());
-                    return;
-                }
-                
-                Map<String,Integer> topItems;
-                try
-                {
-                    topItems = Queries.getTopNItems(n);
-                }
-                catch (SQLException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "A database error occurred:\n" + ex.getMessage(),
-                            "Top Items",
-                            JOptionPane.ERROR_MESSAGE);
-                    nItemsTextField.setText("");
-                    nItemsList.setModel(new DefaultListModel<String>());
-                    return;
-                }
-                
-                DefaultListModel<String> nItemsModel = new DefaultListModel<String>();
-                for (String itemName : topItems.keySet())
-                    nItemsModel.addElement(itemName);
-                nItemsList.setModel(nItemsModel);
+                updateTopItems();
             }
         });
         
@@ -1719,53 +1620,7 @@ public class EmployeeView {
         nCustomersRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
-                int n;
-                try
-                {
-                    n = Integer.parseInt(nCustomersTextField.getText());
-                }
-                catch (NumberFormatException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Number of customers must be an integer greater than or equal to 1.",
-                            "Best Customers",
-                            JOptionPane.ERROR_MESSAGE);
-                    nCustomersTextField.setText("");
-                    nCustomersList.setModel(new DefaultListModel<Long>());
-                    return;
-                }
-                
-                if (n < 1)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Number of customers must be an integer greater than or equal to 1.",
-                            "Best Customers",
-                            JOptionPane.ERROR_MESSAGE);
-                    nCustomersTextField.setText("");
-                    nCustomersList.setModel(new DefaultListModel<Long>());
-                    return;
-                }
-                
-                Map<Long,Long> bestCustomers;
-                try
-                {
-                    bestCustomers = Queries.getFrequentCustomers(n);
-                }
-                catch (SQLException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "A database error occurred:\n" + ex.getMessage(),
-                            "Best Customers",
-                            JOptionPane.ERROR_MESSAGE);
-                    nCustomersTextField.setText("");
-                    nCustomersList.setModel(new DefaultListModel<Long>());
-                    return;
-                }
-                
-                DefaultListModel<Long> nCustomersModel = new DefaultListModel<Long>();
-                for (Long custID : bestCustomers.keySet())
-                    nCustomersModel.addElement(custID);
-                nCustomersList.setModel(nCustomersModel);
+                updateBestCustomers();
             }
         });
         
@@ -1843,53 +1698,7 @@ public class EmployeeView {
         nCustomersRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
-                int n;
-                try
-                {
-                    n = Integer.parseInt(nRecentTextField.getText());
-                }
-                catch (NumberFormatException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Number of customers must be an integer greater than or equal to 1.",
-                            "Recent Customers",
-                            JOptionPane.ERROR_MESSAGE);
-                    nRecentTextField.setText("");
-                    nRecentList.setModel(new DefaultListModel<Long>());
-                    return;
-                }
-                
-                if (n < 1)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "Number of customers must be an integer greater than or equal to 1.",
-                            "Recent Customers",
-                            JOptionPane.ERROR_MESSAGE);
-                    nRecentTextField.setText("");
-                    nRecentList.setModel(new DefaultListModel<Long>());
-                    return;
-                }
-                
-                Map<Long,Timestamp> recentCustomers;
-                try
-                {
-                    recentCustomers = Queries.getLastNCust(n);
-                }
-                catch (SQLException ex)
-                {
-                    JOptionPane.showMessageDialog(null,
-                            "A database error occurred:\n" + ex.getMessage(),
-                            "Recent Customers",
-                            JOptionPane.ERROR_MESSAGE);
-                    nRecentTextField.setText("");
-                    nRecentList.setModel(new DefaultListModel<Long>());
-                    return;
-                }
-                
-                DefaultListModel<Long> nRecentModel = new DefaultListModel<Long>();
-                for (Long custID : recentCustomers.keySet())
-                    nRecentModel.addElement(custID);
-                nRecentList.setModel(nRecentModel);
+                updateRecentCustomers();
             }
         });
         
@@ -1958,25 +1767,7 @@ public class EmployeeView {
     {
         fastestDriversPanel = new JPanel(new BorderLayout());
         fastestDriversList = new JList<Long>();
-        List<DelivererTime> drivers;
-        try
-        {
-            drivers = Queries.getFastestDeliverers();
-        }
-        catch (SQLException ex)
-        {
-            JOptionPane.showMessageDialog(null,
-                    "A database error occurred:\n" + ex.getMessage(),
-                    "Fastest Drivers",
-                    JOptionPane.ERROR_MESSAGE);
-            fastestDriversList.setModel(new DefaultListModel<Long>());
-            return;
-        }
-        
-        DefaultListModel<Long> fastestDriversModel = new DefaultListModel<Long>();
-        for (DelivererTime driver : drivers)
-            fastestDriversModel.addElement(driver.empid);
-        fastestDriversList.setModel(fastestDriversModel);
+        updateFastestDrivers();
         
         JScrollPane fastestDriversScrollPane = new JScrollPane(fastestDriversList,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -2708,6 +2499,256 @@ public class EmployeeView {
         statPanel.add(monthlyRevenuePanel, gbc);
     }
 	
+    private void updateQuantitySold()
+    {
+        String itemName = qsItemNameTextField.getText();
+        java.sql.Date start = new java.sql.Date(((Date)fromSpinner.getValue()).getTime());
+        java.sql.Date end = new java.sql.Date(((Date)toSpinner.getValue()).getTime());
+        long qSold;
+        try
+        {
+            qSold = Queries.getQuantitySold(itemName, start, end);
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n"+ ex.getMessage(),
+                    "Quantity Sold",
+                    JOptionPane.ERROR_MESSAGE);
+            qsQuantityTextField.setText("");
+            return;
+        }
+        qsQuantityTextField.setText(Long.toString(qSold));
+    }
+    
+    private void updateAverageDeliveryTime()
+    {
+        if (dtEmpIdTextField.getText().equals(""))
+            return;
+        
+        long empID;
+        try
+        {
+            empID = Long.parseLong(dtEmpIdTextField.getText());
+        }
+        catch (NumberFormatException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Invalid employee ID.",
+                    "Delivery Time",
+                    JOptionPane.ERROR_MESSAGE);
+            dtAvgTimeTextField.setText("");
+            return;   
+        }
+        
+        java.sql.Date start = new java.sql.Date(((Date)fromSpinner.getValue()).getTime());
+        java.sql.Date end = new java.sql.Date(((Date)toSpinner.getValue()).getTime());
+        long avgDeliveryTime;
+        try
+        {
+            avgDeliveryTime = Queries.getAverageDeliveryTime(empID);
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n" + ex.getMessage(),
+                    "Average Delivery Time",
+                    JOptionPane.ERROR_MESSAGE);
+            dtAvgTimeTextField.setText("");
+            return;
+        }
+        
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(avgDeliveryTime);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(avgDeliveryTime - TimeUnit.MINUTES.toMillis(minutes));
+        
+        dtAvgTimeTextField.setText(String.format("%02d:%02d", minutes, seconds));
+    }
+    
+    private void updateTopItems()
+    {
+        if (nItemsTextField.getText().equals(""))
+            return;
+        
+        int n;
+        try
+        {
+            n = Integer.parseInt(nItemsTextField.getText());
+        }
+        catch (NumberFormatException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Number of items must be an integer greater than or equal to 1.",
+                    "Top Items",
+                    JOptionPane.ERROR_MESSAGE);
+            nItemsTextField.setText("");
+            nItemsList.setModel(new DefaultListModel<String>());
+            return;
+        }
+        
+        if (n < 1)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Number of items must be an integer greater than or equal to 1.",
+                    "Top Items",
+                    JOptionPane.ERROR_MESSAGE);
+            nItemsTextField.setText("");
+            nItemsList.setModel(new DefaultListModel<String>());
+            return;
+        }
+        
+        Map<String,Integer> topItems;
+        try
+        {
+            topItems = Queries.getTopNItems(n);
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n" + ex.getMessage(),
+                    "Top Items",
+                    JOptionPane.ERROR_MESSAGE);
+            nItemsTextField.setText("");
+            nItemsList.setModel(new DefaultListModel<String>());
+            return;
+        }
+        
+        DefaultListModel<String> nItemsModel = new DefaultListModel<String>();
+        for (String itemName : topItems.keySet())
+            nItemsModel.addElement(itemName);
+        nItemsList.setModel(nItemsModel);
+    }
+
+    private void updateBestCustomers()
+    {
+        if (nCustomersTextField.getText().equals(""))
+            return;
+        
+        int n;
+        try
+        {
+            n = Integer.parseInt(nCustomersTextField.getText());
+        }
+        catch (NumberFormatException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Number of customers must be an integer greater than or equal to 1.",
+                    "Best Customers",
+                    JOptionPane.ERROR_MESSAGE);
+            nCustomersTextField.setText("");
+            nCustomersList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        if (n < 1)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Number of customers must be an integer greater than or equal to 1.",
+                    "Best Customers",
+                    JOptionPane.ERROR_MESSAGE);
+            nCustomersTextField.setText("");
+            nCustomersList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        Map<Long,Long> bestCustomers;
+        try
+        {
+            bestCustomers = Queries.getFrequentCustomers(n);
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n" + ex.getMessage(),
+                    "Best Customers",
+                    JOptionPane.ERROR_MESSAGE);
+            nCustomersTextField.setText("");
+            nCustomersList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        DefaultListModel<Long> nCustomersModel = new DefaultListModel<Long>();
+        for (Long custID : bestCustomers.keySet())
+            nCustomersModel.addElement(custID);
+        nCustomersList.setModel(nCustomersModel);
+    }
+    
+    private void updateRecentCustomers()
+    {
+        if (nRecentTextField.getText().equals(""))
+            return;
+        
+        int n;
+        try
+        {
+            n = Integer.parseInt(nRecentTextField.getText());
+        }
+        catch (NumberFormatException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Number of customers must be an integer greater than or equal to 1.",
+                    "Recent Customers",
+                    JOptionPane.ERROR_MESSAGE);
+            nRecentTextField.setText("");
+            nRecentList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        if (n < 1)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "Number of customers must be an integer greater than or equal to 1.",
+                    "Recent Customers",
+                    JOptionPane.ERROR_MESSAGE);
+            nRecentTextField.setText("");
+            nRecentList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        Map<Long,Timestamp> recentCustomers;
+        try
+        {
+            recentCustomers = Queries.getLastNCust(n);
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n" + ex.getMessage(),
+                    "Recent Customers",
+                    JOptionPane.ERROR_MESSAGE);
+            nRecentTextField.setText("");
+            nRecentList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        DefaultListModel<Long> nRecentModel = new DefaultListModel<Long>();
+        for (Long custID : recentCustomers.keySet())
+            nRecentModel.addElement(custID);
+        nRecentList.setModel(nRecentModel);
+    }
+    
+    private void updateFastestDrivers()
+    {
+        List<DelivererTime> drivers;
+        try
+        {
+            drivers = Queries.getFastestDeliverers();
+        }
+        catch (SQLException ex)
+        {
+            JOptionPane.showMessageDialog(null,
+                    "A database error occurred:\n" + ex.getMessage(),
+                    "Fastest Drivers",
+                    JOptionPane.ERROR_MESSAGE);
+            fastestDriversList.setModel(new DefaultListModel<Long>());
+            return;
+        }
+        
+        DefaultListModel<Long> fastestDriversModel = new DefaultListModel<Long>();
+        for (DelivererTime driver : drivers)
+            fastestDriversModel.addElement(driver.empid);
+        fastestDriversList.setModel(fastestDriversModel);
+    }
+    
     private void updateStats(java.sql.Date start, java.sql.Date end)
     {
         if (end.compareTo(start) < 0)
@@ -2875,6 +2916,20 @@ public class EmployeeView {
 	{
         GridBagConstraints gbc;
         statPanel = new JPanel(new GridBagLayout());
+        
+        initQuantitySoldPanel();
+        initDeliveryTimePanel();
+        initTopItemsPanel();
+        initBestCustomersPanel();
+        initRecentCustomersPanel();
+        initFastestDriversPanel();
+        initOrderCostPanel();
+        initDailyOrdersPanel();
+        initMonthlyOrdersPanel();
+        initDailyRevenuePanel();
+        initMonthlyRevenuePanel();
+        
+
         JPanel topPanel = new JPanel();
         
         JLabel fromLabel = new JLabel("From:");
@@ -2895,7 +2950,16 @@ public class EmployeeView {
                 if (newFrom.compareTo(toDate) > 0)
                     fromSpinner.setValue(fromDate);
                 else
+                {
                     fromDate = newFrom;
+                    updateQuantitySold();
+                    updateAverageDeliveryTime();
+                    updateTopItems();
+                    updateBestCustomers();
+                    updateRecentCustomers();
+                    updateFastestDrivers();
+                    updateStats(new java.sql.Date(fromDate.getTime()), new java.sql.Date(toDate.getTime()));
+                }
             }
         });
         topPanel.add(fromSpinner);
@@ -2918,7 +2982,16 @@ public class EmployeeView {
                 if (newTo.compareTo(fromDate) < 0)
                     toSpinner.setValue(toDate);
                 else
+                {
                     toDate = newTo;
+                    updateQuantitySold();
+                    updateAverageDeliveryTime();
+                    updateTopItems();
+                    updateBestCustomers();
+                    updateRecentCustomers();
+                    updateFastestDrivers();
+                    updateStats(new java.sql.Date(fromDate.getTime()), new java.sql.Date(toDate.getTime()));
+                }
             }
         });
         topPanel.add(toSpinner);
@@ -2932,18 +3005,6 @@ public class EmployeeView {
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(topPanel, gbc);
-        
-        initQuantitySoldPanel();
-        initDeliveryTimePanel();
-        initTopItemsPanel();
-        initBestCustomersPanel();
-        initRecentCustomersPanel();
-        initFastestDriversPanel();
-        initOrderCostPanel();
-        initDailyOrdersPanel();
-        initMonthlyOrdersPanel();
-        initDailyRevenuePanel();
-        initMonthlyRevenuePanel();
         
         java.sql.Date start = new java.sql.Date(((Date)fromSpinner.getValue()).getTime());
         java.sql.Date end = new java.sql.Date(((Date)toSpinner.getValue()).getTime());
