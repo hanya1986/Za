@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -405,6 +406,22 @@ public class SignupView {
 				values.put("state", arrayTextField[6].getText());
 				values.put("zip", arrayTextField[7].getText());
 				try {
+					if(arrayTextField[6].getText().length() != 2){
+						JOptionPane.showMessageDialog(frame, "State must be 2 character!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if(arrayTextField[3].getText().isEmpty()){
+						JOptionPane.showMessageDialog(frame, "Username cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if(pwField.getPassword().length == 0){
+						JOptionPane.showMessageDialog(frame, "Passowrd cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if(ProfileManager.getPersonID(arrayTextField[3].getText()) != ProfileManager.USERNAME_NOT_IN_TABLE){
+						JOptionPane.showMessageDialog(frame, "Username already exist!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 					ProfileManager.createCustomer(values, String.valueOf(pwField.getPassword()));
 					long personId = ProfileManager.getPersonID(arrayTextField[3].getText());
 					if(phoneNumberComboBox.getItemCount() != 0){

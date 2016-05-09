@@ -115,16 +115,6 @@ public class EmployeeView {
 			"Large price:"
 	};
 	
-	private String[] custAttr = new String[]{
-			"first_name",
-			"middle_name",
-			"last_name",
-			"date_of_birth",
-			"street",
-			"city",
-			"state",
-			"zip",
-		};
 	private String[] itemsAttr = new String[]{
 			"type",
 			"est_prep_time",
@@ -223,7 +213,6 @@ public class EmployeeView {
 	private List<String> removeEmails;
 	private Map<String,Map<String,Object>> menu = new HashMap<String,Map<String,Object>>();
 	private List<String> empAttrList = new ArrayList<String>(Arrays.asList(empAttr));
-	private List<String> custAttrList = new ArrayList<String>(Arrays.asList(custAttr));
 	private List<String> itemAttrList = new ArrayList<String>(Arrays.asList(itemsAttr));
 	
 	/**
@@ -264,18 +253,11 @@ public class EmployeeView {
 	public static void main(String[] args) {
 	    try {
             String db_location = "./ZADB/za";
-            String db_path = db_location + ".h2.db";
-            File f = new File(db_path);
-            if (f.exists()) {
-                System.out.println("REMOVING OLD DATABASE\n");
-                //f.delete();
-            }
-
             String username = "username";
             String password = "password";
             ConnectionManager.initConnection(db_location, username, password);
-            //ZaDatabase.createDatabase();
-            //TablePopulator populate = new TablePopulator();
+            ZaDatabase.createDatabase();
+            TablePopulator populate = new TablePopulator();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -739,15 +721,11 @@ public class EmployeeView {
 		initPhoneNumberPanel();
 		initEmailPanel();
 		mainPanel = new JPanel(new GridBagLayout());
-		//mainPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		cutomerProfilePanel = new JPanel(new GridBagLayout());
-		//profileScollPane = new JScrollPane(profilePanel);
-		//JLabel[] arrayLabel = new JLabel[profileFields.length];
 		custArrayTextField = new JTextField[CustomerProfileFields.length];
 		SpinnerDateModel model;
 		for(int i = 0; i < CustomerProfileFields.length; i++){
 		    
-			//arrayLabel[i] = new JLabel(profileFields[i]);
 		    JLabel attributeLabel = new JLabel(CustomerProfileFields[i]);
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = i;
@@ -834,6 +812,22 @@ public class EmployeeView {
 				values.put("state", custArrayTextField[6].getText());
 				values.put("zip", custArrayTextField[7].getText());
 				try {
+					if(custArrayTextField[6].getText().length() != 2){
+						JOptionPane.showMessageDialog(frame, "State must be 2 character!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if(custArrayTextField[3].getText().isEmpty()){
+						JOptionPane.showMessageDialog(frame, "Username cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if(pwField.getPassword().length == 0){
+						JOptionPane.showMessageDialog(frame, "Passowrd cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if(ProfileManager.getPersonID(custArrayTextField[3].getText()) != ProfileManager.USERNAME_NOT_IN_TABLE){
+						JOptionPane.showMessageDialog(frame, "Username already exist!", "Notice", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 					ProfileManager.createCustomer(values, String.valueOf(pwField.getPassword()));
 					long personId = ProfileManager.getPersonID(custArrayTextField[3].getText());
 					if(phoneNumberComboBox.getItemCount() != 0){
@@ -3304,7 +3298,9 @@ public class EmployeeView {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(e.getActionCommand().equals("Add employee")){
-					addNewEmp();
+					if(!addNewEmp()){
+						return;
+					}
 					loadManageEmpView();
 					frame.revalidate();
 				}
@@ -3362,8 +3358,16 @@ public class EmployeeView {
 	/**
 	 * adding new employee.
 	 */
-	private void addNewEmp(){
+	private boolean addNewEmp(){
 		Map<String,Object> values = new HashMap<String,Object>();
+		for(int i = 0; i < empArrayTextField.length; i++){
+			if(empArrayTextField[i] != null){
+				if(empArrayTextField[i].getText().isEmpty()){
+					JOptionPane.showMessageDialog(null, "Fields cannot be empty", "Notice", JOptionPane.ERROR_MESSAGE);
+					return false;
+				}
+			}
+		}
 		values.put("first_name", empArrayTextField[0].getText());
 		values.put("middle_name", empArrayTextField[1].getText());
 		values.put("last_name", empArrayTextField[2].getText());
@@ -3384,6 +3388,22 @@ public class EmployeeView {
 			values.put("date_terminated" , null);
 		}
 		try {
+			if(empArrayTextField[5].getText().length() != 2){
+				JOptionPane.showMessageDialog(null, "State must be 2 character!", "Notice", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			if(usernameTextField.getText().isEmpty()){
+				JOptionPane.showMessageDialog(null, "Username cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			if(passwordField.getPassword().length == 0){
+				JOptionPane.showMessageDialog(null, "Passowrd cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			if(ProfileManager.getPersonID(usernameTextField.getText()) != ProfileManager.USERNAME_NOT_IN_TABLE){
+				JOptionPane.showMessageDialog(null, "Username already exist!", "Notice", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
 			long personId = ProfileManager.createEmployee(values, String.valueOf(passwordField.getPassword()));
 			if(phoneNumberComboBox.getItemCount() != 0){
 				for(int i = 0; i < phoneNumberComboBox.getItemCount(); i++){
@@ -3396,6 +3416,7 @@ public class EmployeeView {
 				}
 			}
 			JOptionPane.showMessageDialog(frame, "Employee account created!", "Notice", JOptionPane.INFORMATION_MESSAGE);
+			return true;
 		} catch (NoSuchAlgorithmException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -3403,6 +3424,7 @@ public class EmployeeView {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		return true;
 	}
 	
 	/**
