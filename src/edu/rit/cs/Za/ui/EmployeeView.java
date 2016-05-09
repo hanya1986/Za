@@ -80,9 +80,9 @@ import edu.rit.cs.Za.ui.CustomerView.MyModel;
 public class EmployeeView {
 	
 	private String[] profileFields = new String[]{
-			"FirstName",
-			"MiddleName",
-			"LastName",
+			"First Name",
+			"Middle Name",
+			"Last Name",
 			"DOB",
 			"Address",
 			"City",
@@ -1319,7 +1319,7 @@ public class EmployeeView {
 	 */
 	public void initializeManagerView(){
 		
-		JButton statButton = new JButton("statistics");
+		JButton statButton = new JButton("Statistics");
 		statButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -1331,7 +1331,7 @@ public class EmployeeView {
 		});
 		menuBar.add(statButton);
 		
-		JButton manageEmpButton = new JButton("Manage employees");
+		JButton manageEmpButton = new JButton("Manage Employees");
 		manageEmpButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -1343,7 +1343,7 @@ public class EmployeeView {
 		});
 		menuBar.add(manageEmpButton);
 		
-		JButton manageMenuButton = new JButton("Manage menu");
+		JButton manageMenuButton = new JButton("Manage Menu");
 		manageMenuButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -2961,13 +2961,13 @@ public class EmployeeView {
 	 */
 	public void initializeManageEmpView(){
 		manageEmpPanel = new JPanel(new BorderLayout());
-		String[] columns = { "Employee ID", "Firstname", "Middle Name","Lastname", "Job Title", "Hourly Rate", "Date Hired","Terminated"};
+		String[] columns = { "Employee ID", "First Name", "Middle Name","Last Name", "Job Title", "Hourly Rate", "Date Hired","Terminated"};
 		manageEmpTable = new JTable();
 		manageEmpTable.setModel(populateEmpTable(columns));
 		JScrollPane sp = new JScrollPane(manageEmpTable);
 		manageEmpPanel.add(sp, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
-		JButton addEmpButton = new JButton("Add employee");
+		JButton addEmpButton = new JButton("Add Employee");
 		addEmpButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -2977,7 +2977,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(addEmpButton);
-		JButton removeButton = new JButton("Terminate employee");
+		JButton removeButton = new JButton("Terminate Employee");
 		removeButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -2987,7 +2987,7 @@ public class EmployeeView {
 					return;
 				}
 				modifiedempID = Long.parseLong(manageEmpTable.getValueAt(row, 0).toString());
-				Object[] options = {"Yes, remove it", "No, keep it"};
+				Object[] options = {"Yes", "No"};
 				int n = JOptionPane.showOptionDialog(frame,
 						"Would you like to terminate the employee?",
 						"Confirm",
@@ -3013,7 +3013,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(removeButton);
-		JButton modifyButton = new JButton("Modify employee");
+		JButton modifyButton = new JButton("Modify Employee");
 		modifyButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3053,7 +3053,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(addItemButton);
-		JButton removeButton = new JButton("Remove item");
+		JButton removeButton = new JButton("Remove Item");
 		removeButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3086,7 +3086,7 @@ public class EmployeeView {
 			
 		});
 		buttonPanel.add(removeButton);
-		JButton modifyButton = new JButton("Modify item");
+		JButton modifyButton = new JButton("Modify Item");
 		modifyButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -3292,29 +3292,29 @@ public class EmployeeView {
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.VERTICAL;
-		String[] buttonName = {"Add employee", "Modify employee", "Add item", "Modify item"};
+		String[] buttonName = {"Add Employee", "Modify Employee", "Add Item", "Modify Item"};
 		bottonButton = new JButton(buttonName[viewType.ordinal()]);
 		bottonButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(e.getActionCommand().equals("Add employee")){
+				if(e.getActionCommand().equals("Add Employee")){
 					if(!addNewEmp()){
 						return;
 					}
 					loadManageEmpView();
 					frame.revalidate();
 				}
-				if(e.getActionCommand().equals("Add item")){
+				if(e.getActionCommand().equals("Add Item")){
 					addNewItem();
 					loadManageMenuView();
 					frame.revalidate();
 				}
-				if(e.getActionCommand().equals("Modify item")){
+				if(e.getActionCommand().equals("Modify Item")){
 					modifyItem();
 					loadManageMenuView();
 					frame.revalidate();
 				}
-				if(e.getActionCommand().equals("Modify employee")){
+				if(e.getActionCommand().equals("Modify Employee")){
 					modifyEmp();
 					loadManageEmpView();
 					frame.revalidate();

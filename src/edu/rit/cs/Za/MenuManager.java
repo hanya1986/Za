@@ -163,7 +163,7 @@ public class MenuManager
         Connection conn = ConnectionManager.getConnection();
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT name ");
-        builder.append("FROM Menu_Item ");
+        builder.append("FROM Menu_Item;");
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
         while (rs.next())
