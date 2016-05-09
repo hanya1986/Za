@@ -280,9 +280,9 @@ public class Queries
         Connection conn = ConnectionManager.getConnection();
         Map<String, Integer> topNItems = new HashMap<String, Integer>();
         String build = "";
-        build += "SELECT name, count(name) LIMIT ?";
-        build += "FROM Menu_Item INNER JOIN ZaOrderItem ON Menu_Item.name = ZaOrderItem.name ";
-        build += "ORDER BY count(name)";
+        build += "SELECT name, count(name) FROM Menu_Item ";
+        build += "INNER JOIN ZaOrderItem ON Menu_Item.name = ZaOrderItem.itemid ";
+        build += "GROUP BY name ORDER BY count(name) DESC LIMIT ?";
         PreparedStatement ps = conn.prepareStatement(build);
         ps.setInt(1, N);
         ResultSet results = ps.executeQuery();
