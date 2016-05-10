@@ -852,8 +852,12 @@ public class CustomerView {
 	 * loadProfileView: Reloading the Profile UI.
 	 */
 	private void loadProfileView(){
-		frame.getContentPane().remove(orderPanel);
-		frame.getContentPane().remove(bottomPanel);
+	    if (orderPanel != null)
+	        frame.getContentPane().remove(orderPanel);
+	    
+	    if (bottomPanel != null)
+	        frame.getContentPane().remove(bottomPanel);
+	    
 		initializeProfileView();
 		populateProfileData();
 	}
@@ -862,7 +866,8 @@ public class CustomerView {
 	 * loadOrderView: Reloading the Order UI.
 	 */
 	private void loadOrderView(){
-		frame.getContentPane().remove(mainPanel);
+	    if (mainPanel != null)
+	        frame.getContentPane().remove(mainPanel);
 		initializeOrderView();
 	}
 

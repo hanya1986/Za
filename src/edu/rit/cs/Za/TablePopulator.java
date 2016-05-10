@@ -81,7 +81,7 @@ public class TablePopulator
      */
     public static void createSampleUsers() throws NoSuchAlgorithmException, SQLException
     {
-    	wipeTables();
+    	//wipeTables();
     	
     	String[] streets = {"AdSepPls Blvd", "Yut Street", "Wook Tpk"};
     	String[] states = {"NY", "CA", "SC"};
@@ -758,6 +758,7 @@ public class TablePopulator
         builder = new StringBuilder();
         builder.append("SELECT * ");
         builder.append("FROM Employee; ");
+        Connection conn = ConnectionManager.getConnection();
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
         while(rs.next()) 
@@ -780,6 +781,7 @@ public class TablePopulator
         builder = new StringBuilder();
         builder.append("SELECT * ");
         builder.append("FROM Customer; ");
+        Connection conn = ConnectionManager.getConnection();
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
         while(rs.next()) 
@@ -798,6 +800,7 @@ public class TablePopulator
         builder = new StringBuilder();
         builder.append("SELECT * ");
         builder.append("FROM Person; ");
+        Connection conn = ConnectionManager.getConnection();
         PreparedStatement ps = conn.prepareStatement(builder.toString());
         ResultSet rs = ps.executeQuery();
         while(rs.next()) 

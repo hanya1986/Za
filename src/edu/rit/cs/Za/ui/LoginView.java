@@ -61,9 +61,9 @@ public class LoginView implements ActionListener{
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
-		frame.setMinimumSize(new Dimension(700, 500));
-		frame.setMaximumSize(new Dimension(700,500));
+		frame.setSize(700, 500);
+		frame.setResizable(false);
+		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 2, 0, 0));
 		

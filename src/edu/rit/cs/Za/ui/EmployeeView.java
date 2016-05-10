@@ -504,6 +504,8 @@ public class EmployeeView {
 	 */
 	private void initPhoneNumberPanel()
 	{
+	    newPhones = new LinkedList<String>();
+	    
 	    phoneNumberPanel = new JPanel(new GridBagLayout());
 	    
         phoneNumberComboBox = new JComboBox<String>();
@@ -611,6 +613,8 @@ public class EmployeeView {
 	 * initEmailPanel: initializing the feature for adding multiple email.
 	 */
 	private void initEmailPanel(){
+	    newEmails = new LinkedList<String>();
+	    
 		emailPanel = new JPanel(new GridBagLayout());
 	    
 		emailComboBox = new JComboBox<String>();
@@ -805,30 +809,30 @@ public class EmployeeView {
 				values.put("middle_name", custArrayTextField[1].getText());
 				values.put("last_name", custArrayTextField[2].getText());
 				values.put("date_of_birth", (Date)customerDOBSpinner.getValue());
-				values.put("username", custArrayTextField[3].getText());
-				values.put("street", custArrayTextField[4].getText());
-				values.put("city", custArrayTextField[5].getText());
-				values.put("state", custArrayTextField[6].getText());
-				values.put("zip", custArrayTextField[7].getText());
+				values.put("username", custArrayTextField[4].getText());
+				values.put("street", custArrayTextField[6].getText());
+				values.put("city", custArrayTextField[7].getText());
+				values.put("state", custArrayTextField[8].getText());
+				values.put("zip", custArrayTextField[9].getText());
 				try {
-					if(custArrayTextField[6].getText().length() != 2){
-						JOptionPane.showMessageDialog(frame, "State must be 2 character!", "Notice", JOptionPane.ERROR_MESSAGE);
+					if(custArrayTextField[8].getText().length() != 2){
+						JOptionPane.showMessageDialog(frame, "State must be 2 characters!", "Notice", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					if(custArrayTextField[3].getText().isEmpty()){
-						JOptionPane.showMessageDialog(frame, "Username cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+					if(custArrayTextField[4].getText().isEmpty()){
+						JOptionPane.showMessageDialog(frame, "Please enter a username.", "Notice", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 					if(pwField.getPassword().length == 0){
-						JOptionPane.showMessageDialog(frame, "Passowrd cannot be empty!", "Notice", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(frame, "Please enter a password", "Notice", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					if(ProfileManager.getPersonID(custArrayTextField[3].getText()) != ProfileManager.USERNAME_NOT_IN_TABLE){
-						JOptionPane.showMessageDialog(frame, "Username already exist!", "Notice", JOptionPane.ERROR_MESSAGE);
+					if(ProfileManager.getPersonID(custArrayTextField[4].getText()) != ProfileManager.USERNAME_NOT_IN_TABLE){
+						JOptionPane.showMessageDialog(frame, "Please choose a different username.", "Notice", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 					ProfileManager.createCustomer(values, String.valueOf(pwField.getPassword()));
-					long personId = ProfileManager.getPersonID(custArrayTextField[3].getText());
+					long personId = ProfileManager.getPersonID(custArrayTextField[4].getText());
 					if(phoneNumberComboBox.getItemCount() != 0){
 						for(int i = 0; i < phoneNumberComboBox.getItemCount(); i++){
 							ProfileManager.addPhoneNumber(personId, phoneNumberComboBox.getItemAt(i));
