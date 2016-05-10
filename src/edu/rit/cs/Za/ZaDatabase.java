@@ -172,7 +172,13 @@ public class ZaDatabase
         builder.append("CREATE TABLE IF NOT EXISTS Menu_Item (");
         builder.append("  name          VARCHAR(256),");
         builder.append("  type          VARCHAR(8) NOT NULL,");
+        
+        /*
+         * TODO: remove price column (now have small, medium, and large price
+         * columns)
+         */
         builder.append("  price         DECIMAL(4,2) NOT NULL,");
+        
         builder.append("  est_prep_time INT,");
         builder.append("  available     BOOLEAN DEFAULT TRUE,");
         builder.append("  small_price   DECIMAL(4,2) NOT NULL,");
@@ -262,7 +268,10 @@ public class ZaDatabase
         builder.append("  itemid VARCHAR(256) NOT NULL,");
         builder.append("  quantity INT DEFAULT 1,");
         builder.append("  size VARCHAR(8),");
+        
+        /* TODO: remove available column (not need in ZaOrderItem) */
         builder.append("  available BOOLEAN DEFAULT TRUE,");
+        
         builder.append("  PRIMARY KEY (orderid,itemid,size),");
         builder.append("  FOREIGN KEY (orderid) REFERENCES ZaOrder (orderid),");
         builder.append("  FOREIGN KEY (itemid) REFERENCES Menu_Item (name),");
