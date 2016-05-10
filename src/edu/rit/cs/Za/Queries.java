@@ -694,10 +694,10 @@ public class Queries
         ResultSet rs = ps.executeQuery();
         rs.next();
         
-        Float avgMonthlyOrders = rs.getFloat(1);
-        Long minMonthlyOrders = rs.getLong(2);
-        Long maxMonthlyOrders = rs.getLong(3);
-        Long totalMonthlyOrders = rs.getLong(4);
+        float avgMonthlyOrders = rs.getFloat(1);
+        long minMonthlyOrders = rs.getLong(2);
+        long maxMonthlyOrders = rs.getLong(3);
+        long totalMonthlyOrders = rs.getLong(4);
         
         builder.setLength(0);
         builder.append("SELECT COUNT(*) AS n_orders, ");
@@ -735,10 +735,10 @@ public class Queries
         
         Map<String,Float> stats = new HashMap<String,Float>();
         stats.put("AVG_MONTHLY_ORDERS", avgMonthlyOrders);
-        stats.put("MIN_MONTHLY_ORDERS", (float)(minMonthlyOrders.longValue()));
+        stats.put("MIN_MONTHLY_ORDERS", (float)minMonthlyOrders);
         stats.put("MED_MONTHLY_ORDERS", medMonthlyOrders);
-        stats.put("MAX_MONTHLY_ORDERS", (float)(maxMonthlyOrders.longValue()));
-        stats.put("TOTAL_MONTHLY_ORDERS", (float)(totalMonthlyOrders.longValue()));
+        stats.put("MAX_MONTHLY_ORDERS", (float)maxMonthlyOrders);
+        stats.put("TOTAL_MONTHLY_ORDERS", (float)totalMonthlyOrders);
         
         return stats;
     }

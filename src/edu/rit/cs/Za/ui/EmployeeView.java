@@ -65,6 +65,7 @@ import edu.rit.cs.Za.ProfileManager;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Duration;
 
 import edu.rit.cs.Za.ConnectionManager;
 import edu.rit.cs.Za.ItemType;
@@ -425,7 +426,7 @@ public class EmployeeView {
 	 */
 	private void initialize(){
 		frame = new JFrame();
-		frame.setSize(new Dimension(1280, 768));
+		frame.setSize(new Dimension(1400, 700));
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -1381,7 +1382,7 @@ public class EmployeeView {
         gbc.fill = GridBagConstraints.NONE;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.weightx = 0.0; gbc.weighty = 1.0;
         quantitySoldPanel.add(new JLabel("Item Name:"), gbc);
         
@@ -1401,7 +1402,7 @@ public class EmployeeView {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.weightx = 0.0; gbc.weighty = 1.0;
         quantitySoldPanel.add(new JLabel("Quantity:"), gbc);
         
@@ -1421,7 +1422,7 @@ public class EmployeeView {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.anchor = GridBagConstraints.PAGE_END;
         gbc.weightx = 1.0; gbc.weighty = 1.0;
         quantitySoldPanel.add(qsRefreshButton, gbc);
         
@@ -1432,11 +1433,11 @@ public class EmployeeView {
         gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 1;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(quantitySoldPanel, gbc);
     }
     
@@ -1465,7 +1466,7 @@ public class EmployeeView {
         gbc.fill = GridBagConstraints.NONE;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.weightx = 0.0; gbc.weighty = 1.0;
         deliveryTimePanel.add(new JLabel("Employee ID:"), gbc);
         
@@ -1485,7 +1486,7 @@ public class EmployeeView {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.weightx = 0.0; gbc.weighty = 1.0;
         deliveryTimePanel.add(new JLabel("Average Time:"), gbc);
         
@@ -1516,11 +1517,11 @@ public class EmployeeView {
         gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 2;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.PAGE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(deliveryTimePanel, gbc);
     }
     
@@ -1561,7 +1562,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.weightx = 0.75; gbc.weighty = 1.0;
         topItemsPanel.add(nItemsTextField, gbc);
         
         gbc = new GridBagConstraints();
@@ -1571,7 +1572,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.weightx = 0.25; gbc.weighty = 1.0;
         topItemsPanel.add(nItemsRefreshButton, gbc);
         
         JScrollPane nItemsScrollPane = new JScrollPane(nItemsList,
@@ -1594,11 +1595,11 @@ public class EmployeeView {
         gbc = new GridBagConstraints();
         gbc.gridx = 1; gbc.gridy = 1;
         gbc.gridwidth = 1; gbc.gridheight = 2;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(topItemsPanel, gbc);
     }
     
@@ -1639,7 +1640,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.weightx = 0.75; gbc.weighty = 1.0;
         bestCustomerPanel.add(nCustomersTextField, gbc);
         
         gbc = new GridBagConstraints();
@@ -1649,7 +1650,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.weightx = 0.25; gbc.weighty = 1.0;
         bestCustomerPanel.add(nCustomersRefreshButton, gbc);
         
         JScrollPane nCustomersScrollPane = new JScrollPane(nCustomersList,
@@ -1672,11 +1673,11 @@ public class EmployeeView {
         gbc = new GridBagConstraints();
         gbc.gridx = 2; gbc.gridy = 1;
         gbc.gridwidth = 1; gbc.gridheight = 2;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(bestCustomerPanel, gbc);
     }
     
@@ -1717,7 +1718,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.weightx = 0.75; gbc.weighty = 1.0;
         recentCustomerPanel.add(nRecentTextField, gbc);
         
         gbc = new GridBagConstraints();
@@ -1727,7 +1728,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.5; gbc.weighty = 1.0;
+        gbc.weightx = 0.25; gbc.weighty = 1.0;
         recentCustomerPanel.add(nRecentRefreshButton, gbc);
         
         JScrollPane nRecentScrollPane = new JScrollPane(nRecentList,
@@ -1750,11 +1751,11 @@ public class EmployeeView {
         gbc = new GridBagConstraints();
         gbc.gridx = 3; gbc.gridy = 1;
         gbc.gridwidth = 1; gbc.gridheight = 2;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(recentCustomerPanel, gbc);
     }
     
@@ -1783,7 +1784,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(fastestDriversPanel, gbc);
     }
 
@@ -1821,7 +1822,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         orderCostPanel.add(new JLabel("Average:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -1841,7 +1842,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         orderCostPanel.add(new JLabel("Minimum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -1861,7 +1862,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         orderCostPanel.add(new JLabel("Maximum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -1881,7 +1882,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         orderCostPanel.add(new JLabel("Median:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -1901,7 +1902,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         orderCostPanel.add(new JLabel("Total:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -1919,14 +1920,14 @@ public class EmployeeView {
                         "Order Cost"));
         
         gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridx = 0; gbc.gridy = 0;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
-        statPanel.add(orderCostPanel, gbc);
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        statBottomPanel.add(orderCostPanel, gbc);
     }
     
     private JPanel dailyOrdersPanel;
@@ -1963,7 +1964,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyOrdersPanel.add(new JLabel("Average:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -1983,7 +1984,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyOrdersPanel.add(new JLabel("Minimum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2003,7 +2004,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyOrdersPanel.add(new JLabel("Maximum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2023,7 +2024,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyOrdersPanel.add(new JLabel("Median:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2043,7 +2044,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyOrdersPanel.add(new JLabel("Total:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2061,14 +2062,14 @@ public class EmployeeView {
                         "Daily Orders"));
         
         gbc = new GridBagConstraints();
-        gbc.gridx = 1; gbc.gridy = 3;
+        gbc.gridx = 1; gbc.gridy = 0;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
-        statPanel.add(dailyOrdersPanel, gbc);
+        gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        statBottomPanel.add(dailyOrdersPanel, gbc);
     }
     
     private JPanel monthlyOrdersPanel;
@@ -2105,7 +2106,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyOrdersPanel.add(new JLabel("Average:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2125,7 +2126,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyOrdersPanel.add(new JLabel("Minimum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2145,7 +2146,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyOrdersPanel.add(new JLabel("Maximum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2165,7 +2166,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyOrdersPanel.add(new JLabel("Median:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2185,7 +2186,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyOrdersPanel.add(new JLabel("Total:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2203,14 +2204,14 @@ public class EmployeeView {
                         "Monthly Orders"));
         
         gbc = new GridBagConstraints();
-        gbc.gridx = 2; gbc.gridy = 3;
+        gbc.gridx = 2; gbc.gridy = 0;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
-        statPanel.add(monthlyOrdersPanel, gbc);
+        gbc.anchor = GridBagConstraints.PAGE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        statBottomPanel.add(monthlyOrdersPanel, gbc);
     }
     
     private JPanel dailyRevenuePanel;
@@ -2247,7 +2248,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyRevenuePanel.add(new JLabel("Average:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2267,7 +2268,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyRevenuePanel.add(new JLabel("Minimum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2287,7 +2288,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyRevenuePanel.add(new JLabel("Maximum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2307,7 +2308,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyRevenuePanel.add(new JLabel("Median:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2327,7 +2328,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         dailyRevenuePanel.add(new JLabel("Total:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2345,14 +2346,14 @@ public class EmployeeView {
                         "Daily Revenue"));
         
         gbc = new GridBagConstraints();
-        gbc.gridx = 3; gbc.gridy = 3;
+        gbc.gridx = 3; gbc.gridy = 0;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
-        statPanel.add(dailyRevenuePanel, gbc);
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        statBottomPanel.add(dailyRevenuePanel, gbc);
     }
     
     private JPanel monthlyRevenuePanel;
@@ -2389,7 +2390,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyRevenuePanel.add(new JLabel("Average:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2409,7 +2410,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyRevenuePanel.add(new JLabel("Minimum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2429,7 +2430,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyRevenuePanel.add(new JLabel("Maximum:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2449,7 +2450,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyRevenuePanel.add(new JLabel("Median:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2469,7 +2470,7 @@ public class EmployeeView {
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.LINE_START;
-        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.weightx = 0.0; gbc.weighty = 1.0;
         monthlyRevenuePanel.add(new JLabel("Total:"), gbc);
         
         gbc = new GridBagConstraints();
@@ -2486,15 +2487,16 @@ public class EmployeeView {
                 BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), 
                         "Monthly Revenue"));
         
+        
         gbc = new GridBagConstraints();
-        gbc.gridx = 4; gbc.gridy = 3;
+        gbc.gridx = 4; gbc.gridy = 0;
         gbc.gridwidth = 1; gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipadx = 4; gbc.ipady = 4;
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.weightx = 0.2; gbc.weighty = 1.0;
-        statPanel.add(monthlyRevenuePanel, gbc);
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        statBottomPanel.add(monthlyRevenuePanel, gbc);
     }
 	
     private void updateQuantitySold()
@@ -2556,10 +2558,10 @@ public class EmployeeView {
             return;
         }
         
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(avgDeliveryTime);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(avgDeliveryTime - TimeUnit.MINUTES.toMillis(minutes));
-        
-        dtAvgTimeTextField.setText(String.format("%02d:%02d", minutes, seconds));
+        Duration duration = Duration.ofMillis(avgDeliveryTime);
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes();
+        dtAvgTimeTextField.setText(String.format("%02:%02", hours, minutes));
     }
     
     private void updateTopItems()
@@ -2787,10 +2789,10 @@ public class EmployeeView {
             if (!orderStats.isEmpty())
             {
                 avgDailyOrdersTextField.setText(orderStats.get("AVG_DAILY_ORDERS").toString());
-                minDailyOrdersTextField.setText(orderStats.get("MIN_DAILY_ORDERS").toString());
-                maxDailyOrdersTextField.setText(orderStats.get("MAX_DAILY_ORDERS").toString());
+                minDailyOrdersTextField.setText(Integer.toString((int)orderStats.get("MIN_DAILY_ORDERS").floatValue()));
+                maxDailyOrdersTextField.setText(Integer.toString((int)orderStats.get("MAX_DAILY_ORDERS").floatValue()));
                 medDailyOrdersTextField.setText(orderStats.get("MED_DAILY_ORDERS").toString());
-                totalDailyOrdersTextField.setText(orderStats.get("TOTAL_DAILY_ORDERS").toString());
+                totalDailyOrdersTextField.setText(Integer.toString((int)orderStats.get("TOTAL_DAILY_ORDERS").floatValue()));
             }
             else
             {
@@ -2820,10 +2822,10 @@ public class EmployeeView {
             if (!orderStats.isEmpty())
             {
                 avgMonthlyOrdersTextField.setText(orderStats.get("AVG_MONTHLY_ORDERS").toString());
-                minMonthlyOrdersTextField.setText(orderStats.get("MIN_MONTHLY_ORDERS").toString());
-                maxMonthlyOrdersTextField.setText(orderStats.get("MAX_MONTHLY_ORDERS").toString());
+                minMonthlyOrdersTextField.setText(Integer.toString((int)orderStats.get("MIN_MONTHLY_ORDERS").floatValue()));
+                maxMonthlyOrdersTextField.setText(Integer.toString((int)orderStats.get("MAX_MONTHLY_ORDERS").floatValue()));
                 medMonthlyOrdersTextField.setText(orderStats.get("MED_MONTHLY_ORDERS").toString());
-                totalMonthlyOrdersTextField.setText(orderStats.get("TOTAL_MONTHLY_ORDERS").toString());
+                totalMonthlyOrdersTextField.setText(Integer.toString((int)orderStats.get("TOTAL_MONTHLY_ORDERS").floatValue()));
             }
             else
             {
@@ -2907,6 +2909,8 @@ public class EmployeeView {
     private Date fromDate;
     private Date toDate;
     
+    private JPanel statBottomPanel;
+    
 	/**
 	 * initializeStatView: initialize the statistics UI
 	 */
@@ -2921,12 +2925,14 @@ public class EmployeeView {
         initBestCustomersPanel();
         initRecentCustomersPanel();
         initFastestDriversPanel();
+        
+        statBottomPanel = new JPanel(new GridBagLayout());
+        
         initOrderCostPanel();
         initDailyOrdersPanel();
         initMonthlyOrdersPanel();
         initDailyRevenuePanel();
         initMonthlyRevenuePanel();
-        
 
         JPanel topPanel = new JPanel();
         
@@ -3003,6 +3009,16 @@ public class EmployeeView {
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.weightx = 1.0; gbc.weighty = 1.0;
         statPanel.add(topPanel, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 5; gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipadx = 4; gbc.ipady = 4;
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        statPanel.add(statBottomPanel, gbc);
         
         java.sql.Date start = new java.sql.Date(((Date)fromSpinner.getValue()).getTime());
         java.sql.Date end = new java.sql.Date(((Date)toSpinner.getValue()).getTime());
