@@ -760,7 +760,7 @@ public class CustomerView {
 		gbc.weighty = 0.3;
 		gbc.gridx++;
 		gbc.gridy = 0;
-		JLabel carLabel = new JLabel("Shopping car");
+		JLabel carLabel = new JLabel("Shopping Cart");
 		orderPanel.add(carLabel, gbc);
 		gbc.gridy++;
 		gbc.weightx = 1;

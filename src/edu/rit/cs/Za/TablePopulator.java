@@ -896,6 +896,7 @@ public class TablePopulator
         try
         {
             new TablePopulator();
+            TablePopulator.createSampleUsers();
         }
         catch (IOException ex)
         {
@@ -906,6 +907,10 @@ public class TablePopulator
         {
             System.out.println("A SQL error occurred while attempting to recreate the test database.");
             System.out.println(ex);
+        }
+        catch (NoSuchAlgorithmException ex)
+        {
+            System.out.println("SHA-256 not supported on this system.");
         }
         
         try

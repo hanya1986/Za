@@ -1698,7 +1698,7 @@ public class EmployeeView {
         nRecentTextField = new JTextField();
         nRecentList = new JList<Long>();
         nRecentRefreshButton = new JButton("Refresh");
-        nCustomersRefreshButton.addActionListener(new ActionListener(){
+        nRecentRefreshButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
                 updateRecentCustomers();
@@ -2564,8 +2564,9 @@ public class EmployeeView {
         
         Duration duration = Duration.ofMillis(avgDeliveryTime);
         long hours = duration.toHours();
+        duration = duration.minusHours(hours);
         long minutes = duration.toMinutes();
-        dtAvgTimeTextField.setText(String.format("%02:%02", hours, minutes));
+        dtAvgTimeTextField.setText(String.format("%02d:%02d", hours, minutes));
     }
     
     private void updateTopItems()

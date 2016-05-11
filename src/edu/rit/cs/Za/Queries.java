@@ -329,9 +329,9 @@ public class Queries
         Connection conn = ConnectionManager.getConnection();
         Map<Long, Timestamp> customers = new HashMap<Long, Timestamp>();
         String build = "";
-        build += "SELECT DISTINCT custid, time_order_placed LIMIT ?";
-        build += "FROM ZaOrder";
-        build += "ORDER BY time_order_placed";
+        build += "SELECT DISTINCT custid, time_order_placed ";
+        build += "FROM ZaOrder ";
+        build += "ORDER BY time_order_placed LIMIT ?;";
         PreparedStatement ps = conn.prepareStatement(build);
         ps.setInt(1, N);
         ResultSet results = ps.executeQuery();
