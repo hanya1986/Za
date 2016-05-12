@@ -3,6 +3,7 @@ package edu.rit.cs.Za;
 /**
  * ZaDatabase.java
  * Contributor(s):  Jordan Rosario (jar2119@rit.edu)
+ *                  Nicholas Marchionda (njm3348@rit.edu)
  */
 
 import java.sql.Connection;
